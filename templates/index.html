@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Login System - Welcome{% endblock %}
+
+{% block extra_head %}
+<style>
+    .welcome-container {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .welcome-card {
+        width: 400px;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .welcome-btn {
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-weight: 600;
+        margin: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .welcome-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-container">
+    <div class="card welcome-card">
+        <div class="card-body p-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Welcome</h2>
+                <p class="text-muted">Please login or register to continue</p>
+            </div>
+            
+            <div class="d-grid gap-3">
+                <a href="{{ url_for('login.login') }}" class="btn btn-primary welcome-btn">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+                <a href="{{ url_for('register.register') }}" class="btn btn-outline-primary welcome-btn">
+                    <i class="fas fa-user-plus me-2"></i>Register
+                </a>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mt-4">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+{% endblock %}
