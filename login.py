@@ -41,7 +41,7 @@ def login():
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         
-        # Basic validation
+        #  validation
         if not email or not password:
             flash('Please enter both email and password.', 'error')
             return render_template('login.html')
@@ -64,9 +64,9 @@ def login():
 @login_bp.route('/dashboard')
 def dashboard():
     """
-    Simple dashboard page after successful login.
+     dashboard page after successful login.
     """
-    # Check if user is logged in (simple session check)
+    # Check if user is logged in ( session check)
     if not request.args.get('logged_in'):
         flash('Please login to access dashboard.', 'error')
         return redirect(url_for('login.login'))
@@ -80,8 +80,8 @@ def dashboard():
 @login_bp.route('/logout')
 def logout():
     """
-    Handle user logout - simplified version.
-    Just redirects to index page.
+    Handle user logout
+    redirects to index page.
     """
     flash('You have been logged out successfully!', 'success')
     return redirect('/')

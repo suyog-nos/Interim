@@ -1,9 +1,9 @@
 -- ========================
--- SIMPLE LOGIN SYSTEM
+--  LOGIN SYSTEM
 -- ========================
 
-CREATE DATABASE IF NOT EXISTS test;
-USE test;
+CREATE DATABASE IF NOT EXISTS interim_test_database;
+USE interim_test_database;
 
 -- USERS TABLE
 CREATE TABLE users (

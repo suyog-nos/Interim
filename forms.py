@@ -25,7 +25,7 @@ class RegistrationForm(FlaskForm):
     # Phone number field with length validation
     phone = StringField(
         'Phone Number', 
-        validators=[DataRequired(), Length(min=10, max=15)]
+        validators=[DataRequired(), Length(min=10, max=10)]
     )
     
     # Password field with minimum length requirement

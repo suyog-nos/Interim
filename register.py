@@ -19,7 +19,7 @@ def register():
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
         
-        # Basic validation - check all fields are filled
+        # validation - check all fields are filled
         if not all([first_name, last_name, email, phone, password, confirm_password]):
             flash('All fields are required.', 'error')
             return render_template('register.html')
@@ -29,13 +29,13 @@ def register():
             flash('Passwords do not match.', 'error')
             return render_template('register.html')
         
-        # Basic email validation
+        # email validation
         if '@' not in email or '.' not in email:
             flash('Please enter a valid email address.', 'error')
             return render_template('register.html')
         
-        # Basic phone validation - check for 10 digits
-        if len(phone) < 10 or not phone.isdigit():
+        # phone validation - check for exactly 10 digits
+        if len(phone) != 10 or not phone.isdigit():
             flash('Please enter a valid 10-digit phone number.', 'error')
             return render_template('register.html')
         

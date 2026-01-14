@@ -5,7 +5,5 @@ conn = mysql.connector.connect(
     host="localhost",
     user="root",
     password="",
-    database="test"
+    database="interim_test_database"
 )
-
-# Install required package: pip install mysql-connector-python
