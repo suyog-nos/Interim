@@ -1,0 +1,51 @@
+# Interim
+
+A web application built with Python Flask and MySQL database.
+
+## Quick Start
+
+1. Extract the project files
+2. Create and activate a virtual environment
+3. Install dependencies
+4. Start XAMPP (Apache + MySQL)
+5. Import the database
+6. Run the application
+
+## Installation
+
+### 1. Virtual Environment
+```bash
+python -m venv venv
+```
+
+**Windows:**
+```bash
+venv\Scripts\activate
+```
+
+**Mac/Linux:**
+```bash
+source venv/bin/activate
+```
+
+### 2. Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Database Setup
+1. Start XAMPP (Apache + MySQL)
+2. Open `http://localhost/phpmyadmin`
+3. Create a new database
+4. Import the provided SQL file
+
+### 4. Run Application
+```bash
+python app.py
+```
+
+## Troubleshooting
+
+**Database Connection:** Verify database credentials in config
+**Missing Modules:** Ensure all dependencies are installed
+**Environment Issues:** Make sure virtual environment is activated
