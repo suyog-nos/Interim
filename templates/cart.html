@@ -1,0 +1,950 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - SmartStationery{% endblock %}
+
+{% block extra_head %}
+<!-- Quantity validation alert -->
+<div id="quantityAlert" class="quantity-alert">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>Quantity must be between 1 and 999</span>
+</div>
+
+<style>
+/* Cart Dark Theme Styles */
+.dark-theme .table {
+    color: var(--dark-text-1);
+    background-color: var(--dark-bg-2);
+}
+
+.dark-theme .table-light {
+    background-color: var(--dark-bg-3) !important;
+    color: var(--dark-text-1) !important;
+}
+
+.dark-theme .table-hover tbody tr:hover {
+    background-color: var(--dark-bg-1) !important;
+    color: var(--dark-text-1);
+}
+
+.dark-theme .table-active {
+    background-color: var(--dark-bg-3) !important;
+    color: var(--dark-text-1) !important;
+}
+
+.dark-theme .table th {
+    background-color: var(--dark-bg-3) !important;
+    color: var(--dark-text-1) !important;
+    border-color: var(--dark-border) !important;
+}
+
+.dark-theme .table td {
+    background-color: var(--dark-bg-2) !important;
+    color: var(--dark-text-1) !important;
+    border-color: var(--dark-border) !important;
+}
+
+.dark-theme .table-responsive {
+    background-color: var(--dark-bg-2);
+}
+
+.dark-theme .input-group .form-control {
+    background-color: var(--dark-bg-3) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-1) !important;
+}
+
+.dark-theme .input-group .btn-outline-secondary {
+    background-color: var(--dark-bg-3) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-2) !important;
+}
+
+.dark-theme .input-group .btn-outline-secondary:hover {
+    background-color: var(--dark-bg-1) !important;
+    border-color: var(--primary) !important;
+    color: var(--primary-light) !important;
+}
+
+.dark-theme .btn-outline-danger {
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.dark-theme .btn-outline-danger:hover {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: white !important;
+}
+
+.dark-theme .text-muted {
+    color: var(--gray-400) !important;
+}
+
+.dark-theme h2 {
+    color: var(--dark-text-1) !important;
+}
+
+.dark-theme h4 {
+    color: var(--dark-text-1) !important;
+}
+
+.dark-theme h6 {
+    color: var(--dark-text-1) !important;
+}
+
+.dark-theme .container {
+    background-color: var(--dark-bg-2);
+}
+
+.dark-theme .btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.dark-theme .btn-primary:hover {
+    background-color: var(--primary-light) !important;
+    border-color: var(--primary-light) !important;
+}
+
+.dark-theme .text-decoration-none {
+    color: var(--primary-light) !important;
+}
+
+.dark-theme .text-decoration-none:hover {
+    color: var(--primary) !important;
+}
+
+.dark-theme .spinner-border {
+    border-color: var(--primary-light) !important;
+    border-right-color: transparent !important;
+}
+
+/* Quantity input styling */
+.cart-quantity-input {
+    font-weight: 600;
+    text-align: center;
+    border-left: none;
+    border-right: none;
+    max-width: 60px;
+}
+
+.cart-quantity-input:focus {
+    box-shadow: none;
+    border-color: #dee2e6;
+}
+
+/* Remove number input arrows */
+.cart-quantity-input::-webkit-outer-spin-button,
+.cart-quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.cart-quantity-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Product image styling */
+.cart-product-image {
+    max-width: 60px;
+    max-height: 60px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Dark theme loading spinner */
+.dark-theme .loading-spinner {
+    border: 3px solid rgba(255,255,255,.1);
+    border-top-color: var(--dark-text-1);
+}
+
+/* Remove Item Modal Dark Theme */
+.dark-theme .modal-content {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .modal-header {
+    background-color: var(--dark-bg-2);
+    border-bottom-color: var(--dark-border);
+}
+
+.dark-theme .modal-title {
+    color: var(--dark-text-1);
+}
+
+.dark-theme .modal-body {
+    background-color: var(--dark-bg-2);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .modal-footer {
+    background-color: var(--dark-bg-2);
+    border-top-color: var(--dark-border);
+}
+
+.dark-theme .btn-close {
+    filter: invert(1) brightness(0.9);
+}
+
+.dark-theme .alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-color: rgba(255, 193, 7, 0.3);
+    color: var(--accent-light);
+}
+
+.dark-theme .text-muted {
+    color: var(--gray-400) !important;
+}
+
+.dark-theme .btn-secondary {
+    background-color: var(--dark-bg-3);
+    border-color: var(--dark-border);
+    color: var(--dark-text-2);
+}
+
+.dark-theme .btn-secondary:hover {
+    background-color: var(--dark-bg-1);
+    border-color: var(--primary);
+    color: var(--primary-light);
+}
+
+/* Quantity validation alert */
+.quantity-alert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1100;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.quantity-alert.show {
+    display: flex;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.quantity-alert i {
+    font-size: 1.2em;
+}
+
+/* Dark theme support */
+.dark-theme .quantity-alert {
+    background-color: #dc3545;
+    color: white;
+}
+
+.dark-theme .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.dark-theme .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+.dark-theme .btn-success {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.dark-theme .btn-success:hover {
+    background-color: var(--accent-light);
+    border-color: var(--accent-light);
+}
+
+.dark-theme .btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.dark-theme .btn-primary:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-shopping-cart me-2"></i>Your Shopping Cart</h2>
+            
+            <!-- Loading State -->
+            <div id="cartLoading" class="text-center py-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Loading your cart...</p>
+            </div>
+            
+            <!-- Cart Items Table -->
+            <div class="table-responsive" id="cartContent">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartItems">
+                        <!-- Cart items will be dynamically inserted here -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-active">
+                            <td colspan="3" class="text-end fw-bold">Subtotal:</td>
+                            <td class="fw-bold" id="cartSubtotal">रु 0.00</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Empty Cart Message -->
+            <div id="emptyCartMessage" class="text-center py-5" style="display: none;">
+                <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i>
+                <h4 class="text-muted">Your cart is empty</h4>
+                <p class="text-muted">Looks like you haven't added any items to your cart yet.</p>
+                <a href="{{ url_for('products.index') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+                </a>
+            </div>
+
+            <!-- Checkout Buttons -->
+            <div class="d-flex justify-content-end mt-4" id="checkoutSection">
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('main.checkout') }}?type=online" class="btn btn-success btn-lg" id="payOnlineBtn" disabled>
+                        <i class="fas fa-credit-card me-2"></i>Pay Now
+                    </a>
+                    <button type="button" class="btn btn-primary btn-lg" id="payStoreBtn" disabled>
+                        <i class="fas fa-store me-2"></i>Pay at Store
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Remove Item Confirmation Modal -->
+<div class="modal fade" id="removeItemModal" tabindex="-1" aria-labelledby="removeItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removeItemModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Remove Item
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-trash-alt fa-3x text-danger mb-3"></i>
+                    <h6 class="fw-bold">Are you sure you want to remove this item?</h6>
+                    <p class="text-muted mb-0">This action cannot be undone.</p>
+                </div>
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <div>
+                        <strong id="removeItemName" class="d-block">Item Name</strong>
+                        will be permanently removed from your cart.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmRemoveBtn">
+                    <i class="fas fa-trash me-2"></i>Remove Item
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let cartData = null;
+
+function formatPrice(price) {
+    return `रु ${parseFloat(price).toFixed(2)}`;
+}
+
+function showQuantityAlert(message = 'Quantity must be between 1 and 999') {
+    const alert = document.getElementById('quantityAlert');
+    const alertText = alert.querySelector('span');
+    alertText.textContent = message;
+    alert.classList.add('show');
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        alert.classList.remove('show');
+    }, 3000);
+}
+
+function updateCartUI(data) {
+    const cartItemsEl = document.getElementById('cartItems');
+    const subtotalEl = document.getElementById('cartSubtotal');
+    const payOnlineBtn = document.getElementById('payOnlineBtn');
+    const payStoreBtn = document.getElementById('payStoreBtn');
+    const emptyMessage = document.getElementById('emptyCartMessage');
+    const cartContent = document.getElementById('cartContent');
+    const checkoutSection = document.getElementById('checkoutSection');
+    
+    if (!data.success || !data.cart_items || data.cart_items.length === 0) {
+        // Show empty cart
+        emptyMessage.style.display = 'block';
+        cartContent.style.display = 'none';
+        checkoutSection.style.display = 'none';
+        return;
+    }
+    
+    // Show cart with items
+    emptyMessage.style.display = 'none';
+    cartContent.style.display = 'block';
+    checkoutSection.style.display = 'flex';
+    
+    let itemsHTML = '';
+    data.cart_items.forEach(item => {
+        itemsHTML += `
+            <tr data-cart-item-id="${item.cart_item_id}">
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="${item.image_url}" alt="${item.name}" class="cart-product-image me-3">
+                        <div>
+                            <h6 class="mb-1">${item.name}</h6>
+                            <small class="text-muted">${item.category_name || 'Product'}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>${formatPrice(item.price)}</td>
+                <td>
+                    <div class="input-group" style="width: 120px;">
+                        <button class="btn btn-outline-secondary btn-sm decrease-qty" type="button">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" class="form-control text-center cart-quantity-input" 
+                               value="${item.quantity}" min="1" max="999" data-cart-item-id="${item.cart_item_id}">
+                        <button class="btn btn-outline-secondary btn-sm increase-qty" type="button">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </td>
+                <td class="fw-bold">${formatPrice(item.subtotal)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger remove-item" data-cart-item-id="${item.cart_item_id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+    });
+    
+    cartItemsEl.innerHTML = itemsHTML;
+    subtotalEl.textContent = formatPrice(data.total_amount);
+    payOnlineBtn.disabled = false;
+    payStoreBtn.disabled = false;
+    
+    // Add event listeners to new elements
+    attachItemEventListeners();
+}
+
+function attachItemEventListeners() {
+    // Quantity decrease buttons
+    document.querySelectorAll('.decrease-qty').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cartItemId = this.closest('tr').dataset.cartItemId;
+            const input = this.closest('tr').querySelector('.cart-quantity-input');
+            const currentValue = parseInt(input.value);
+            if (currentValue > 1) {
+                updateCartItemQuantity(cartItemId, currentValue - 1);
+            } else {
+                showQuantityAlert('Quantity must be at least 1');
+            }
+        });
+    });
+    
+    // Quantity increase buttons
+    document.querySelectorAll('.increase-qty').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cartItemId = this.closest('tr').dataset.cartItemId;
+            const input = this.closest('tr').querySelector('.cart-quantity-input');
+            const currentValue = parseInt(input.value);
+            if (currentValue < 999) {
+                updateCartItemQuantity(cartItemId, currentValue + 1);
+            } else {
+                showQuantityAlert('Maximum quantity is 999');
+            }
+        });
+    });
+    
+    // Quantity input changes
+    document.querySelectorAll('.cart-quantity-input').forEach(input => {
+        input.addEventListener('input', function() {
+            let value = parseInt(this.value);
+            if (isNaN(value) || value < 1) {
+                this.value = 1;
+                value = 1;
+                showQuantityAlert('Quantity must be at least 1');
+            }
+            if (value > 999) {
+                this.value = 999;
+                showQuantityAlert('Maximum quantity is 999');
+                return;
+            }
+            
+            const cartItemId = this.dataset.cartItemId;
+            updateCartItemQuantity(cartItemId, value);
+        });
+        
+        // Prevent backspace from making input empty
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace') {
+                const currentValue = this.value;
+                if (currentValue.length <= 1) {
+                    e.preventDefault();
+                    this.value = '1';
+                }
+            }
+        });
+    });
+    
+    // Remove item buttons
+    document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Modal is now handled by the global event listener
+            // This is kept for compatibility but the modal handles the actual confirmation
+        });
+    });
+}
+
+function updateCartItemQuantity(cartItemId, newQuantity) {
+    const row = document.querySelector(`tr[data-cart-item-id="${cartItemId}"]`);
+    const input = row.querySelector('.cart-quantity-input');
+    const totalCell = row.querySelector('td:nth-child(4)');
+    
+    // Show loading state
+    input.disabled = true;
+    row.style.opacity = '0.6';
+    
+    fetch('/products/api/cart/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            cart_item_id: parseInt(cartItemId),
+            quantity: newQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadCart(); // Reload cart to get updated totals
+        } else {
+            alert(data.message || 'Failed to update quantity');
+            input.disabled = false;
+            row.style.opacity = '1';
+        }
+    })
+    .catch(error => {
+        console.error('Error updating quantity:', error);
+        alert('Error updating quantity. Please try again.');
+        input.disabled = false;
+        row.style.opacity = '1';
+    });
+}
+
+function removeCartItem(cartItemId) {
+    const row = document.querySelector(`tr[data-cart-item-id="${cartItemId}"]`);
+    
+    // Show loading state
+    row.style.opacity = '0.6';
+    
+    fetch('/products/api/cart/remove', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            cart_item_id: parseInt(cartItemId)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadCart(); // Reload cart
+        } else {
+            alert(data.message || 'Failed to remove item');
+            row.style.opacity = '1';
+        }
+    })
+    .catch(error => {
+        console.error('Error removing item:', error);
+        alert('Error removing item. Please try again.');
+        row.style.opacity = '1';
+    });
+}
+
+function loadCart() {
+    const loading = document.getElementById('cartLoading');
+    const content = document.getElementById('cartContent');
+    const emptyMessage = document.getElementById('emptyCartMessage');
+    
+    loading.style.display = 'block';
+    content.style.display = 'none';
+    emptyMessage.style.display = 'none';
+    
+    fetch('/products/api/cart')
+        .then(response => response.json())
+        .then(data => {
+            loading.style.display = 'none';
+            cartData = data;
+            updateCartUI(data);
+        })
+        .catch(error => {
+            console.error('Error loading cart:', error);
+            loading.style.display = 'none';
+            alert('Error loading cart. Please refresh the page.');
+        });
+}
+
+// Initialize cart when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadCart();
+    
+    // Initialize remove modal
+    const removeModal = new bootstrap.Modal(document.getElementById('removeItemModal'));
+    const confirmRemoveBtn = document.getElementById('confirmRemoveBtn');
+    let currentRemoveItemId = null;
+    
+    // Remove item buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-item')) {
+            const btn = e.target.closest('.remove-item');
+            const cartItemId = btn.dataset.cartItemId;
+            const row = btn.closest('tr');
+            const itemName = row.querySelector('h6').textContent;
+            
+            // Set item name in modal
+            document.getElementById('removeItemName').textContent = itemName;
+            
+            // Store current item ID
+            currentRemoveItemId = cartItemId;
+            
+            // Show modal
+            removeModal.show();
+        }
+    });
+    
+    // Confirm remove button
+    confirmRemoveBtn.addEventListener('click', function() {
+        if (currentRemoveItemId) {
+            removeCartItem(currentRemoveItemId);
+            removeModal.hide();
+            currentRemoveItemId = null;
+        }
+    });
+    
+    // Pay at Store button
+    document.getElementById('payStoreBtn').addEventListener('click', function() {
+        if (this.disabled) return;
+        
+        // Show payment modal without saving to database
+        showPaymentModal();
+    });
+});
+
+function showPaymentModal() {
+    if (!cartData || !cartData.cart_items || cartData.cart_items.length === 0) {
+        alert('Your cart is empty');
+        return;
+    }
+    
+    // Create payment modal content
+    const modalHtml = `
+        <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-store me-2"></i>
+                            Pay at Store - Order Summary
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-shopping-cart fa-4x text-primary mb-3"></i>
+                            <h6 class="fw-bold">Complete your payment at our store</h6>
+                            <p class="text-muted">Please review your order details below before confirming.</p>
+                        </div>
+                        
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Qty</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${cartData.cart_items.map(item => `
+                                        <tr>
+                                            <td>${item.name}</td>
+                                            <td>${item.quantity}</td>
+                                            <td>${formatPrice(item.price)}</td>
+                                            <td>${formatPrice(item.subtotal)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-active fw-bold">
+                                        <td colspan="3">Total Amount:</td>
+                                        <td>${formatPrice(cartData.total_amount)}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Important:</strong> This is a preview only. Your order will be processed when you visit our store and make the payment.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" onclick="confirmStoreOrder()">
+                            <i class="fas fa-shopping-cart me-2"></i>Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if present
+    const existingModal = document.getElementById('paymentModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    modal.show();
+    
+    // Remove modal from DOM after hidden
+    document.getElementById('paymentModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function confirmStoreOrder() {
+    if (!cartData || !cartData.cart_items) return;
+    
+    // Call API to clear cart from database
+    fetch('/products/api/cart/pay-store', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Close the payment modal
+        const paymentModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+        paymentModal.hide();
+        
+        // Show order confirmation modal
+        const modalHtml = `
+            <div class="modal fade" id="orderConfirmationModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Order Placed Successfully!
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-store fa-4x text-primary mb-3"></i>
+                                <h6 class="fw-bold">Your order has been placed!</h6>
+                                <p class="text-muted">Please visit our store to complete your payment and collect your items.</p>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <strong>Order Reference:</strong> <code>${data.transaction_code}</code><br>
+                                <strong>Total Items:</strong> ${cartData.cart_items.length}<br>
+                                <strong>Total Amount:</strong> ${formatPrice(cartData.total_amount)}
+                            </div>
+                            
+                            <div class="alert alert-success">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Next Steps:</strong><br>
+                                1. Save this order reference<br>
+                                2. Visit our store with this reference<br>
+                                3. Complete your payment<br>
+                                4. Collect your items
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-clock me-2"></i>
+                                <strong>Pickup Notice:</strong> Customer must pick up within 2–3 days after the order is ready for pickup.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="clearCartAfterOrder()">
+                                <i class="fas fa-check me-2"></i>Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if present
+        const existingModal = document.getElementById('orderConfirmationModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add modal to page
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('orderConfirmationModal'));
+        modal.show();
+        
+        // Remove modal from DOM after hidden
+        document.getElementById('orderConfirmationModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    })
+    .catch(error => {
+        console.error('Error placing order:', error);
+        alert('Error placing order. Please try again.');
+    });
+}
+
+function clearCartAfterOrder() {
+    // Clear cart data to show empty cart
+    cartData = { success: false, cart_items: [] };
+    updateCartUI(cartData);
+}
+
+function showOrderSuccessModal(orderData) {
+    // Create success modal content
+    const modalHtml = `
+        <div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Order Created Successfully!
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-store fa-4x text-primary mb-3"></i>
+                            <h6 class="fw-bold">Your order has been created!</h6>
+                            <p class="text-muted">Please visit our store to complete your payment.</p>
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>Order Reference:</strong> ${orderData.transaction_code}<br>
+                            <strong>Total Amount:</strong> ${formatPrice(orderData.total_amount)}<br>
+                            <strong>Order ID:</strong> #${orderData.order_id}
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Important:</strong> Please save your order reference and bring it to the store for payment.
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Pickup Notice:</strong> Customer must pick up within 2–3 days after the order is ready for pickup.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <a href="{{ url_for('products.index') }}" class="btn btn-primary">
+                            <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if present
+    const existingModal = document.getElementById('orderSuccessModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
+    modal.show();
+    
+    // Remove modal from DOM after hidden
+    document.getElementById('orderSuccessModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+</script>
+{% endblock %}

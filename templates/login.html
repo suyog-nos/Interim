@@ -1,0 +1,441 @@
+{% extends "base.html" %}
+
+{% block title %}Login - SmartStationery{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Alert Styles */
+.alert {
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    transition: all 0.3s ease;
+}
+
+.alert-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-color: #badbcc;
+}
+
+.alert.alert-success .btn-close {
+    filter: brightness(0) saturate(100%) invert(23%) sepia(24%) saturate(1288%) hue-rotate(98deg) brightness(95%) contrast(94%);
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.alert.alert-success .btn-close:hover {
+    opacity: 1;
+}
+
+.alert-dismissible .btn-close {
+    padding: 0.75rem 1rem;
+    background-size: 0.75rem;
+}
+
+/* Dark theme support */
+.dark-theme .alert-success {
+    background-color: #0f5132;
+    color: #d1e7dd;
+    border-color: #198754;
+}
+
+.dark-theme .alert.alert-success .btn-close {
+    filter: invert(1);
+}
+
+/* Animation for alert */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+#successMessage {
+    animation: slideInRight 0.3s ease-out forwards;
+}
+/* Login page specific styles */
+.login-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background-color: var(--gray-50);
+    margin-top: -64px; /* Offset the fixed navbar height */
+}
+
+.dark-theme .login-section {
+    background: var(--dark-bg-1);
+}
+
+/* Custom off-white color for login card in light theme */
+:root {
+    --login-card-bg: #fcfcfd;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.login-card {
+    background: var(--login-card-bg);
+    padding: 2.5rem 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 400px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dark-theme .login-card {
+    background: var(--dark-bg-2);
+    border: 1px solid var(--dark-border);
+}
+
+.login-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.login-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 30%;
+    right: 30%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 3px;
+}
+
+.login-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: var(--primary);
+}
+
+.dark-theme .login-title {
+    color: var(--primary-light);
+}
+
+.login-subtitle {
+    color: var(--gray-600);
+    margin: 0;
+    font-size: 1rem;
+}
+
+.dark-theme .login-subtitle {
+    color: var(--dark-text-2);
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.input-with-icon {
+    position: relative;
+    width: 100%;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    font-size: 1rem;
+}
+
+.input-with-icon input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: 0.9375rem;
+    transition: all 0.2s ease;
+    background-color: var(--white);
+    color: var(--gray-900);
+}
+
+.dark-theme .input-with-icon input {
+    background-color: var(--dark-bg-3);
+    border-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.input-with-icon input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    outline: none;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-password:hover {
+    background-color: var(--gray-100);
+    color: var(--gray-600);
+}
+
+.dark-theme .toggle-password:hover {
+    background-color: var(--dark-bg-3);
+    color: var(--dark-text-2);
+}
+
+.toggle-password i {
+    font-size: 1rem;
+}
+
+.toggle-password[aria-pressed="true"] .fa-eye {
+    display: none;
+}
+
+.toggle-password[aria-pressed="false"] .fa-eye-slash {
+    display: none;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 0.875rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0.5rem;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+}
+
+.login-footer {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.9375rem;
+    color: var(--gray-600);
+}
+
+.dark-theme .login-footer {
+    color: var(--dark-text-3);
+}
+
+.login-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if category == 'success' %}
+                <div id="successMessage" class="alert alert-success fade show" role="alert" style="position: fixed; top: 80px; right: 20px; z-index: 1050; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: none; border-left: 4px solid #0f5132; cursor: pointer;" data-bs-delay="2000" data-bs-autohide="true" onclick="this.remove()">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <div>
+                            <strong>Success!</strong>
+                            <div class="small">{{ message }}</div>
+                        </div>
+                    </div>
+                </div>
+            <script>
+                // Auto-hide after 2 seconds
+                document.addEventListener('DOMContentLoaded', function() {
+                    const successMessage = document.getElementById('successMessage');
+                    if (successMessage) {
+                        setTimeout(() => {
+                            successMessage.remove();
+                        }, 2000);
+                    }
+                });
+            </script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="login-section">
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Error Popup -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'error' %}
+                        <div id="errorPopup" class="alert alert-danger" role="alert" style="margin-bottom: 1.5rem; border-radius: var(--radius); padding: 0.75rem 1.25rem; border: none; background-color: #f8d7da; color: #721c24; font-size: 0.9rem; text-align: center; animation: fadeIn 0.3s ease-in-out;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <style>
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(-10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            </style>
+
+            <div class="login-header">
+                <h2 class="login-title">Welcome Back!</h2>
+                <p class="login-subtitle">Sign in to your account</p>
+            </div>
+
+            <form id="loginForm" class="login-form" method="POST" action="{{ url_for('login.login') }}" onsubmit="return handleFormSubmit(this);">
+                <input type="hidden" name="role" id="roleInput" value="staff">
+
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="email" id="username" name="username" placeholder="Email" value="{{ email or '' }}" required>
+                </div>
+
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" name="password" placeholder="Password" required 
+                           aria-describedby="password-constraints" autocomplete="current-password">
+                    <button type="button" class="toggle-password" aria-label="Toggle password visibility" 
+                            aria-pressed="false">
+                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-eye-slash"></i>
+                    </button>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+                        <label class="form-check-label" for="rememberMe">
+                            Remember me
+                        </label>
+                    </div>
+                    <a href="#" class="text-decoration-none">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-login">
+                    Sign In
+                </button>
+
+                <div class="login-footer">
+                    Don't have an account? <a href="{{ url_for('register.register') }}">Sign up</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to handle form submission and prevent resubmission
+    function handleFormSubmit(form) {
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Signing in...';
+        }
+        return true;
+    }
+
+    // Clear URL parameters on page load to prevent resubmission
+    if (window.history.replaceState) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-hide success message after 5 seconds
+        const successMessage = document.getElementById('successMessage');
+        if (successMessage) {
+            setTimeout(() => {
+                const alert = new bootstrap.Alert(successMessage);
+                alert.close();
+            }, 5000);
+        }
+
+        // Toggle password visibility
+        const togglePassword = document.querySelector('.toggle-password');
+        const password = document.querySelector('#password');
+
+        if (togglePassword && password) {
+            function togglePasswordState() {
+                const isPressed = togglePassword.getAttribute('aria-pressed') === 'true';
+                togglePassword.setAttribute('aria-pressed', !isPressed);
+                password.type = isPressed ? 'password' : 'text';
+            }
+
+            // Click handler
+            togglePassword.addEventListener('click', togglePasswordState);
+            
+            // Auto-hide error popup after 3 seconds (increased from 1s for better readability)
+            const errorPopup = document.getElementById('errorPopup');
+            if (errorPopup) {
+                setTimeout(() => {
+                    errorPopup.style.transition = 'opacity 0.5s ease';
+                    errorPopup.style.opacity = '0';
+                    setTimeout(() => errorPopup.remove(), 500);
+                }, 3000);
+            }
+            
+            // Keyboard navigation support
+            togglePassword.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    togglePasswordState();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1326 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - SmartStationery{% endblock %}
+
+{% block content %}
+<!-- Toast Notifications -->
+<div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            {% set toast_id = 'flash-' ~ loop.index %}
+            <div id="{{ toast_id }}" class="toast align-items-center text-white bg-{{ 'success' if category == 'success' else 'danger' }} border-0" 
+                 role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="3000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>
+                        <div>
+                            <div class="fw-bold">{{ 'Success' if category == 'success' else 'Error' }}</div>
+                            <div class="small">{{ message }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endwith %}
+    <!-- AJAX Toasts will be inserted here -->
+</div>
+
+<div class="container py-4 animate-fade-in">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="profile-card">
+                <div class="profile-header text-center text-md-start">
+                    <div class="d-flex flex-column flex-md-row align-items-center">
+                        <div class="profile-avatar me-md-4 mb-3 mb-md-0">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h3 class="mb-1">{{ user.first_name }} {{ user.last_name }}</h3>
+                            <p class="mb-0 text-white-50">{{ user.role or 'Customer' }} Account</p>
+                        </div>
+                        <div class="ms-md-auto mt-3 mt-md-0 profile-actions">
+                            <div class="d-flex">
+                                {% if not edit_mode %}
+                                <button id="editProfileBtn" class="btn btn-edit text-white">
+                                    <i class="fas fa-edit me-2"></i>Edit Profile
+                                </button>
+                                {% endif %}
+                                <button type="button" class="btn btn-outline-light ms-2" id="changePasswordBtn">
+                                    <i class="fas fa-key me-2"></i>Change Password
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-3 p-md-4">
+                    {% if user %}
+                    <form id="profileForm" method="POST" action="{{ url_for('main.update_profile') }}" class="needs-validation" novalidate>
+                        <div class="profile-section">
+                            <h5 class="section-title mb-4">
+                                <i class="fas fa-user-circle me-2"></i>Profile Information
+                            </h5>
+                            
+                            <div class="w-100">
+                                <table class="table table-borderless table-hover align-middle m-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="text-nowrap" style="width: 30%;">
+                                                <i class="fas fa-user text-primary me-2"></i>First Name
+                                            </th>
+                                            <td>
+                                                {% if not edit_mode %}
+                                                    <span class="d-inline-block p-2 bg-light bg-opacity-10 border rounded-3 w-100">
+                                                        {{ user.first_name }}
+                                                    </span>
+                                                {% else %}
+                                                    <input type="text" class="form-control" id="firstName" name="first_name" value="{{ user.first_name }}" required>
+                                                    <div class="invalid-feedback">Please enter your first name</div>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-nowrap">
+                                                <i class="fas fa-user-tag text-primary me-2"></i>Last Name
+                                            </th>
+                                            <td>
+                                                {% if not edit_mode %}
+                                                    <span class="d-inline-block p-2 bg-light bg-opacity-10 border rounded-3 w-100">
+                                                        {{ user.last_name }}
+                                                    </span>
+                                                {% else %}
+                                                    <input type="text" class="form-control" id="lastName" name="last_name" value="{{ user.last_name }}" required>
+                                                    <div class="invalid-feedback">Please enter your last name</div>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-nowrap">
+                                                <i class="fas fa-envelope text-primary me-2"></i>Email
+                                            </th>
+                                            <td>
+                                                {% if not edit_mode %}
+                                                    <span class="d-inline-block p-2 bg-light bg-opacity-10 border rounded-3 w-100">
+                                                        {{ user.email }}
+                                                    </span>
+                                                {% else %}
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                                                    </div>
+                                                    <div class="invalid-feedback">Please enter a valid email address</div>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-nowrap">
+                                                <i class="fas fa-phone text-primary me-2"></i>Phone
+                                            </th>
+                                            <td>
+                                                {% if not edit_mode %}
+                                                    <span class="d-inline-block p-2 bg-light bg-opacity-10 border rounded-3 w-100">
+                                                        {{ user.phone }}
+                                                    </span>
+                                                {% else %}
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone }}" pattern="[0-9]{10}" required>
+                                                    </div>
+                                                    <div class="invalid-feedback">Please enter a valid 10-digit phone number</div>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        {% if edit_mode %}
+                        <div class="d-flex justify-content-end gap-3 mt-3 pt-2">
+                            <a href="{{ url_for('main.customer_profile') }}" class="btn btn-cancel btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                        {% endif %}
+                    </form>
+                    {% else %}
+                    <div class="alert alert-warning mb-0" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        We could not load your profile information. Please try again or contact support.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hide clear button in input fields */
+    input[type="text"]::-ms-clear,
+    input[type="email"]::-ms-clear,
+    input[type="tel"]::-ms-clear,
+    input[type="password"]::-ms-clear {
+        display: none;
+    }
+    
+    /* Style for invalid input fields */
+    .form-control.is-invalid,
+    .was-validated .form-control:invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+    }
+    
+    /* Hide validation icons but keep the red border */
+    .form-control.is-valid,
+    .was-validated .form-control:valid,
+    .form-control.is-invalid,
+    .was-validated .form-control:invalid {
+        background-image: none !important;
+        padding-right: 0.75rem !important;
+    }
+    
+    /* Error toast styling */
+    .toast.bg-danger {
+        background-color: #dc3545 !important;
+        border: 1px solid #dc3545;
+        animation: pulse 2s infinite;
+    }
+    
+    .toast.bg-danger .toast-body {
+        color: white;
+        font-weight: 500;
+    }
+    
+    .toast.bg-danger .toast-header {
+        background-color: #c82333;
+        color: white;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .toast.bg-danger .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+        }
+    }
+    /* Theme-aware Toast Notifications */
+    .toast-container {
+        --toast-bg: #ffffff;
+        --toast-color: #212529;
+        --toast-border: 1px solid rgba(0, 0, 0, 0.1);
+        --toast-box-shadow: 0 4px 16px rgba(15, 23, 42, 0.18);
+    }
+    
+    [data-bs-theme="dark"] .toast-container {
+        --toast-bg: #111827;
+        --toast-color: #e5e7eb;
+        --toast-border: 1px solid rgba(156, 163, 175, 0.35);
+        --toast-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    }
+    
+    .theme-aware-toast {
+        background-color: var(--toast-bg) !important;
+        color: var(--toast-color);
+        border: var(--toast-border) !important;
+        box-shadow: var(--toast-box-shadow) !important;
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        backdrop-filter: blur(14px);
+        max-width: 360px;
+    }
+    
+    .theme-aware-toast.toast-success {
+        border-left: 4px solid #198754;
+    }
+    
+    .theme-aware-toast.toast-error {
+        border-left: 4px solid #dc3545;
+    }
+    
+    [data-bs-theme="light"] .theme-aware-toast.toast-success {
+        background: linear-gradient(90deg, rgba(25, 135, 84, 0.06), #ffffff);
+    }
+    
+    [data-bs-theme="light"] .theme-aware-toast.toast-error {
+        background: linear-gradient(90deg, rgba(220, 53, 69, 0.06), #ffffff);
+    }
+    
+    [data-bs-theme="dark"] .theme-aware-toast.toast-success {
+        background: radial-gradient(circle at top left, rgba(52, 211, 153, 0.22), #111827);
+    }
+    
+    [data-bs-theme="dark"] .theme-aware-toast.toast-error {
+        background: radial-gradient(circle at top left, rgba(248, 113, 113, 0.25), #111827);
+    }
+    
+    .theme-aware-toast .toast-icon {
+        font-size: 1.5rem;
+        padding: 0 0.75rem 0 0.5rem;
+    }
+    
+    .theme-aware-toast.toast-success .toast-icon i {
+        color: #198754;
+    }
+    
+    .theme-aware-toast.toast-error .toast-icon i {
+        color: #dc3545;
+    }
+    
+    .theme-aware-toast .toast-body {
+        padding: 0.75rem 0.5rem 0.75rem 0;
+    }
+    
+    .theme-aware-toast .btn-close {
+        opacity: 0.7;
+        transition: opacity 0.15s ease;
+    }
+    
+    .theme-aware-toast .btn-close:hover {
+        opacity: 1;
+    }
+    
+    /* Profile Card */
+    .profile-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    /* Profile Header with Hover Animation */
+    .profile-header {
+        background: linear-gradient(135deg, #4361ee, #3a0ca3);
+        padding: 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, 
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0.1) 100%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    
+    .profile-header:hover::before {
+        transform: translateX(100%);
+    }
+    
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        transition: all 0.3s ease;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .profile-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .profile-info h3 {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .profile-info h3::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -5px;
+        left: 0;
+        background-color: white;
+        transition: width 0.3s ease;
+    }
+    
+    .profile-header:hover .profile-info h3::after {
+        width: 100%;
+    }
+    
+    .profile-actions {
+        transition: transform 0.3s ease;
+    }
+    
+    #changePasswordBtn {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    #changePasswordBtn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .profile-header:hover .profile-actions {
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .profile-header {
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .profile-avatar {
+            margin: 0 auto 1rem;
+        }
+        
+        .profile-actions {
+            margin-top: 1rem;
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .profile-actions .btn {
+            flex: 1 0 auto;
+            min-width: 120px;
+            max-width: 48%;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .profile-actions .btn i {
+            margin-right: 0.25rem;
+        }
+        
+        .profile-actions .ms-2 {
+            margin-left: 0.5rem !important;
+        }
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .profile-header {
+        background: linear-gradient(135deg, #4361ee, #3a0ca3);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+        transform: rotate(30deg);
+    }
+    
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Profile Sections */
+    .profile-section {
+        background: var(--bs-body-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid var(--bs-border-color);
+    }
+
+    .section-title {
+        color: var(--bs-heading-color);
+        font-weight: 600;
+        font-size: 1.25rem;
+        padding-bottom: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    /* Table Styles */
+    .table {
+        --bs-table-bg: transparent;
+        --bs-table-hover-bg: rgba(var(--bs-primary-rgb), 0.05);
+        transition: all 0.25s ease;
+    }
+    
+    .table th {
+        color: var(--bs-heading-color);
+        font-weight: 500;
+        border: none;
+        padding: 1rem 1.5rem 1rem 0;
+        vertical-align: middle;
+        transition: all 0.2s ease;
+    }
+    
+    .table td {
+        padding: 1rem 0;
+        vertical-align: middle;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    
+    .table tr {
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 8px;
+    }
+    
+    .table tr:not(:last-child) {
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+    
+    .table tr:hover {
+        background-color: var(--bs-table-hover-bg);
+        transform: translateX(4px);
+    }
+    
+    .table tr:hover td {
+        padding-left: 4px;
+    }
+    
+    /* Form Styles */
+    .form-control, .form-select {
+        border: 1px solid var(--bs-border-color);
+        background-color: var(--bs-form-control-bg);
+        color: var(--bs-body-color);
+        padding: 0.6rem 1rem;
+        font-size: 0.95rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        height: auto;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-control:hover, .form-select:hover {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.1);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background-color: var(--bs-form-control-bg);
+        color: var(--bs-body-color);
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.2);
+        transform: translateY(-1px);
+    }
+    
+    .input-group-text {
+        background-color: var(--bs-light-bg-subtle);
+        color: var(--bs-body-color);
+        border: 1px solid var(--bs-border-color);
+        padding: 0 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .input-group:hover .input-group-text {
+        background-color: var(--bs-primary);
+        color: white;
+        border-color: var(--bs-primary);
+    }
+    
+    /* Responsive adjustments */
+    /* Premium Mobile Layout */
+    @media (max-width: 768px) {
+        .profile-section {
+            padding: 1.35rem 1.25rem 1.75rem;
+            border-radius: 18px;
+            background: var(--bs-body-bg);
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.15);
+            border: 1px solid rgba(67, 97, 238, 0.12);
+            margin: 0.5rem 0.25rem 1.5rem;
+        }
+
+        [data-bs-theme="dark"] .profile-section {
+            background: rgba(17, 24, 39, 0.8);
+            border-color: rgba(96, 165, 250, 0.25);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .profile-section .table {
+            display: block;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .profile-section .table tbody {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .profile-section .table tr {
+            display: block;
+            padding: 1.05rem 1rem;
+            border-radius: 16px;
+            border: 1px solid rgba(67, 97, 238, 0.15);
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        [data-bs-theme="dark"] .profile-section .table tr {
+            background: rgba(15, 23, 42, 0.85);
+            border-color: rgba(96, 165, 250, 0.28);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+        }
+
+        .profile-section .table tr:active {
+            transform: translateY(2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+        }
+
+        .profile-section .table th,
+        .profile-section .table td {
+            display: block;
+            width: 100%;
+            padding: 0;
+            border: 0;
+            background: transparent;
+        }
+
+        .profile-section .table th {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(55, 65, 81, 0.9);
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        [data-bs-theme="dark"] .profile-section .table th {
+            color: rgba(226, 232, 240, 0.8);
+        }
+
+        .profile-section .table th i {
+            color: #4361ee;
+            font-size: 1rem;
+        }
+
+        .profile-section .table td {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--bs-body-color);
+        }
+
+        .profile-section .table td span {
+            display: block;
+            padding: 0.65rem 0.85rem;
+            border-radius: 12px;
+            background: rgba(67, 97, 238, 0.08);
+            border: 1px solid rgba(67, 97, 238, 0.12);
+        }
+
+        [data-bs-theme="dark"] .profile-section .table td span {
+            background: rgba(59, 130, 246, 0.16);
+            border-color: rgba(147, 197, 253, 0.2);
+        }
+
+        .profile-section .table td .form-control,
+        .profile-section .table td .input-group-text {
+            padding: 0.65rem 0.95rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            background: var(--bs-body-bg);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .profile-section .table td .form-control:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.18);
+        }
+
+        .profile-section .table td .input-group {
+            gap: 0.4rem;
+            flex-wrap: nowrap;
+        }
+
+        .profile-section .table td .input-group-text {
+            background: rgba(67, 97, 238, 0.08);
+            color: #4361ee;
+        }
+
+        .profile-section .table td .invalid-feedback {
+            font-size: 0.8rem;
+            margin-top: 0.35rem;
+        }
+
+        .profile-section .d-flex.justify-content-end.gap-3 {
+            flex-direction: column;
+            gap: 0.85rem !important;
+            padding-top: 1rem;
+            margin-top: 1.75rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .profile-section .btn-save,
+        .profile-section .btn-cancel {
+            width: 100%;
+            justify-content: center;
+            border-radius: 14px;
+            padding: 0.85rem 1rem;
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+    }
+    
+    /* Form Action Buttons */
+    .btn-save {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        color: white;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .btn-cancel {
+        border-radius: 6px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-cancel:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-1px);
+    }
+    
+    @media (max-width: 768px) {
+        .btn-save, 
+        .btn-cancel {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        
+        .d-flex.justify-content-end.gap-3 {
+            gap: 0.75rem !important;
+            padding: 0.75rem 0 0;
+            margin-top: 1rem;
+        }
+    }
+    
+    /* Edit Profile Button */
+    .btn-edit {
+        background: linear-gradient(135deg, #4361ee, #3a0ca3);
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-cancel {
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin-right: 0.5rem;
+    }
+    
+    /* Section Styling */
+    .section-title {
+        color: #3a0ca3;
+        font-weight: 600;
+        position: relative;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(90deg, #4361ee, #3a0ca3);
+        border-radius: 3px;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .profile-header {
+            text-align: center;
+        }
+        
+        .profile-actions {
+            justify-content: center !important;
+            margin-top: 1rem;
+        }
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enable edit mode when Edit Profile button is clicked
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    if (editProfileBtn) {
+        editProfileBtn.addEventListener('click', function() {
+            window.location.href = "{{ url_for('main.customer_profile', edit='true') }}";
+        });
+    }
+
+    // Form submission with AJAX
+    const form = document.getElementById('profileForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            if (!form.checkValidity()) {
+                event.stopPropagation();
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
+            
+            // Prepare form data
+            const formData = new FormData(form);
+            
+            // Send AJAX request
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Show success message
+                    showToast('success', 'Success', data.message || 'Profile updated successfully!');
+                    // Reload the page after a short delay to show the success message
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    // Show error message - only show one message for email conflicts
+                    if (data.message) {
+                        showToast('danger', 'Email Already Registered', data.message);
+                        // Add red border to email input
+                        const emailInput = document.querySelector('input[name="email"]');
+                        if (emailInput) {
+                            emailInput.classList.add('is-invalid');
+                            // Remove the red border when user starts typing again
+                            emailInput.addEventListener('input', function clearError() {
+                                emailInput.classList.remove('is-invalid');
+                                emailInput.removeEventListener('input', clearError);
+                            });
+                        }
+                    } else {
+                        showToast('error', 'Error', data.message || 'An error occurred. Please try again.');
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Error', 'An error occurred while updating your profile.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            });
+            
+            form.classList.add('was-validated');
+        }, false);
+    }
+    
+    // Function to show toast notifications
+    function showToast(type, title, message) {
+        const toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) return;
+        
+        const toastId = 'toast-' + Date.now();
+        const icon = {
+            'success': 'check-circle',
+            'error': 'exclamation-circle',
+            'info': 'info-circle',
+            'warning': 'exclamation-triangle',
+            'danger': 'exclamation-circle'
+        }[type] || 'info-circle';
+        
+        const toastHTML = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" 
+                 role="alert" aria-live="assertive" aria-atomic="true"
+                 data-bs-autohide="true" data-bs-delay="2000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center">
+                        <i class="fas fa-${icon} me-2"></i>
+                        <div>
+                            <div class="fw-bold">${title}</div>
+                            <div class="small">${message}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const toastElement = document.createElement('div');
+        toastElement.innerHTML = toastHTML;
+        toastContainer.appendChild(toastElement);
+        
+        const toast = new bootstrap.Toast(toastElement.querySelector('.toast'), {
+            autohide: true,
+            delay: 2000  // 2 seconds
+        });
+        
+        toast.show();
+        
+        // Remove the toast from DOM after it's hidden
+        toastElement.querySelector('.toast').addEventListener('hidden.bs.toast', function () {
+            toastElement.remove();
+        });
+    }
+
+    // Custom validation for name fields (no numbers allowed)
+    const nameInputs = document.querySelectorAll('input[name="first_name"], input[name="last_name"]');
+    nameInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+            // Remove any numbers from the input
+            this.value = this.value.replace(/[0-9]/g, '');
+            
+            // Set custom validity
+            if (/\d/.test(this.value)) {
+                this.setCustomValidity('Name should not contain numbers');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    });
+
+    // Email validation
+    const emailInput = document.querySelector('input[name="email"]');
+    if (emailInput) {
+        emailInput.addEventListener('input', function(e) {
+            // Stricter email validation that requires a proper domain
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
+            if (this.value) {
+                if (!emailPattern.test(this.value)) {
+                    this.setCustomValidity('Please enter a valid email address (e.g., example@gmail.com)');
+                } else if (this.value.endsWith('@gmail.') || this.value.endsWith('@gmail')) {
+                    this.setCustomValidity('Please include a valid domain after @gmail (e.g., @gmail.com)');
+                } else if (this.value.includes('@gmail.') && !this.value.endsWith('.com')) {
+                    this.setCustomValidity('Gmail addresses must end with @gmail.com');
+                } else {
+                    this.setCustomValidity('');
+                }
+                // Trigger validation to show the message immediately
+                this.reportValidity();
+            }
+        });
+    }
+
+    // Initialize toasts
+    const successToastEl = document.getElementById('successToast');
+    if (successToastEl) {
+        successToastEl.classList.add('fade');
+        const successToast = new bootstrap.Toast(successToastEl, {
+            autohide: true,
+            delay: 1000 // 1 second
+        });
+        successToast.show();
+    }
+
+    const errorToastEl = document.getElementById('errorToast');
+    if (errorToastEl) {
+        // Prepare error toast but do not auto-show unless explicitly triggered
+        errorToastEl.classList.add('fade');
+        new bootstrap.Toast(errorToastEl, {
+            autohide: true,
+            delay: 5000
+        });
+    }
+});
+</script>
+
+<!-- Password Change Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="changePasswordForm" method="POST" action="{{ url_for('main.change_password') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="currentPassword" name="current_password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">Please enter your current password</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="newPassword" name="new_password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">Password does not meet requirements</div>
+                        <div id="passwordRequirements" class="small text-muted mb-2 mt-2" style="display: none;">
+                            <div class="mb-1">Password Requirements:</div>
+                            <div id="requirementsList"></div>
+                            <div id="allRequirementsMet" class="text-success small mt-1" style="display: none;">
+                                <i class="fas fa-check-circle"></i> Password meets all requirements
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">Passwords do not match</div>
+                        <div id="passwordMatchWarning" class="text-danger small mt-1" style="display: none;">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Passwords do not match
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal theming */
+.modal-content {
+    background-color: var(--white);
+    color: var(--gray-800);
+}
+
+.dark-theme .modal-content {
+    background-color: var(--dark-bg-2);
+    color: var(--gray-200);
+    border: 1px solid var(--gray-700);
+}
+
+.modal-header, .modal-footer {
+    border-color: var(--gray-200);
+}
+
+.dark-theme .modal-header,
+.dark-theme .modal-footer {
+    border-color: var(--gray-700);
+}
+
+.dark-theme .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.dark-theme .form-control {
+    background-color: var(--dark-bg-2);
+    border-color: var(--gray-700);
+    color: var(--gray-200);
+}
+
+.dark-theme .form-label {
+    color: var(--gray-200);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize flash message toasts
+    const flashToasts = document.querySelectorAll('#toastContainer .toast');
+    flashToasts.forEach(toastElement => {
+        const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 3000
+        });
+        toast.show();
+    });
+    
+    // Password change modal
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    
+    // Open modal
+    changePasswordBtn.addEventListener('click', function() {
+        const modal = new bootstrap.Modal(changePasswordModal);
+        modal.show();
+    });
+    
+    // Password visibility toggles
+    document.getElementById('toggleCurrentPassword').addEventListener('click', function() {
+        const input = document.getElementById('currentPassword');
+        const icon = this.querySelector('i');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    });
+    
+    document.getElementById('toggleNewPassword').addEventListener('click', function() {
+        const input = document.getElementById('newPassword');
+        const icon = this.querySelector('i');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    });
+    
+    document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+        const input = document.getElementById('confirmPassword');
+        const icon = this.querySelector('i');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    });
+    
+    // Password validation function
+    function validatePassword(password) {
+        const requirements = [
+            {
+                test: password.length >= 8,
+                message: 'At least 8 characters',
+                icon: 'fa-ruler-horizontal'
+            },
+            {
+                test: /[a-z]/.test(password),
+                message: 'At least one lowercase letter (a-z)',
+                icon: 'fa-font-case-lower'
+            },
+            {
+                test: /[A-Z]/.test(password),
+                message: 'At least one uppercase letter (A-Z)',
+                icon: 'fa-font-case-upper'
+            },
+            {
+                test: /[0-9]/.test(password),
+                message: 'At least one number (0-9)',
+                icon: 'fa-hashtag'
+            },
+            {
+                test: /[^A-Za-z0-9]/.test(password),
+                message: 'At least one special character (!@#$%^&*)',
+                icon: 'fa-exclamation'
+            }
+        ];
+        
+        const unmetRequirements = requirements.filter(req => !req.test);
+        const allRequirementsMet = unmetRequirements.length === 0;
+        
+        // Update requirements display
+        const requirementsList = document.getElementById('requirementsList');
+        const allRequirementsMetEl = document.getElementById('allRequirementsMet');
+        
+        requirementsList.innerHTML = requirements.map(req => `
+            <div class="${req.test ? 'text-success' : 'text-muted'}">
+                <i class="fas ${req.test ? 'fa-check' : 'fa-times'}"></i>
+                ${req.message}
+            </div>
+        `).join('');
+        
+        allRequirementsMetEl.style.display = allRequirementsMet ? 'block' : 'none';
+        
+        return allRequirementsMet;
+    }
+    
+    // Real-time password validation
+    document.getElementById('newPassword').addEventListener('input', function() {
+        const passwordRequirements = document.getElementById('passwordRequirements');
+        
+        // Show requirements when user starts typing
+        if (this.value.length > 0) {
+            passwordRequirements.style.display = 'block';
+        } else {
+            passwordRequirements.style.display = 'none';
+        }
+        
+        const isValid = validatePassword(this.value);
+        this.classList.remove('is-invalid', 'is-valid');
+        this.classList.add(isValid ? 'is-valid' : 'is-invalid');
+    });
+    
+    // Also show requirements on focus
+    document.getElementById('newPassword').addEventListener('focus', function() {
+        if (this.value.length > 0) {
+            document.getElementById('passwordRequirements').style.display = 'block';
+        }
+    });
+    
+    // Real-time password matching validation
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = this.value;
+        const passwordMatchWarning = document.getElementById('passwordMatchWarning');
+        
+        if (confirmPassword.length > 0) {
+            if (newPassword !== confirmPassword) {
+                // Show warning and red border
+                passwordMatchWarning.style.display = 'block';
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else {
+                // Hide warning and show success
+                passwordMatchWarning.style.display = 'none';
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        } else {
+            // Hide warning when empty
+            passwordMatchWarning.style.display = 'none';
+            this.classList.remove('is-invalid', 'is-valid');
+        }
+    });
+    
+    // Form validation
+    changePasswordForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const currentPassword = document.getElementById('currentPassword');
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        let isValid = true;
+        
+        // Reset validation states
+        [currentPassword, newPassword, confirmPassword].forEach(input => {
+            input.classList.remove('is-invalid');
+            input.classList.remove('is-valid');
+        });
+        
+        // Validate current password
+        if (!currentPassword.value) {
+            currentPassword.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            currentPassword.classList.add('is-valid');
+        }
+        
+        // Validate new password with requirements
+        const isPasswordValid = validatePassword(newPassword.value);
+        if (!isPasswordValid) {
+            newPassword.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            newPassword.classList.add('is-valid');
+        }
+        
+        // Validate password confirmation
+        if (!confirmPassword.value || confirmPassword.value !== newPassword.value) {
+            confirmPassword.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            confirmPassword.classList.add('is-valid');
+        }
+        
+        if (isValid) {
+            // Submit form
+            this.submit();
+        }
+    });
+    
+    // Clear form on modal close
+    changePasswordModal.addEventListener('hidden.bs.modal', function() {
+        changePasswordForm.reset();
+        [currentPassword, newPassword, confirmPassword].forEach(input => {
+            input.classList.remove('is-invalid', 'is-valid');
+        });
+        // Clear and hide requirements display
+        document.getElementById('requirementsList').innerHTML = '';
+        document.getElementById('allRequirementsMet').style.display = 'none';
+        document.getElementById('passwordRequirements').style.display = 'none';
+        document.getElementById('passwordMatchWarning').style.display = 'none';
+    });
+});
+</script>
+{% endblock %}
+

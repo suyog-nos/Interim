@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block title %}Orders - SmartStationery{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    /* Status-based button styles */
+    .btn-status {
+        transition: all 0.2s ease-in-out;
+        min-width: 140px;
+        text-align: left;
+        position: relative;
+        padding-right: 30px;
+    }
+
+    .btn-status::after {
+        content: '▼';
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.7em;
+        opacity: 0.7;
+    }
+
+    /* Status-specific styles */
+    .btn-status-processing {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+    }
+    
+    .btn-status-ready {
+        background-color: #fd7e14;
+        border-color: #fd7e14;
+        color: white;
+    }
+    
+    .btn-status-completed {
+        background-color: #198754;
+        border-color: #198754;
+        color: white;
+    }
+    
+    .btn-status-cancelled {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+
+    /* Hover effects */
+    .btn-status:hover {
+        filter: brightness(90%);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Dropdown menu styles - Professional */
+    .dropdown-menu {
+        min-width: 100%;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        margin-top: 8px;
+        border-radius: 8px;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .dark-theme .dropdown-menu {
+        background-color: rgba(33, 37, 41, 0.95);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .dropdown-item {
+        padding: 10px 16px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: none;
+        background: none;
+        color: var(--gray-700);
+    }
+
+    .dark-theme .dropdown-item {
+        color: var(--gray-200);
+    }
+
+    .dropdown-item:hover {
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);
+        color: #0d6efd;
+        transform: translateX(4px);
+        padding-left: 20px;
+    }
+
+    .dark-theme .dropdown-item:hover {
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.2) 0%, rgba(13, 110, 253, 0.1) 100%);
+        color: #5aa3ff;
+    }
+
+    /* Professional dropdown toggle */
+    .btn-outline-secondary.dropdown-toggle {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(108, 117, 125, 0.3);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-outline-secondary.dropdown-toggle:hover {
+        background: rgba(108, 117, 125, 0.1);
+        border-color: rgba(108, 117, 125, 0.5);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-theme .btn-outline-secondary.dropdown-toggle {
+        background: rgba(33, 37, 41, 0.9);
+        border-color: rgba(108, 117, 125, 0.5);
+        color: var(--gray-200);
+    }
+
+    .dark-theme .btn-outline-secondary.dropdown-toggle:hover {
+        background: rgba(108, 117, 125, 0.2);
+        border-color: rgba(108, 117, 125, 0.7);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Payment status card styles */
+    .payment-paid {
+        background-color: rgba(25, 135, 84, 0.05) !important;
+        border-left: 4px solid #198754 !important;
+    }
+    
+    .payment-unpaid {
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        border-left: 4px solid #dc3545 !important;
+    }
+
+    .dark-theme .payment-paid {
+        background-color: rgba(25, 135, 84, 0.15) !important;
+        border-left-color: #198754 !important;
+    }
+    
+    .dark-theme .payment-unpaid {
+        background-color: rgba(220, 53, 69, 0.15) !important;
+        border-left-color: #dc3545 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Payment Confirmation Modal -->
+<div class="modal fade" id="paymentConfirmModal" tabindex="-1" aria-labelledby="paymentConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentConfirmModalLabel">Confirm Payment Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to mark order <strong>#<span id="confirmOrderNumber"></span></strong> as <strong>Paid</strong>?</p>
+                <input type="hidden" id="confirmOrderId">
+                <input type="hidden" id="confirmPaymentType">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmPaidBtn">Mark as Paid</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal theming */
+.modal-content {
+    background-color: var(--white);
+    color: var(--gray-800);
+}
+
+.dark-theme .modal-content {
+    background-color: var(--dark-bg-2);
+    color: var(--gray-200);
+    border: 1px solid var(--gray-700);
+}
+
+.modal-header, .modal-footer {
+    border-color: var(--gray-200);
+}
+
+.dark-theme .modal-header,
+.dark-theme .modal-footer {
+    border-color: var(--gray-700);
+}
+
+.dark-theme .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.dark-theme .modal-body strong {
+    color: #198754;
+}
+</style>
+
+<script>
+function showPaymentConfirmModal(orderId, paymentType) {
+    document.getElementById('confirmOrderId').value = orderId;
+    document.getElementById('confirmPaymentType').value = paymentType;
+    document.getElementById('confirmOrderNumber').textContent = orderId;
+    
+    const modal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));
+    modal.show();
+}
+
+function confirmPaymentChange() {
+    const orderId = document.getElementById('confirmOrderId').value;
+    const paymentType = document.getElementById('confirmPaymentType').value;
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('paymentConfirmModal'));
+    if (modal) {
+        modal.hide();
+    }
+    
+    // Submit form
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/orders/update-payment-status';
+    
+    const orderIdInput = document.createElement('input');
+    orderIdInput.type = 'hidden';
+    orderIdInput.name = 'order_id';
+    orderIdInput.value = orderId;
+    
+    const paymentTypeInput = document.createElement('input');
+    paymentTypeInput.type = 'hidden';
+    paymentTypeInput.name = 'payment_type';
+    paymentTypeInput.value = paymentType;
+    
+    const paymentStatusInput = document.createElement('input');
+    paymentStatusInput.type = 'hidden';
+    paymentStatusInput.name = 'payment_status';
+    paymentStatusInput.value = 'Paid';
+    
+    form.appendChild(orderIdInput);
+    form.appendChild(paymentTypeInput);
+    form.appendChild(paymentStatusInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('confirmPaidBtn').addEventListener('click', confirmPaymentChange);
+});
+</script>
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="mb-0">All Orders</h2>
+            <p class="text-muted mb-0">Monitor every transaction placed by customers or POS staff.</p>
+        </div>
+        <!-- Action buttons have been removed -->
+    </div>
+
+    {% if orders %}
+        {% for order in orders %}
+            <div class="card shadow-sm border-0 mb-4 {% if order.payment_status == 'Paid' %}payment-paid{% elif order.payment_status == 'Unpaid' %}payment-unpaid{% endif %}">
+                <div class="card-header bg-white border-0 pb-0">
+                    <div class="row g-3 align-items-start align-items-md-center">
+                        <div class="col-md-3">
+                            <small class="text-muted text-uppercase">Order ID</small>
+                            <h5 class="mb-0">#{{ order.order_id }}</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted text-uppercase">Customer</small>
+                            <h6 class="mb-0">{{ order.customer_name or 'Walk-in Customer' }}</h6>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted text-uppercase">Created</small>
+                            <div>{{ order.created_at }}</div>
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                                <span class="badge bg-info text-dark">{{ order.order_type or 'Online' }}</span>
+                                
+                                <!-- Payment Status Dropdown -->
+                                <div class="dropdown">
+                                    <button class="btn btn-sm dropdown-toggle {% if order.payment_status == 'Paid' %}btn-success{% else %}btn-danger{% endif %}" type="button" id="paymentDropdown{{ order.order_id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{ order.payment_status }}
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="paymentDropdown{{ order.order_id }}">
+                                        <li>
+                                            {% if order.payment_status == 'Unpaid' %}
+                                                <button type="button" class="dropdown-item text-start w-100" onclick="showPaymentConfirmModal('{{ order.order_id }}', '{{ order.payment_type }}')">
+                                                    Paid
+                                                </button>
+                                            {% else %}
+                                                <form method="POST" action="/orders/update-payment-status" style="margin: 0;">
+                                                    <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                                                    <input type="hidden" name="payment_type" value="{{ order.payment_type }}">
+                                                    <input type="hidden" name="payment_status" value="Paid">
+                                                    <button type="submit" class="dropdown-item text-start w-100">Paid</button>
+                                                </form>
+                                            {% endif %}
+                                        </li>
+                                        <li>
+                                            <form method="POST" action="/orders/update-payment-status" style="margin: 0;">
+                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                                                <input type="hidden" name="payment_type" value="{{ order.payment_type }}">
+                                                <input type="hidden" name="payment_status" value="Unpaid">
+                                                <button type="submit" class="dropdown-item text-start w-100">Unpaid</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Order Status Dropdown -->
+                                <div class="dropdown">
+                                    <button class="btn btn-sm dropdown-toggle {% if order.order_status == 'cancelled' %}btn-danger{% elif order.order_status == 'completed' %}btn-success{% elif order.order_status == 'processing' %}btn-warning{% elif order.order_status == 'ready_for_pickup' %}btn-primary{% else %}btn-outline-secondary{% endif %}" type="button" id="statusDropdown{{ order.order_id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {% if order.order_status == 'processing' %}Processing{% elif order.order_status == 'ready_for_pickup' %}Ready for Pickup{% elif order.order_status == 'completed' %}Completed{% elif order.order_status == 'cancelled' %}Cancelled{% else %}{{ order.order_status | capitalize }}{% endif %}
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="statusDropdown{{ order.order_id }}">
+                                        <li>
+                                            <form method="POST" action="/orders/update-status" style="margin: 0;">
+                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                                                <input type="hidden" name="new_status" value="processing">
+                                                <button type="submit" class="dropdown-item text-start w-100">Processing</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form method="POST" action="/orders/update-status" style="margin: 0;">
+                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                                                <input type="hidden" name="new_status" value="ready_for_pickup">
+                                                <button type="submit" class="dropdown-item text-start w-100">Ready for Pickup</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form method="POST" action="/orders/update-status" style="margin: 0;">
+                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                                                <input type="hidden" name="new_status" value="completed">
+                                                <button type="submit" class="dropdown-item text-start w-100">Completed</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form method="POST" action="/orders/update-status" style="margin: 0;">
+                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                                                <input type="hidden" name="new_status" value="cancelled">
+                                                <button type="submit" class="dropdown-item text-start w-100">Cancelled</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <small class="text-muted text-uppercase">Total Amount</small>
+                            <h4 class="mb-0">Rs. {{ '%.2f' | format(order.total_amount) }}</h4>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted text-uppercase">Transaction Code</small>
+                            <div class="fw-semibold">{{ order.transaction_code or '—' }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted text-uppercase">Order Status</small>
+                            <div class="fw-semibold">{{ order.order_status | upper }}</div>
+                        </div>
+                    </div>
+
+                    {# Action buttons have been removed as per request #}
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th class="text-center" style="width: 120px;">Qty</th>
+                                    <th class="text-center" style="width: 120px;">Unit</th>
+                                    <th class="text-end" style="width: 150px;">Unit Price</th>
+                                    <th class="text-end" style="width: 150px;">Line Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if order.line_items %}
+                                    {% for item in order.line_items %}
+                                        <tr>
+                                            <td>{{ item.product_name }}</td>
+                                            <td class="text-center">{{ item.quantity }}</td>
+                                            <td class="text-center">{{ item.unit }}</td>
+                                            <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
+                                            <td class="text-end">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No products recorded for this order.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-receipt fa-3x text-muted"></i>
+                </div>
+                <h4>No orders found</h4>
+                <p class="text-muted">New orders will appear here as soon as customers place them or your staff records a sale.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

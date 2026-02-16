@@ -1,0 +1,1501 @@
+{% extends "base.html" %}
+
+{% block title %}Stock - SmartStationery{% endblock %}
+
+{% block content %}
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addProductModalLabel">
+                    <i class="fas fa-box-open me-2"></i> Add New Product
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addProductForm" method="POST">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="productName" class="form-label">Product Name<span class="text-danger"> *</span></label>
+                            <input type="text" class="form-control" id="productName" name="name" placeholder="e.g. Pentonic Blue 0.7mm" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productCategory" class="form-label">Category<span class="text-danger"> *</span></label>
+                            <select class="form-control" id="productCategory" name="category_id" required>
+                                <option value="">Select category...</option>
+                                <option value="1">Pens</option>
+                                <option value="2">Notebooks</option>
+                                <option value="3">Stationery</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="productPrice" class="form-label">Price (Rs.)<span class="text-danger"> *</span></label>
+                            <input type="number" class="form-control" id="productPrice" name="price" step="0.01" min="0" placeholder="e.g. 50.00" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="productStock" class="form-label">Stock Quantity<span class="text-danger"> *</span></label>
+                            <input type="number" class="form-control" id="productStock" name="stock_quantity" min="0" value="0" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="productUnit" class="form-label">Unit Type</label>
+                            <select class="form-control" id="productUnit" name="unit_type">
+                                <option value="piece">Piece</option>
+                                <option value="pack">Pack</option>
+                                <option value="dozen">Dozen</option>
+                                <option value="bundle">Bundle</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="productUnitsPerPack" class="form-label">Units Per Pack</label>
+                            <input type="number" class="form-control" id="productUnitsPerPack" name="units_per_pack" min="1" value="1">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="productBrand" class="form-label">Brand</label>
+                            <input type="text" class="form-control" id="productBrand" name="brand" placeholder="e.g. Pentonic">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="productSupplier" class="form-label">Supplier</label>
+                            <select class="form-control" id="productSupplier" name="supplier_id">
+                                <option value="">Select supplier...</option>
+                                <option value="1">Supplier A</option>
+                                <option value="2">Supplier B</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="productImageURL" class="form-label">Image URL</label>
+                            <input type="text" class="form-control" id="productImageURL" name="image_url" placeholder="static/images/Pentonic.png">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productSKU" class="form-label">SKU (optional)</label>
+                            <input type="text" class="form-control" id="productSKU" name="sku" placeholder="e.g. BALL-003-B07">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveProductBtn">
+                        <i class="fas fa-save me-1"></i> Save Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="container d-flex flex-column min-vh-100 py-4">
+    <div class="row justify-content-center my-auto">
+        <div class="col-12 col-lg-10">
+            <div class="card shadow-lg rounded-3 border-0">
+                <div class="card-header bg-gradient-primary-to-secondary text-white py-3">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                        <h2 class="h4 mb-3 mb-md-0 fw-bold">
+                            <i class="fas fa-boxes me-2"></i>Product Inventory
+                        </h2>
+                        <div class="d-flex flex-column flex-md-row align-items-center gap-3 w-100 w-md-auto">
+                            <!-- Search Bar -->
+                            <div class="search-container">
+                                <div class="input-group search-input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Search products by name or category...">
+                                </div>
+                            </div>
+                            <!-- Add Product Button - Admin Only -->
+                            {% if session.get('role') == 'Admin' %}
+                            <button type="button" class="btn btn-add-product" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="fas fa-plus-circle me-2"></i> Add Product
+                            </button>
+                            {% endif %}
+                            {% if session.get('role') == 'Staff' %}
+                            <button type="button" class="btn btn-info ms-2" data-bs-toggle="modal" data-bs-target="#stockRequestModal">
+                                <i class="fas fa-truck-loading me-2"></i> Stock Arrival
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show m-3" role="alert">
+                                    <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr class="table-light">
+                                    <th class="text-uppercase fw-semibold small text-muted text-start" style="width: 35%; text-align: left;">Product Name</th>
+                                    <th class="text-uppercase fw-semibold small text-muted text-start" style="width: 20%; text-align: left;">Category</th>
+                                    {% if session.get('role') == 'Admin' %}
+                                    <th class="text-uppercase fw-semibold small text-muted text-start" style="width: 15%; text-align: left;">Supplier</th>
+                                    {% endif %}
+                                    <th class="text-uppercase fw-semibold small text-muted ps-3" style="width: 10%; text-align: left;">In Stock(pcs)</th>
+                                    <th class="text-uppercase fw-semibold small text-muted pe-4" style="width: 10%; text-align: left;">Price (Rs.)</th>
+                                    {% if session.get('role') == 'Staff' %}
+                                    <th class="text-uppercase fw-semibold small text-muted pe-4" style="width: 5%; text-align: center;">Actions</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody id="productTableBody">
+                                {% for product in products %}
+                                <tr class="product-row">
+                                    <td class="ps-4 py-3 fw-medium">
+                                        {{ product.name }}
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-light text-dark border border-1 border-light-subtle px-3 py-2">
+                                            <i class="fas fa-tag me-1 text-primary"></i>
+                                            {{ product.category }}
+                                        </span>
+                                    </td>
+                                    {% if session.get('role') == 'Admin' %}
+                                    <td>
+                                        <span class="badge rounded-pill bg-info text-white border border-1 border-info-subtle px-3 py-2">
+                                            <i class="fas fa-truck me-1"></i>
+                                            {{ product.supplier or 'No Supplier' }}
+                                        </span>
+                                    </td>
+                                    {% endif %}
+                                    <td class="ps-3">
+                                        <span class="d-inline-flex align-items-center">
+                                            <span class="quantity-indicator me-2 {% if product.quantity <= 10 %}bg-danger{% else %}bg-success{% endif %}"></span>
+                                            {{ product.quantity }}
+                                        </span>
+                                    </td>
+                                    <td class="pe-4 fw-medium">
+                                        Rs. {{ "%.2f"|format(product.price) }}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if session.get('role') == 'Staff' %}
+                                        <button class="btn btn-sm btn-outline-warning alert-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#productAlertModal"
+                                                data-product-id="{{ product.product_id }}"
+                                                data-name="{{ product.name }}" 
+                                                data-category="{{ product.category }}"
+                                                data-quantity="{{ product.quantity }}">
+                                            <i class="fas fa-bell"></i> Alert
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <div class="empty-state">
+                                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                            <h5 class="mb-1">No Products Found</h5>
+                                            <p class="text-muted mb-3">Get started by adding your first product</p>
+                                            <a href="{{ url_for('add_product') }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-plus me-1"></i> Add Product
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr id="noResults" style="display: none;">
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="fas fa-search fa-2x text-muted mb-2"></i>
+                                        <p class="mb-0">No products found matching your search.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const productRows = document.querySelectorAll('.product-row');
+        
+        // Add input event listener for real-time search
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                filterProducts(this.value);
+            });
+        }
+        
+        function filterProducts(searchTerm) {
+            const term = searchTerm.toLowerCase().trim();
+            let hasResults = false;
+            
+            // If no search term, show all rows
+            if (!term) {
+                productRows.forEach(row => {
+                    row.style.display = '';
+                });
+                const noResults = document.getElementById('noResults');
+                if (noResults) noResults.style.display = 'none';
+                return;
+            }
+            
+            productRows.forEach(row => {
+                try {
+                    const productName = row.querySelector('td:first-child').textContent.toLowerCase();
+                    const category = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    
+                    if (productName.includes(term) || category.includes(term)) {
+                        row.style.display = '';
+                        hasResults = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                } catch (e) {
+                    console.error('Error processing row:', e);
+                }
+            });
+            
+            // Show/hide no results message
+            const noResults = document.getElementById('noResults');
+            if (noResults) {
+                noResults.style.display = hasResults ? 'none' : '';
+            }
+        }
+        
+        // Add event listener for Escape key to clear search
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && searchInput) {
+                searchInput.value = '';
+                filterProducts('');
+            }
+        });
+        
+        const categoryFilter = document.getElementById('category-filter');
+        const itemCount = document.getElementById('item-count');
+        
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', function() {
+                const selectedCategory = this.value;
+                let visibleCount = 0;
+                
+                productRows.forEach(row => {
+                    const rowCategory = row.getAttribute('data-category');
+                    if (!selectedCategory || rowCategory === selectedCategory) {
+                        row.style.display = '';
+                        visibleCount++;
+                        
+                        // Highlight the first few characters of the category
+                        if (selectedCategory) {
+                            const categoryCell = row.querySelector('td:nth-child(2)');
+                            if (categoryCell) {
+                                categoryCell.classList.add('category-highlight');
+                                setTimeout(() => {
+                                    categoryCell.classList.remove('category-highlight');
+                                }, 1000);
+                            }
+                        }
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                itemCount.textContent = visibleCount;
+            });
+        }
+    });
+</script>
+
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
+    
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    .min-vh-100 {
+        min-height: 100vh;
+    }
+    
+    .my-auto {
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    
+    .card {
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    
+    :root {
+        --primary-color: #4e73df;
+        --primary-hover: #2e59d9;
+        --secondary-color: #6c757d;
+        --success-color: #1cc88a;
+        --danger-color: #e74a3b;
+        --light-color: #f8f9fc;
+        --dark-color: #5a5c69;
+    }
+    
+    body {
+        background-color: #f8f9fc;
+        color: #5a5c69;
+    }
+    
+    .bg-gradient-primary-to-secondary {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    }
+    
+    .card-header {
+        border: none;
+        padding: 1.5rem 1.5rem;
+        text-align: center;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        overflow: hidden;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+    }
+    
+    .table {
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+    }
+    
+    .table th {
+        border-bottom: 2px solid #e3e6f0;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.5rem;
+        white-space: nowrap;
+    }
+    
+    .table td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        border-color: #e3e6f0;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+    
+    .quantity-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+    
+    .badge {
+        font-weight: 500;
+        font-size: 0.75rem;
+        padding: 0.35em 0.8em;
+    }
+    
+    .empty-state {
+        padding: 2rem 0;
+    }
+    
+    .empty-state i {
+        opacity: 0.5;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--primary-hover);
+        border-color: var(--primary-hover);
+    }
+    
+    /* Add Product Button */
+    .btn-add-product {
+        background: rgba(255, 255, 255, 0.1);
+        color: white !important;
+        text-decoration: none !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        text-transform: none;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    
+    .btn-add-product:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(34, 74, 190, 0.25);
+        color: white !important;
+        text-decoration: none !important;
+    }
+    
+    .btn-add-product i {
+        font-size: 0.95rem;
+        margin-right: 8px;
+        transition: none;
+    }
+    
+    .btn-add-product:hover i {
+        transform: translateX(2px);
+    }
+    
+    /* Header Search Styles */
+    .search-container {
+        min-width: 180px;
+        max-width: 250px;
+        width: 100%;
+        transition: all 0.2s ease;
+        margin-right: 0.75rem;
+    }
+    
+    @media (min-width: 768px) {
+        .search-container {
+            min-width: 200px;
+        }
+    }
+    
+    .search-input-group {
+        background: transparent;
+        border-radius: 0;
+        transition: all 0.2s ease;
+        border: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        height: 36px;
+        box-shadow: none;
+    }
+    
+    .search-input-group:focus-within {
+        background: transparent;
+        box-shadow: none;
+        border-bottom-color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .search-container .input-group-text {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0 0.5rem 0 0;
+        font-size: 0.9rem;
+    }
+    
+    .search-container .form-control {
+        background: transparent;
+        border: none;
+        color: white;
+        padding: 0.25rem 0.5rem 0.25rem 0.5rem;
+        height: 100%;
+        font-size: 0.9rem;
+        font-weight: 400;
+        box-shadow: none !important;
+    }
+    
+    .search-container .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 400;
+        font-size: 0.9rem;
+    }
+    
+    .search-container .form-control:focus {
+        background: transparent;
+        color: white;
+        box-shadow: none;
+        outline: none;
+        border: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 0 1rem;
+        }
+        .table-responsive {
+            font-size: 0.875rem;
+        }
+    }
+    /* Category filter styling */
+    .category-filter {
+        max-width: 250px;
+    }
+    
+    /* Print styles */
+    @media print {
+        .no-print, .card-header, .card-footer, #category-filter {
+            display: none !important;
+        }
+        body, .card, .table {
+            background: white !important;
+            color: black !important;
+            font-size: 12px;
+        }
+        .container {
+            max-width: 100%;
+            padding: 0;
+        }
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .table th, .table td {
+            padding: 4px 8px;
+            border: 1px solid #dee2e6;
+        }
+        .badge {
+            border: 1px solid #dee2e6;
+            background: white !important;
+            color: black !important;
+            padding: 2px 6px;
+            font-weight: normal;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+    }
+    
+    /* Category filter highlight */
+    .category-highlight {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+        transition: none;
+    }
+    
+    .card-header h2, 
+    .card-header h2 i {
+        color: white !important;
+    }
+    
+    /* Alert button styles */
+    .alert-btn {
+        white-space: nowrap;
+    }
+    .alert-btn i {
+        margin-right: 4px;
+    }
+
+    /* Dark theme styles for Alert Modal */
+    .dark-theme #productAlertModal .modal-content {
+        background: var(--dark-bg-2);
+        border-color: var(--gray-700);
+        color: var(--gray-200);
+    }
+
+    .dark-theme #productAlertModal .modal-header {
+        background: #ffc107 !important;
+        color: #212529 !important;
+        border-color: var(--gray-700);
+    }
+
+    .dark-theme #productAlertModal .modal-body {
+        color: var(--gray-300);
+    }
+
+    .dark-theme #productAlertModal .form-label {
+        color: var(--gray-200);
+    }
+
+    .dark-theme #productAlertModal .form-control {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+
+    .dark-theme #productAlertModal .form-control::placeholder {
+        color: var(--gray-500);
+    }
+
+    .dark-theme #productAlertModal .modal-footer {
+        border-color: var(--gray-700);
+    }
+
+    .dark-theme #productAlertModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+
+    .dark-theme #productAlertModal .btn-close:hover {
+        opacity: 1;
+    }
+
+    /* Flying paper plane animation for Send Alert button */
+    #sendAlertBtn {
+        position: relative;
+        overflow: hidden;
+    }
+
+    #sendAlertBtn::before {
+        content: '✈️';
+        position: absolute;
+        font-size: 20px;
+        top: 50%;
+        left: -30px;
+        transform: translateY(-50%) rotate(-45deg);
+        opacity: 0;
+        transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 1;
+    }
+
+    #sendAlertBtn:hover::before {
+        left: calc(100% + 30px);
+        opacity: 1;
+        transform: translateY(-50%) rotate(45deg);
+    }
+
+    #sendAlertBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    #sendAlertBtn i {
+        position: relative;
+        z-index: 2;
+        transition: transform 0.3s ease;
+    }
+
+    #sendAlertBtn:hover i {
+        transform: translateX(-5px);
+    }
+
+    /* Dark theme styles for Add Product Modal */
+    .dark-theme #addProductModal .modal-content {
+        background: var(--dark-bg-2);
+        border-color: var(--gray-700);
+        color: var(--gray-200);
+    }
+
+    .dark-theme #addProductModal .modal-header {
+        background: var(--primary) !important;
+        color: var(--white) !important;
+        border-color: var(--gray-700);
+    }
+
+    .dark-theme #addProductModal .modal-body {
+        color: var(--gray-300);
+    }
+
+    .dark-theme #addProductModal .form-label {
+        color: var(--gray-200);
+    }
+
+    .dark-theme #addProductModal .form-control {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+
+    .dark-theme #addProductModal .form-control::placeholder {
+        color: var(--gray-500);
+    }
+
+    .dark-theme #addProductModal .form-control:focus {
+        background: var(--dark-bg-1);
+        border-color: var(--primary);
+        color: var(--gray-200);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .dark-theme #addProductModal .modal-footer {
+        border-color: var(--gray-700);
+    }
+
+    .dark-theme #addProductModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+
+    .dark-theme #addProductModal .btn-close:hover {
+        opacity: 1;
+    }
+
+    .dark-theme #addProductModal .text-danger {
+        color: #ef4444 !important;
+    }
+    
+    /* Success Popup Styles */
+    .alert-success-popup {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 320px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .alert-success-popup .success-icon {
+        font-size: 24px;
+        animation: checkBounce 0.5s ease-out;
+    }
+    
+    .alert-success-popup .success-message {
+        flex: 1;
+        line-height: 1.4;
+    }
+    
+    .alert-success-popup strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+    
+    .alert-success-popup br + span {
+        font-size: 12px;
+        opacity: 0.9;
+    }
+    
+    /* Dark theme success popup */
+    .dark-theme .alert-success-popup {
+        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Animations */
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes checkBounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-10px);
+        }
+        60% {
+            transform: translateY(-5px);
+        }
+    }
+</style>
+
+<!-- Alert Modal -->
+<div class="modal fade" id="productAlertModal" tabindex="-1" aria-labelledby="productAlertModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="productAlertModalLabel">Product Alert</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <p class="mb-1"><strong>Product:</strong> <span id="modalProductName"></span></p>
+                    <p class="mb-1"><strong>Category:</strong> <span id="modalProductCategory"></span></p>
+                    <div class="mb-3">
+                        <label for="quantityInDemand" class="form-label"><strong>Quantity in Demand:</strong></label>
+                        <input type="number" min="1" class="form-control" id="quantityInDemand" value="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="alertMessage" class="form-label">Alert Message:</label>
+                        <textarea class="form-control" id="alertMessage" rows="3" placeholder="Enter your alert message here..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" id="sendAlertBtn">
+                    <i class="fas fa-paper-plane me-1"></i> Send Alert
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Store the current product ID when modal is shown
+    let currentProductId = null;
+
+    // Handle modal show event
+    const productAlertModal = document.getElementById('productAlertModal');
+    if (productAlertModal) {
+        productAlertModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const productId = button.getAttribute('data-product-id');
+            const productName = button.getAttribute('data-name');
+            const productCategory = button.getAttribute('data-category');
+            const productQuantity = button.getAttribute('data-quantity');
+            
+            // Store the current product ID
+            currentProductId = productId;
+            
+            // Update modal content
+            document.getElementById('modalProductName').textContent = productName;
+            document.getElementById('modalProductCategory').textContent = productCategory;
+            document.getElementById('quantityInDemand').value = '';
+            
+            // Reset the message field
+            document.getElementById('alertMessage').value = '';
+        });
+        
+        // Reset the currentProductId when modal is hidden
+        productAlertModal.addEventListener('hidden.bs.modal', function () {
+            currentProductId = null;
+        });
+    }
+    
+    // Handle send alert button click
+    const sendAlertBtn = document.getElementById('sendAlertBtn');
+    if (sendAlertBtn) {
+        sendAlertBtn.addEventListener('click', async function() {
+            const message = document.getElementById('alertMessage').value.trim();
+            const messageField = document.getElementById('alertMessage');
+            const quantityField = document.getElementById('quantityInDemand');
+            const errorElement = document.getElementById('alertError');
+            
+            // Validate inputs
+            const errors = [];
+            
+            if (!message) {
+                errors.push('Please enter an alert message.');
+                messageField.focus();
+            }
+            
+            const quantity = parseInt(quantityField.value);
+            if (isNaN(quantity) || quantity < 1) {
+                errors.push('Please enter a valid quantity (minimum 1).');
+                if (!message) quantityField.focus();
+            }
+            
+            if (errors.length > 0) {
+                if (errorElement) {
+                    errorElement.innerHTML = errors.join('<br>');
+                    errorElement.style.display = 'block';
+                }
+                return;
+            }
+            
+            if (!currentProductId) {
+                if (errorElement) {
+                    errorElement.textContent = 'Product not found. Please try again.';
+                    errorElement.style.display = 'block';
+                }
+                return;
+            }
+            
+            try {
+                // Disable the button to prevent multiple submissions
+                sendAlertBtn.disabled = true;
+                sendAlertBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
+                
+                // Get the quantity value
+                const quantity = parseInt(document.getElementById('quantityInDemand').value);
+                
+                // Send the alert to the server with both message and quantity
+                const response = await fetch(`/api/products/${currentProductId}/alert`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ 
+                        message: message,
+                        quantity: quantity
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success popup
+                    const successPopup = document.createElement('div');
+                    successPopup.className = 'alert-success-popup';
+                    successPopup.innerHTML = `
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="success-message">
+                            <strong>Success!</strong><br>
+                            ${result.message}
+                        </div>
+                    `;
+                    document.body.appendChild(successPopup);
+                    
+                    // Auto-remove after 3 seconds
+                    setTimeout(() => {
+                        if (successPopup.parentNode) {
+                            successPopup.parentNode.removeChild(successPopup);
+                        }
+                    }, 3000);
+                    
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('productAlertModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                } else {
+                    // Show error message
+                    if (errorElement) {
+                        errorElement.textContent = result.error || 'Failed to send alert. Please try again.';
+                        errorElement.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Error sending alert:', error);
+                if (errorElement) {
+                    errorElement.textContent = 'An error occurred. Please try again.';
+                    errorElement.style.display = 'block';
+                }
+            } finally {
+                // Re-enable the button
+                sendAlertBtn.disabled = false;
+                sendAlertBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Send Alert';
+            }
+        });
+    }
+    
+    // Clear error when typing in the message or quantity field
+    const clearErrorOnInput = function() {
+        const errorElement = document.getElementById('alertError');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+    };
+    
+    // Add event listeners to clear errors when user types
+    const alertMessage = document.getElementById('alertMessage');
+    const quantityField = document.getElementById('quantityInDemand');
+    
+    if (alertMessage) alertMessage.addEventListener('input', clearErrorOnInput);
+    if (quantityField) quantityField.addEventListener('input', clearErrorOnInput);
+    
+    // Prevent alphabet input in quantity field - numbers only
+    if (quantityField) {
+        quantityField.addEventListener('input', function(e) {
+            // Remove any non-numeric characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+        
+        quantityField.addEventListener('keypress', function(e) {
+            // Prevent non-numeric key presses
+            if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab') {
+                e.preventDefault();
+            }
+        });
+    }
+</script>
+
+<!-- Stock Arrival Modal - Staff Only -->
+{% if session.get('role') == 'Staff' %}
+<div class="modal fade" id="stockRequestModal" tabindex="-1" aria-labelledby="stockRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="stockRequestModalLabel">
+                    <i class="fas fa-truck-loading me-2"></i> ADD NEW ARRIVAL
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="stockRequestForm">
+                <div class="modal-body">
+                    <div id="productsContainer">
+                        <!-- First Product Row -->
+                        <div class="product-row">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <label class="form-label">Product *</label>
+                                    <select class="form-select" name="product_id[]" required>
+                                        <option value="">Select Product</option>
+                                        {% for product in products %}
+                                        <option value="{{ product.product_id if product.product_id is defined else '' }}">
+                                            {{ product.name }} (Current: {{ product.quantity or 0 }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Quantity Arrived *</label>
+                                    <input type="number" class="form-control quantity-input" name="quantity[]" min="1" required placeholder="Enter quantity">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Supplier</label>
+                                    <select class="form-select" name="supplier_id[]">
+                                        <option value="">Select Supplier</option>
+                                        {% for supplier in suppliers %}
+                                        <option value="{{ supplier.supplier_id }}">
+                                            {{ supplier.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger btn-sm remove-product">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add More Products Button -->
+                    <div class="text-center mb-3">
+                        <button type="button" class="btn btn-outline-primary" id="addProductBtn">
+                            <i class="fas fa-plus me-2"></i> Add Another Product
+                        </button>
+                        <button type="button" class="btn btn-outline-danger ms-2" id="clearAllBtn">
+                            <i class="fas fa-eraser me-2"></i> Clear All
+                        </button>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-info d-flex align-items-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <div>
+                                    <strong>Note:</strong>This request will go to Admin for approval.
+                                    Stock is not added until approval is granted.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="requestError" class="alert alert-danger" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info" id="submitRequestBtn">
+                        <i class="fas fa-paper-plane me-1"></i> Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-row {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        background-color: #f8f9fa;
+    }
+    .remove-product {
+        display: none;
+    }
+    
+    /* Dark theme styles for Stock Arrival Modal */
+    .dark-theme .product-row {
+        background-color: #374151;
+        border-color: #4b5563;
+        color: #f3f4f6;
+    }
+    
+    .dark-theme #stockRequestModal .modal-content {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+    
+    .dark-theme #stockRequestModal .modal-header {
+        background-color: #374151;
+        border-color: #4b5563;
+    }
+    
+    .dark-theme #stockRequestModal .modal-body {
+        background-color: #1f2937;
+        color: #f3f4f6;
+    }
+    
+    .dark-theme #stockRequestModal .form-label {
+        color: #e5e7eb;
+    }
+    
+    .dark-theme #stockRequestModal .form-control {
+        background-color: #374151;
+        border-color: #4b5563;
+        color: #f3f4f6;
+    }
+    
+    .dark-theme #stockRequestModal .form-control:focus {
+        background-color: #374151;
+        border-color: #3b82f6;
+        color: #f3f4f6;
+    }
+    
+    .dark-theme #stockRequestModal .form-select {
+        background-color: #374151;
+        border-color: #4b5563;
+        color: #f3f4f6;
+    }
+    
+    .dark-theme #stockRequestModal .form-select:focus {
+        background-color: #374151;
+        border-color: #3b82f6;
+        color: #f3f4f6;
+    }
+    
+    .dark-theme #stockRequestModal .btn-outline-primary {
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+    
+    .dark-theme #stockRequestModal .btn-outline-primary:hover {
+        background-color: #3b82f6;
+        color: #ffffff;
+    }
+    
+    .dark-theme #stockRequestModal .btn-outline-danger {
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+    
+    .dark-theme #stockRequestModal .btn-outline-danger:hover {
+        background-color: #ef4444;
+        color: #ffffff;
+    }
+    
+    .dark-theme #stockRequestModal .alert-info {
+        background-color: rgba(59, 130, 246, 0.1);
+        border-color: #3b82f6;
+        color: #93c5fd;
+    }
+    
+    .dark-theme #stockRequestModal .alert-danger {
+        background-color: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+        color: #fca5a5;
+    }
+</style>
+
+<style>
+    /* Stock Arrival Modal Styles */
+    #stockRequestModal .modal-content {
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+    }
+
+    #stockRequestModal .modal-header {
+        border-radius: 12px 12px 0 0;
+        border: none;
+    }
+
+    #stockRequestModal .form-control:focus {
+        border-color: var(--info);
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+
+    #stockRequestModal .form-select:focus {
+        border-color: var(--info);
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+
+    /* Dark theme styles for Stock Arrival Modal */
+    .dark-theme #stockRequestModal .modal-content {
+        background: var(--dark-bg-2);
+        border-color: var(--gray-700);
+        color: var(--gray-200);
+    }
+    .dark-theme #stockRequestModal .modal-header {
+        background: var(--info) !important;
+        color: var(--white) !important;
+        border-color: var(--gray-700);
+    }
+    .dark-theme #stockRequestModal .modal-body {
+        color: var(--gray-300);
+    }
+    .dark-theme #stockRequestModal .form-label {
+        color: var(--gray-200);
+    }
+    .dark-theme #stockRequestModal .form-control {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+    .dark-theme #stockRequestModal .form-control::placeholder {
+        color: var(--gray-500);
+    }
+    .dark-theme #stockRequestModal .form-control:focus {
+        background: var(--dark-bg-1);
+        border-color: var(--info);
+        color: var(--gray-200);
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+    .dark-theme #stockRequestModal .form-select {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+    .dark-theme #stockRequestModal .form-select:focus {
+        background: var(--dark-bg-1);
+        border-color: var(--info);
+        color: var(--gray-200);
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+    .dark-theme #stockRequestModal .modal-footer {
+        border-color: var(--gray-700);
+    }
+    .dark-theme #stockRequestModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    .dark-theme #stockRequestModal .btn-close:hover {
+        opacity: 1;
+    }
+    .dark-theme #stockRequestModal .alert-info {
+        background-color: rgba(23, 162, 184, 0.1);
+        border-color: var(--info);
+        color: var(--gray-300);
+    }
+</style>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('productsContainer');
+    const addBtn = document.getElementById('addProductBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const stockRequestForm = document.getElementById('stockRequestForm');
+    const submitRequestBtn = document.getElementById('submitRequestBtn');
+    const errorElement = document.getElementById('requestError');
+
+    // If elements are missing (e.g., non-staff view), exit gracefully
+    if (!container || !addBtn || !stockRequestForm || !submitRequestBtn) {
+        console.log('Stock arrival modal elements not found - likely non-staff view');
+        return;
+    }
+
+    console.log('Stock arrival modal elements found, initializing...');
+
+    addBtn.addEventListener('click', () => {
+        const firstRow = container.querySelector('.product-row');
+        if (!firstRow) return;
+        
+        const newRow = firstRow.cloneNode(true);
+
+        // Clear input values
+        newRow.querySelectorAll('input, select').forEach(el => el.value = '');
+
+        // Show remove button for new rows
+        const removeBtn = newRow.querySelector('.remove-product');
+        if (removeBtn) {
+            removeBtn.style.display = 'block';
+            removeBtn.onclick = function() { 
+                newRow.remove(); 
+                updateRemoveButtons(); 
+            };
+        }
+
+        container.appendChild(newRow);
+        updateRemoveButtons();
+    });
+
+    function updateRemoveButtons() {
+        if (!container) return;
+        
+        const rows = container.querySelectorAll('.product-row');
+        rows.forEach((row, index) => {
+            const btn = row.querySelector('.remove-product');
+            if (btn) {
+                btn.style.display = index === 0 ? 'none' : 'block';
+                // Add click handler to all remove buttons
+                btn.onclick = function() { 
+                    row.remove(); 
+                    updateRemoveButtons(); 
+                };
+            }
+        });
+    }
+
+    // Initialize remove buttons on page load
+    updateRemoveButtons();
+
+    // Clear All functionality
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', () => {
+            if (!container) return;
+            
+            // Remove all extra rows, keep only the first one
+            const rows = container.querySelectorAll('.product-row');
+            rows.forEach((row, index) => {
+                if (index > 0) {
+                    row.remove();
+                }
+            });
+            
+            // Clear all input values in the first row
+            const firstRow = container.querySelector('.product-row');
+            if (firstRow) {
+                firstRow.querySelectorAll('input, select').forEach(el => el.value = '');
+            }
+            
+            // Hide error message if visible
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+            
+            // Update remove buttons
+            updateRemoveButtons();
+        });
+    }
+
+    // Prevent non-numeric input in quantity fields
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('quantity-input')) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        }
+    });
+
+    // Prevent paste of non-numeric content in quantity fields
+    document.addEventListener('paste', function(e) {
+        if (e.target.classList.contains('quantity-input')) {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            const numericData = pastedData.replace(/[^0-9]/g, '');
+            document.execCommand('insertText', false, numericData);
+        }
+    });
+
+    // Handle form submission
+    if (stockRequestForm && submitRequestBtn) {
+        console.log('Attaching submit handler to stockRequestForm');
+        stockRequestForm.addEventListener('submit', async function(e) {
+            console.log('Form submit triggered');
+            e.preventDefault();
+            
+            // Validate all product rows
+            const productRows = document.querySelectorAll('.product-row');
+            let hasValidProducts = false;
+            
+            productRows.forEach(row => {
+                const productSelect = row.querySelector('select[name="product_id[]"]');
+                const quantityInput = row.querySelector('input[name="quantity[]"]');
+                
+                if (productSelect && quantityInput && productSelect.value && quantityInput.value) {
+                    hasValidProducts = true;
+                }
+            });
+            
+            if (!hasValidProducts) {
+                alert('Please add at least one product with quantity');
+                return;
+            }
+            
+            // Disable button to prevent double submission
+            submitRequestBtn.disabled = true;
+            submitRequestBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Submitting...';
+            
+            const formData = new FormData(stockRequestForm);
+            console.log('Submitting form data:', Array.from(formData.entries()));
+            
+            try {
+                const response = await fetch('/stock/request', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                console.log('Server response:', result);
+                
+                if (response.ok && result.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('stockRequestModal'));
+                    if (modal) modal.hide();
+                    
+                    // Reset form and remove extra rows
+                    stockRequestForm.reset();
+                    const rows = container.querySelectorAll('.product-row');
+                    rows.forEach((row, index) => { if (index > 0) row.remove(); });
+                    updateRemoveButtons();
+                    
+                    // Show green success message
+                    const successAlert = document.createElement('div');
+                    successAlert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                    successAlert.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+                    successAlert.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Success!</strong> ${result.message}
+                    `;
+                    document.body.appendChild(successAlert);
+                    
+                    // Auto-remove after 2 seconds
+                    setTimeout(() => {
+                        if (successAlert.parentNode) {
+                            successAlert.parentNode.removeChild(successAlert);
+                        }
+                    }, 2000);
+                    
+                } else {
+                    // Show error message
+                    if (errorElement) {
+                        errorElement.textContent = result.message || 'Failed to submit request. Please try again.';
+                        errorElement.style.display = 'block';
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error submitting stock arrival:', error);
+                if (errorElement) {
+                    errorElement.textContent = 'An error occurred. Please try again.';
+                    errorElement.style.display = 'block';
+                }
+            } finally {
+                // Re-enable the button
+                submitRequestBtn.disabled = false;
+                submitRequestBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Submit Request';
+            }
+        });
+    } else {
+        console.error('stockRequestForm or submitRequestBtn not found');
+    }
+});
+</script>
+{% endif %} <!-- End Staff Only -->
+{% endblock %}
