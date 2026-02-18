@@ -1,6 +1,9 @@
-from flask import Blueprint, render_template, request, jsonify, json, session, flash
+from flask import Blueprint, render_template, request, jsonify, json, session, flash, redirect, url_for
 from flask_login import login_required, current_user
 from config import conn  # Use the existing connection
+from werkzeug.utils import secure_filename
+import os
+import time
 
 def format_product(product):
     """Helper function to format product data"""
@@ -18,6 +21,69 @@ def get_db_connection():
     # Return a new connection using the same parameters as in config.py
     return conn
 
+def get_staff_task_stats(user_id):
+    """Get task statistics for a staff member"""
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get task statistics for the user
+        cursor.execute("""
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'in-progress' THEN 1 ELSE 0 END) as in_progress,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
+            FROM tasks
+            WHERE assigned_to = %s
+        """, (user_id,))
+        
+        stats = cursor.fetchone()
+        cursor.close()
+        return stats
+        
+    except Exception as e:
+        print(f"Error fetching staff task stats: {e}")
+        return {
+            'total': 0,
+            'pending': 0,
+            'in_progress': 0,
+            'completed': 0
+        }
+
+def get_staff_tasks(user_id):
+    """Get all tasks for a staff member"""
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        
+        # Get user's tasks
+        cursor.execute("""
+            SELECT * 
+            FROM tasks 
+            WHERE assigned_to = %s 
+            ORDER BY 
+                CASE 
+                    WHEN status = 'pending' THEN 1
+                    WHEN status = 'in-progress' THEN 2
+                    ELSE 3
+                END,
+                due_date ASC,
+                CASE priority
+                    WHEN 'high' THEN 1
+                    WHEN 'medium' THEN 2
+                    ELSE 3
+                END
+        """, (user_id,))
+        
+        tasks = cursor.fetchall()
+        cursor.close()
+        return tasks
+        
+    except Exception as e:
+        print(f"Error fetching staff tasks: {e}")
+        return []
+
 @products_bp.route('/')
 def index():
     """Render the main products page"""
@@ -33,8 +99,8 @@ def products():
 def render_products():
     """Render the products page with initial data"""
     try:
-        # Get initial products (limited for initial load)
-        products_data = get_products_data(limit=12)
+        # Get initial products (increased limit)
+        products_data = get_products_data(limit=50, include_inactive=False)
         
         # Get categories for filter
         conn = get_db_connection()
@@ -64,7 +130,7 @@ def render_products():
                             total_products=0,
                             is_guest=True)
 
-def get_products_data(category='', limit=None, offset=0):
+def get_products_data(category='', limit=None, offset=0, include_inactive=False):
     """Helper function to get products data with filters"""
     try:
         # Build the base query
@@ -73,9 +139,14 @@ def get_products_data(category='', limit=None, offset=0):
                    p.*, c.name as category_name 
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.category_id
+            WHERE 1=1
         """
         
         params = []
+        
+        # Add status filter (default to active products only)
+        if not include_inactive:
+            query += " AND p.status = 'active'"
         
         # Add filters
         if category:
@@ -122,7 +193,7 @@ def get_products_json():
         offset = request.args.get('offset', 0, type=int)
         
         # Get filtered products
-        data = get_products_data(category, limit, offset)
+        data = get_products_data(category, limit, offset, include_inactive=False)
         
         # Return JSON response
         return jsonify({
@@ -158,6 +229,120 @@ def get_product(product_id):
     if product:
         return jsonify(product)
     return jsonify({"error": "Product not found"}), 404
+
+
+@products_bp.route('/edit', methods=['POST'])
+def update_product():
+    """Handle product updates from the edit modal."""
+    role = session.get('role')
+    if role not in ('Admin', 'Staff'):
+        flash('You are not authorized to edit products.', 'danger')
+        return redirect(url_for('main.stock'))
+
+    product_id = request.form.get('product_id')
+    if not product_id:
+        flash('Product ID is required.', 'danger')
+        return redirect(url_for('main.stock'))
+
+    name = request.form.get('name', '').strip()
+    category_id = request.form.get('category_id')
+    supplier_id = request.form.get('supplier_id', '').strip()
+    price = request.form.get('price', 0)
+    stock_quantity = request.form.get('stock_quantity', 0)
+    unit_type = request.form.get('unit_type', 'piece')
+    units_per_pack = request.form.get('units_per_pack') or 1
+    status = request.form.get('status', 'active')
+    brand = request.form.get('brand', '').strip()
+    sku = request.form.get('sku', '').strip()
+
+    if not name or not category_id or not supplier_id:
+        flash('Name, category, and supplier are required.', 'danger')
+        return redirect(url_for('main.stock'))
+
+    try:
+        price = float(price)
+        stock_quantity = int(stock_quantity)
+        units_per_pack = int(units_per_pack)
+    except (TypeError, ValueError):
+        flash('Invalid numeric values provided.', 'danger')
+        return redirect(url_for('main.stock'))
+
+    # Ensure piece products always use 1 unit per pack
+    if unit_type == 'piece':
+        units_per_pack = 1
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            "SELECT image_url FROM products WHERE product_id = %s",
+            (product_id,)
+        )
+        product = cursor.fetchone()
+        if not product:
+            flash('Product not found.', 'danger')
+            return redirect(url_for('main.stock'))
+
+        image_url = product.get('image_url')
+        if 'product_image' in request.files:
+            file = request.files['product_image']
+            if file and file.filename:
+                allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+                filename = file.filename.lower()
+                if '.' in filename and filename.rsplit('.', 1)[1] in allowed_extensions:
+                    secure_name = secure_filename(file.filename)
+                    timestamp = str(int(time.time()))
+                    name_part, ext_part = secure_name.rsplit('.', 1)
+                    final_filename = f"{name_part}_{timestamp}.{ext_part}"
+                    upload_path = os.path.join('static', 'images', final_filename)
+                    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+                    file.save(upload_path)
+                    image_url = f"static/images/{final_filename}"
+                else:
+                    flash('Invalid image type. Please upload PNG, JPG, JPEG, GIF, or WebP.', 'danger')
+                    return redirect(url_for('main.stock'))
+
+        cursor.execute(
+            """
+            UPDATE products
+            SET name = %s,
+                category_id = %s,
+                supplier_id = %s,
+                price = %s,
+                stock_quantity = %s,
+                unit_type = %s,
+                units_per_pack = %s,
+                status = %s,
+                brand = %s,
+                sku = %s,
+                image_url = %s
+            WHERE product_id = %s
+            """,
+            (
+                name,
+                category_id,
+                supplier_id,
+                price,
+                stock_quantity,
+                unit_type,
+                units_per_pack,
+                status,
+                brand,
+                sku,
+                image_url,
+                product_id
+            )
+        )
+        conn.commit()
+        flash('Product updated successfully!', 'success')
+    except Exception as e:
+        conn.rollback()
+        flash(f'Failed to update product: {str(e)}', 'danger')
+    finally:
+        cursor.close()
+
+    return redirect(url_for('main.stock'))
 
 
 @products_bp.route('/api/customer/orders')
@@ -424,10 +609,10 @@ def add_to_cart():
         try:
             # Check if product exists
             cursor.execute("""
-                SELECT product_id, name, price
-                FROM products
-                WHERE product_id = %s
-            """, (product_id,))
+            SELECT product_id, name, price, stock_quantity
+            FROM products
+            WHERE product_id = %s AND status = 'active'
+        """, (product_id,))
             product = cursor.fetchone()
             
             print(f"Product found: {product}")  # Debug log
@@ -581,24 +766,38 @@ def create_store_order():
             }), 401
         
         user_id = session['user_id']
+        data = request.get_json() or {}
+        selected_items = data.get('selected_items', [])
         
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
         try:
-            # Get current cart items
-            cursor.execute("""
-                SELECT ci.product_id, ci.quantity, p.name, p.price
-                FROM cart_items ci
-                JOIN products p ON ci.product_id = p.product_id
-                WHERE ci.user_id = %s
-            """, (user_id,))
+            # Build query to get cart items
+            if selected_items:
+                # Get only selected items
+                placeholders = ','.join(['%s'] * len(selected_items))
+                cursor.execute(f"""
+                    SELECT ci.product_id, ci.quantity, p.name, p.price
+                    FROM cart_items ci
+                    JOIN products p ON ci.product_id = p.product_id
+                    WHERE ci.user_id = %s AND ci.cart_item_id IN ({placeholders})
+                """, [user_id] + selected_items)
+            else:
+                # Get all cart items (backward compatibility)
+                cursor.execute("""
+                    SELECT ci.product_id, ci.quantity, p.name, p.price
+                    FROM cart_items ci
+                    JOIN products p ON ci.product_id = p.product_id
+                    WHERE ci.user_id = %s
+                """, (user_id,))
+            
             cart_items = cursor.fetchall()
             
             if not cart_items:
                 return jsonify({
                     'success': False,
-                    'message': 'Your cart is empty'
+                    'message': 'No items selected for order'
                 }), 400
             
             # Calculate total amount
@@ -632,8 +831,28 @@ def create_store_order():
             
             order_id = cursor.lastrowid
             
-            # Create order items
+            # Create order items and deduct stock
+            stock_update_failed = False
             for item in cart_items:
+                # Check if sufficient stock is available
+                cursor.execute("""
+                    SELECT stock_quantity FROM products 
+                    WHERE product_id = %s FOR UPDATE
+                """, (item['product_id'],))
+                product_stock = cursor.fetchone()
+                
+                if not product_stock or product_stock['stock_quantity'] < item['quantity']:
+                    stock_update_failed = True
+                    break
+                
+                # Deduct stock
+                cursor.execute("""
+                    UPDATE products 
+                    SET stock_quantity = stock_quantity - %s 
+                    WHERE product_id = %s
+                """, (item['quantity'], item['product_id']))
+                
+                # Create order item
                 cursor.execute("""
                     INSERT INTO order_items (
                         order_id, 
@@ -648,11 +867,27 @@ def create_store_order():
                     item['price']
                 ))
             
-            # Clear the cart
-            cursor.execute("""
-                DELETE FROM cart_items 
-                WHERE user_id = %s
-            """, (user_id,))
+            if stock_update_failed:
+                # Rollback the entire transaction if stock update failed
+                conn.rollback()
+                return jsonify({
+                    'success': False,
+                    'message': 'Insufficient stock for one or more items. Please refresh your cart and try again.'
+                }), 400
+            
+            # Remove only the ordered items from cart
+            if selected_items:
+                placeholders = ','.join(['%s'] * len(selected_items))
+                cursor.execute(f"""
+                    DELETE FROM cart_items 
+                    WHERE user_id = %s AND cart_item_id IN ({placeholders})
+                """, [user_id] + selected_items)
+            else:
+                # Clear entire cart (backward compatibility)
+                cursor.execute("""
+                    DELETE FROM cart_items 
+                    WHERE user_id = %s
+                """, (user_id,))
             
             conn.commit()
             
@@ -701,6 +936,7 @@ def get_cart():
                     p.price,
                     p.image_url,
                     p.stock_quantity,
+                    p.status,
                     c.name as category_name
                 FROM cart_items ci
                 JOIN products p ON ci.product_id = p.product_id
@@ -799,6 +1035,100 @@ def remove_from_cart():
             'message': 'Failed to remove item from cart'
         }), 500
 
+@products_bp.route('/api/orders/cancel', methods=['POST'])
+def cancel_order():
+    """Cancel an order and restore stock quantities (Admin only)"""
+    try:
+        role = session.get('role')
+        if role not in ('Admin', 'Staff'):
+            return jsonify({
+                'success': False,
+                'message': 'Only administrators can cancel orders'
+            }), 403
+        
+        data = request.get_json()
+        order_id = data.get('order_id')
+        cancel_reason = data.get('reason', 'Cancelled by administrator')
+        
+        if not order_id:
+            return jsonify({
+                'success': False,
+                'message': 'Order ID is required'
+            }), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        try:
+            # Get order details and items
+            cursor.execute("""
+                SELECT o.order_id, o.order_status, oi.order_item_id, 
+                       oi.product_id, oi.quantity
+                FROM orders o
+                JOIN order_items oi ON o.order_id = oi.order_id
+                WHERE o.order_id = %s
+                FOR UPDATE
+            """, (order_id,))
+            
+            order_items = cursor.fetchall()
+            
+            if not order_items:
+                return jsonify({
+                    'success': False,
+                    'message': 'Order not found'
+                }), 404
+            
+            # Check if order can be cancelled
+            current_status = order_items[0]['order_status']
+            if current_status in ('completed', 'cancelled'):
+                return jsonify({
+                    'success': False,
+                    'message': f'Cannot cancel order in "{current_status}" status'
+                }), 400
+            
+            # Restore stock quantities
+            for item in order_items:
+                cursor.execute("""
+                    UPDATE products 
+                    SET stock_quantity = stock_quantity + %s 
+                    WHERE product_id = %s
+                """, (item['quantity'], item['product_id']))
+            
+            # Update order status
+            cursor.execute("""
+                UPDATE orders 
+                SET order_status = 'cancelled',
+                    updated_at = NOW()
+                WHERE order_id = %s
+            """, (order_id,))
+            
+            # Log the cancellation (optional - if you have an order_history table)
+            # cursor.execute("""
+            #     INSERT INTO order_history (order_id, status, reason, created_by, created_at)
+            #     VALUES (%s, %s, %s, %s, NOW())
+            # """, (order_id, 'cancelled', cancel_reason, session.get('user_id')))
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Order cancelled successfully and stock quantities restored',
+                'order_id': order_id,
+                'items_restored': len(order_items)
+            })
+            
+        finally:
+            cursor.close()
+            
+    except Exception as e:
+        print(f"Error cancelling order: {str(e)}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'message': f'Failed to cancel order: {str(e)}'
+        }), 500
+
 def get_cart_count(user_id):
     """Helper function to get cart item count for a user"""
     try:
@@ -819,3 +1149,38 @@ def get_cart_count(user_id):
     except Exception as e:
         print(f"Error getting cart count: {str(e)}")
         return 0
+
+@products_bp.route('/api/products/<int:product_id>/status', methods=['POST'])
+def update_product_status(product_id):
+    """Update product status (for admin use)"""
+    role = session.get('role')
+    if role not in ('Admin', 'Staff'):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    try:
+        data = request.get_json()
+        new_status = data.get('status')
+        
+        if new_status not in ['active', 'hidden']:
+            return jsonify({'success': False, 'message': 'Invalid status'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("""
+            UPDATE products 
+            SET status = %s 
+            WHERE product_id = %s
+        """, (new_status, product_id))
+        
+        conn.commit()
+        cursor.close()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Product status updated to {new_status}'
+        })
+        
+    except Exception as e:
+        print(f"Error updating product status: {str(e)}")
+        return jsonify({'success': False, 'message': 'Failed to update status'}), 500

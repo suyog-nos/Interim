@@ -418,21 +418,8 @@
     }
 
     .dark-theme .status-active {
-        background: #14532d;
-        color: #86efac;
-        border-color: #22c55e;
-    }
-
-    .status-inactive {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-    }
-
-    .dark-theme .status-inactive {
-        background: #7f1d1d;
-        color: #fca5a5;
-        border-color: #ef4444;
+        background: #065f46;
+        color: #d1fae5;
     }
 
     .btn-sm {
@@ -466,6 +453,273 @@
 
     .dark-theme .btn-edit:hover {
         background: #3b82f6;
+    }
+
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        font-size: 13px;
+        margin-left: 8px;
+    }
+
+    .dark-theme .btn-delete {
+        background: #c82333;
+    }
+
+    .btn-delete:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+    }
+
+    .dark-theme .btn-delete:hover {
+        background: #dc3545;
+    }
+
+    /* Custom delete confirmation modal */
+    .delete-confirm-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .delete-confirm-modal.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .delete-confirm-content {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        transform: scale(0.9);
+        transition: all 0.3s ease;
+    }
+
+    .delete-confirm-modal.show .delete-confirm-content {
+        transform: scale(1);
+    }
+
+    .delete-confirm-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        color: #dc3545;
+    }
+
+    .delete-confirm-header i {
+        font-size: 2rem;
+        margin-right: 1rem;
+    }
+
+    .delete-confirm-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .delete-confirm-body {
+        margin-bottom: 1.5rem;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+
+    .delete-confirm-user-name {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .delete-confirm-footer {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
+    .delete-confirm-btn {
+        padding: 0.5rem 1.25rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .delete-confirm-btn-cancel {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    .delete-confirm-btn-cancel:hover {
+        background: #dee2e6;
+    }
+
+    .delete-confirm-btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+
+    .delete-confirm-btn-delete:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+    }
+
+    .dark-theme .delete-confirm-content {
+        background: #1e293b;
+        color: #f1f5f9;
+    }
+
+    .dark-theme .delete-confirm-body {
+        color: #94a3b8;
+    }
+
+    .dark-theme .delete-confirm-user-name {
+        color: #f1f5f9;
+    }
+
+    .dark-theme .delete-confirm-btn-cancel {
+        background: #374151;
+        color: #f1f5f9;
+    }
+
+    .dark-theme .delete-confirm-btn-cancel:hover {
+        background: #4b5563;
+    }
+
+    /* Custom error modal */
+    .error-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .error-modal.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .error-modal-content {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        transform: scale(0.9);
+        transition: all 0.3s ease;
+    }
+
+    .error-modal.show .error-modal-content {
+        transform: scale(1);
+    }
+
+    .error-modal-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        color: #dc3545;
+    }
+
+    .error-modal-header i {
+        font-size: 2rem;
+        margin-right: 1rem;
+    }
+
+    .error-modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .error-modal-body {
+        margin-bottom: 1.5rem;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+
+    .error-modal-message {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+
+    .error-modal-suggestion {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .error-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .error-modal-btn {
+        padding: 0.5rem 1.25rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #dc3545;
+        color: white;
+    }
+
+    .error-modal-btn:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+    }
+
+    .dark-theme .error-modal-content {
+        background: #1e293b;
+        color: #f1f5f9;
+    }
+
+    .dark-theme .error-modal-body {
+        color: #94a3b8;
+    }
+
+    .dark-theme .error-modal-message {
+        color: #f1f5f9;
+    }
+
+    .dark-theme .error-modal-suggestion {
+        color: #94a3b8;
+    }
+
+    .dark-theme .error-modal-btn {
+        background: #dc3545;
+    }
+
+    .dark-theme .error-modal-btn:hover {
+        background: #e74c3c;
     }
 
     .empty-state {
@@ -829,6 +1083,7 @@
                                 </td>
                                 <td>
                                     <button class="btn btn-sm btn-edit" onclick="editUser('{{ user.id }}')">Edit</button>
+                                    <button class="btn btn-sm btn-delete" onclick="deleteUser('{{ user.id }}', '{{ user.first_name }} {{ user.last_name }}')">Delete</button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -842,6 +1097,46 @@
             </div>
         </div>
     </section>
+
+    <!-- Custom Delete Confirmation Modal -->
+    <div class="delete-confirm-modal" id="deleteConfirmModal">
+        <div class="delete-confirm-content">
+            <div class="delete-confirm-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h5 class="delete-confirm-title">Delete User</h5>
+            </div>
+            <div class="delete-confirm-body">
+                Are you sure you want to delete the user "<span class="delete-confirm-user-name" id="deleteUserName"></span>"? This action cannot be undone.
+            </div>
+            <div class="delete-confirm-footer">
+                <button class="delete-confirm-btn delete-confirm-btn-cancel" id="deleteCancelBtn">
+                    Cancel
+                </button>
+                <button class="delete-confirm-btn delete-confirm-btn-delete" id="deleteConfirmBtn">
+                    <i class="fas fa-trash me-1"></i> Delete User
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Error Modal -->
+    <div class="error-modal" id="errorModal">
+        <div class="error-modal-content">
+            <div class="error-modal-header">
+                <i class="fas fa-exclamation-circle"></i>
+                <h5 class="error-modal-title">Deletion Failed</h5>
+            </div>
+            <div class="error-modal-body">
+                <div class="error-modal-message" id="errorMessage"></div>
+                <div class="error-modal-suggestion" id="errorSuggestion"></div>
+            </div>
+            <div class="error-modal-footer">
+                <button class="error-modal-btn" id="errorCloseBtn">
+                    <i class="fas fa-times me-1"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
@@ -1330,6 +1625,163 @@
                 });
             });
         });
+
+        // Delete user function
+        function deleteUser(userId, userName) {
+            showDeleteConfirmModal(userId, userName);
+        }
+
+        // Function to show delete confirmation modal
+        function showDeleteConfirmModal(userId, userName) {
+            const modal = document.getElementById('deleteConfirmModal');
+            const titleElement = document.getElementById('deleteUserName');
+            const confirmBtn = document.getElementById('deleteConfirmBtn');
+            const cancelBtn = document.getElementById('deleteCancelBtn');
+            
+            // Set user name
+            titleElement.textContent = userName;
+            
+            // Show modal with animation
+            modal.classList.add('show');
+            
+            // Handle confirm button
+            confirmBtn.onclick = function() {
+                modal.classList.remove('show');
+                performDeleteUser(userId, userName);
+            };
+            
+            // Handle cancel button
+            cancelBtn.onclick = function() {
+                modal.classList.remove('show');
+            };
+            
+            // Handle click outside modal
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            };
+        }
+
+        // Function to show error modal
+        function showErrorModal(message, suggestion = '') {
+            const modal = document.getElementById('errorModal');
+            const messageElement = document.getElementById('errorMessage');
+            const suggestionElement = document.getElementById('errorSuggestion');
+            const closeBtn = document.getElementById('errorCloseBtn');
+            
+            // Set error message
+            messageElement.textContent = message;
+            
+            // Set suggestion if provided
+            if (suggestion) {
+                suggestionElement.textContent = suggestion;
+                suggestionElement.style.display = 'block';
+            } else {
+                suggestionElement.style.display = 'none';
+            }
+            
+            // Show modal with animation
+            modal.classList.add('show');
+            
+            // Handle close button
+            closeBtn.onclick = function() {
+                modal.classList.remove('show');
+            };
+            
+            // Handle click outside modal
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            };
+        }
+
+        // Function to perform the actual deletion
+        function performDeleteUser(userId, userName) {
+            fetch(`/users/delete/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                // Check if response is ok before parsing JSON
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Failed to delete user');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Only proceed if we actually have success data
+                if (data && data.success) {
+                    // Show success toast
+                    showToast(data.message || 'User deleted successfully!', 'success');
+                    
+                    // Remove the user row from table
+                    const rows = document.querySelectorAll('#usersTableBody tr');
+                    let userRemoved = false;
+                    
+                    rows.forEach(row => {
+                        if (row.cells[0].textContent === userId) {
+                            row.remove();
+                            userRemoved = true;
+                        }
+                    });
+                    
+                    // Only update counts if user was actually removed
+                    if (userRemoved) {
+                        updateUserCounts();
+                    }
+                } else {
+                    // This should not happen if the backend is correct, but handle it
+                    const errorMessage = (data && data.message) ? data.message : 'Failed to delete user';
+                    showDeleteError(errorMessage);
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting user:', error);
+                showDeleteError(error.message);
+            });
+        }
+
+        // Helper function to show delete errors with suggestions
+        function showDeleteError(errorMessage) {
+            let suggestion = '';
+            
+            if (errorMessage.includes('orders')) {
+                suggestion = 'Please check the user\'s order history and handle any pending orders.';
+            } else if (errorMessage.includes('stock requests')) {
+                suggestion = 'Please approve or reject the user\'s pending stock requests first.';
+            } else if (errorMessage.includes('arrival alerts')) {
+                suggestion = 'Please process the user\'s pending arrival alerts first.';
+            } else if (errorMessage.includes('Cannot delete') || errorMessage.includes('associated records')) {
+                suggestion = 'Please remove all associated records before deleting this user.';
+            } else {
+                suggestion = 'Please try again or contact support if the problem persists.';
+            }
+            
+            showErrorModal(errorMessage, suggestion);
+        }
+
+        // Update user counts
+        function updateUserCounts() {
+            const allUsers = document.querySelectorAll('#usersTableBody tr[data-role]').length;
+            const customers = document.querySelectorAll('#usersTableBody tr[data-role="Customer"]').length;
+            const staff = document.querySelectorAll('#usersTableBody tr[data-role="Staff"]').length;
+            
+            // Update stat cards if they exist
+            const totalStat = document.querySelector('.stat-value');
+            const customerStat = document.querySelectorAll('.stat-value')[1];
+            const staffStat = document.querySelectorAll('.stat-value')[2];
+            
+            if (totalStat) totalStat.textContent = allUsers;
+            if (customerStat) customerStat.textContent = customers;
+            if (staffStat) staffStat.textContent = staff;
+        }
     </script>
 {% endblock %}
 

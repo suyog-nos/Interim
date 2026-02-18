@@ -199,7 +199,7 @@
     border: none;
     color: var(--gray-400);
     cursor: pointer;
-    padding: 0.25rem;
+    padding: 0;
     border-radius: 50%;
     transition: all 0.2s ease;
     width: 2rem;
@@ -207,11 +207,35 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: none;
+    box-sizing: border-box;
 }
 
 .toggle-password:hover {
     background-color: var(--gray-100);
     color: var(--gray-600);
+}
+
+/* Chrome-specific fixes for circular button */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .toggle-password {
+        -webkit-border-radius: 50%;
+        border-radius: 50%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        text-align: center;
+        line-height: 2rem;
+    }
+    
+    .toggle-password i {
+        position: static;
+        transform: none;
+        vertical-align: middle;
+        display: inline-block;
+    }
 }
 
 .dark-theme .toggle-password:hover {
@@ -221,6 +245,16 @@
 
 .toggle-password i {
     font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1rem;
+    height: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 
 .toggle-password[aria-pressed="true"] .fa-eye {

@@ -16,7 +16,7 @@ ROLE_RESTRICTED_ENDPOINTS: Dict[str, Set[str]] = {
     'main.pos': {'Staff'},  # Changed to Staff only
     'main.setup_products_table': {'Admin'},
     'main.debug_db': {'Admin'},
-    'main.manage_products': {'Staff', 'Admin'},
+    'main.demand_forecasting': {'Staff', 'Admin'},
     'main.stock': {'Staff', 'Admin'},
     'main.add_product': {'Staff', 'Admin'},
     'main.orders': {'Staff', 'Admin'},

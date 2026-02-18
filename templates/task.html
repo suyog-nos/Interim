@@ -17,21 +17,63 @@
 }
 
 .task-priority {
-    width: 10px;
+    width: 6px;
     height: 100%;
-    border-radius: 4px 0 0 4px;
+    border-radius: 3px 0 0 3px;
 }
 
 .priority-high {
-    background-color: #dc3545;
+    background-color: #ff4757;
 }
 
 .priority-medium {
-    background-color: #ffc107;
+    background-color: #ffa502;
 }
 
 .priority-low {
-    background-color: #198754;
+    background-color: #26de81;
+}
+
+/* Priority border colors for task cards */
+.priority-border-high {
+    border-left: 4px solid #ff4757;
+}
+
+.priority-border-medium {
+    border-left: 4px solid #ffa502;
+}
+
+.priority-border-low {
+    border-left: 4px solid #26de81;
+}
+
+/* Status-based colors for alert cards */
+.alert-status-pending {
+    border-left: 4px solid #ff9f43;
+    background-color: rgba(255, 159, 67, 0.1);
+}
+
+.alert-status-approved {
+    border-left: 4px solid #26de81;
+    background-color: rgba(38, 222, 129, 0.1);
+}
+
+.alert-status-rejected {
+    border-left: 4px solid #ff4757;
+    background-color: rgba(255, 71, 87, 0.1);
+}
+
+/* Status-based transparent background colors */
+.status-bgcompleted {
+    background-color: rgba(38, 222, 129, 0.1); /* Green transparent */
+}
+
+.status-bgpending {
+    background-color: rgba(255, 165, 2, 0.1); /* Yellow/orange transparent */
+}
+
+.status-bginprogress {
+    background-color: rgba(0, 123, 255, 0.1); /* Blue transparent */
 }
 
 .task-due-date {
@@ -64,69 +106,525 @@
 .status-badge {
     font-size: 0.75rem;
 }
+
+.loading-spinner {
+    display: none;
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #6c757d;
+}
+
+.error-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #dc3545;
+}
+
+.dropdown-scrollable {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.staff-option {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 12px;
+}
+
+.staff-option .name {
+    font-weight: 500;
+    color: #333;
+}
+
+.staff-option .email {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 2px;
+}
+
+.modal {
+    z-index: 1050;
+}
+
+.modal-backdrop {
+    z-index: 1040;
+}
+
+.modal-dialog.modal-lg {
+    min-height: 600px;
+}
+
+.modal-content {
+    min-height: 550px;
+}
+
+.modal-body {
+    min-height: 400px;
+    overflow-y: auto;
+}
+
+.dropdown-menu {
+    z-index: 1060;
+}
+
+/* Custom delete confirmation modal */
+.delete-confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.delete-confirm-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.delete-confirm-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    transition: all 0.3s ease;
+}
+
+.delete-confirm-modal.show .delete-confirm-content {
+    transform: scale(1);
+}
+
+.delete-confirm-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: #dc3545;
+}
+
+.delete-confirm-header i {
+    font-size: 2rem;
+    margin-right: 1rem;
+}
+
+.delete-confirm-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.delete-confirm-body {
+    margin-bottom: 1.5rem;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+.delete-confirm-task-title {
+    font-weight: 600;
+    color: #495057;
+}
+
+.delete-confirm-footer {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.delete-confirm-btn {
+    padding: 0.5rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-confirm-btn-cancel {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.delete-confirm-btn-cancel:hover {
+    background: #dee2e6;
+}
+
+.delete-confirm-btn-delete {
+    background: #dc3545;
+    color: white;
+}
+
+.delete-confirm-btn-delete:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+/* Smaller approve/deny buttons for alerts */
+.approve-stock-btn, .deny-stock-btn, .approve-arrival-btn, .deny-arrival-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+.approve-stock-btn i, .deny-stock-btn i, .approve-arrival-btn i, .deny-arrival-btn i {
+    font-size: 0.7rem;
+}
+
+/* Dark mode styles for task page */
+.dark-theme {
+    background-color: var(--dark-bg-1);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .container {
+    color: var(--dark-text-1);
+}
+
+.dark-theme h1, .dark-theme h2, .dark-theme h3, .dark-theme h4, .dark-theme h5, .dark-theme h6 {
+    color: var(--dark-text-1);
+}
+
+.dark-theme .card {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .task-card {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .task-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .card-body {
+    background-color: transparent;
+    color: var(--dark-text-1);
+}
+
+.dark-theme .card-title {
+    color: var(--dark-text-1);
+}
+
+.dark-theme .card-text {
+    color: var(--dark-text-2);
+}
+
+.dark-theme .text-muted {
+    color: var(--dark-text-3) !important;
+}
+
+.dark-theme .task-category {
+    background-color: var(--dark-bg-3);
+    color: var(--dark-text-2);
+}
+
+.dark-theme .badge {
+    background-color: var(--dark-bg-3);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .bg-warning {
+    background-color: #f59e0b !important;
+    color: #1f2937 !important;
+}
+
+.dark-theme .bg-info {
+    background-color: #3b82f6 !important;
+    color: white !important;
+}
+
+.dark-theme .bg-success {
+    background-color: #10b981 !important;
+    color: white !important;
+}
+
+.dark-theme .bg-danger {
+    background-color: #ef4444 !important;
+    color: white !important;
+}
+
+.dark-theme .bg-primary {
+    background-color: #3b82f6 !important;
+    color: white !important;
+}
+
+/* Dark mode for tabs */
+.dark-theme .nav-tabs {
+    border-bottom-color: var(--dark-border);
+}
+
+.dark-theme .nav-tabs .nav-link {
+    color: var(--dark-text-2);
+    border-color: transparent;
+    background-color: transparent;
+}
+
+.dark-theme .nav-tabs .nav-link:hover {
+    color: var(--dark-text-1);
+    border-color: var(--dark-border);
+    background-color: var(--dark-bg-3);
+}
+
+.dark-theme .nav-tabs .nav-link.active {
+    color: var(--dark-text-1);
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    border-bottom-color: var(--dark-bg-2);
+}
+
+.dark-theme .tab-content {
+    background-color: transparent;
+}
+
+.dark-theme .tab-pane {
+    background-color: transparent;
+    color: var(--dark-text-1);
+}
+
+/* Dark mode for forms */
+.dark-theme .form-control {
+    background-color: var(--dark-bg-3);
+    border-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .form-control:focus {
+    background-color: var(--dark-bg-3);
+    border-color: var(--primary-light);
+    color: var(--dark-text-1);
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+}
+
+.dark-theme .form-select {
+    background-color: var(--dark-bg-3);
+    border-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .form-label {
+    color: var(--dark-text-1);
+}
+
+.dark-theme .form-control::placeholder {
+    color: var(--dark-text-3);
+}
+
+/* Dark mode for buttons */
+.dark-theme .btn-outline-secondary {
+    background-color: var(--dark-bg-3);
+    border-color: var(--dark-border);
+    color: var(--dark-text-2);
+}
+
+.dark-theme .btn-outline-secondary:hover {
+    background-color: var(--dark-bg-4);
+    border-color: var(--primary-light);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.dark-theme .btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.dark-theme .btn-secondary {
+    background-color: var(--dark-bg-3);
+    border-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .btn-secondary:hover {
+    background-color: var(--dark-bg-4);
+    color: var(--dark-text-1);
+}
+
+/* Dark mode for modals */
+.dark-theme .modal-content {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .modal-header {
+    background-color: var(--dark-bg-2);
+    border-bottom-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .modal-footer {
+    background-color: var(--dark-bg-2);
+    border-top-color: var(--dark-border);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .modal-title {
+    color: var(--dark-text-1);
+}
+
+.dark-theme .btn-close {
+    filter: invert(1) brightness(0.8);
+}
+
+/* Dark mode for dropdowns */
+.dark-theme .dropdown-menu {
+    background-color: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .dropdown-item {
+    color: var(--dark-text-2);
+    background-color: transparent;
+}
+
+.dark-theme .dropdown-item:hover {
+    background-color: var(--dark-bg-3);
+    color: var(--dark-text-1);
+}
+
+/* Dark mode for alerts status */
+.dark-theme .alert-status-pending {
+    background-color: rgba(245, 158, 11, 0.1);
+    border-left-color: #f59e0b;
+}
+
+.dark-theme .alert-status-approved {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-left-color: #10b981;
+}
+
+.dark-theme .alert-status-rejected {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-left-color: #ef4444;
+}
+
+/* Dark mode for status backgrounds */
+.dark-theme .status-bgcompleted {
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+.dark-theme .status-bgpending {
+    background-color: rgba(245, 158, 11, 0.1);
+}
+
+.dark-theme .status-bginprogress {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Dark mode for custom delete modal */
+.dark-theme .delete-confirm-content {
+    background-color: var(--dark-bg-2);
+    color: var(--dark-text-1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .delete-confirm-header {
+    color: #ef4444;
+}
+
+.dark-theme .delete-confirm-body {
+    color: var(--dark-text-2);
+}
+
+.dark-theme .delete-confirm-task-title {
+    color: var(--dark-text-1);
+}
+
+.dark-theme .delete-confirm-btn-cancel {
+    background: var(--dark-bg-3);
+    color: var(--dark-text-2);
+}
+
+.dark-theme .delete-confirm-btn-cancel:hover {
+    background: var(--dark-bg-4);
+    color: var(--dark-text-1);
+}
+
+.dark-theme .delete-confirm-btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.dark-theme .delete-confirm-btn-delete:hover {
+    background: #dc2626;
+}
+
+/* Dark mode for empty states */
+.dark-theme .empty-state {
+    color: var(--dark-text-2);
+}
+
+.dark-theme .empty-state i {
+    color: var(--dark-text-3);
+}
+
+.dark-theme .empty-state h5 {
+    color: var(--dark-text-2);
+}
+
+.dark-theme .error-state {
+    color: #ef4444;
+}
+
+/* Dark mode for loading spinner */
+.dark-theme .loading-spinner {
+    border: 5px solid var(--dark-bg-3);
+    border-top: 5px solid var(--primary-light);
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">My Tasks</h1>
-        <div class="text-muted">
-            <i class="fas fa-user me-2"></i>Staff Dashboard
-        </div>
+        <h1 class="h3 mb-0">Tasks</h1>
+        {% if session.role == 'Admin' %}
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            <i class="fas fa-plus me-2"></i>Add Task
+        </button>
+        {% endif %}
     </div>
 
-    <!-- Task Summary -->
-    <div class="row mb-4">
-        <div class="col-md-2">
-            <div class="card bg-danger text-white">
-                <div class="card-body text-center">
-                    <h4 class="mb-0" id="alertCount">4</h4>
-                    <small>Alerts</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h4 class="mb-0" id="totalTasks">2</h4>
-                    <small>Total Tasks</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card bg-warning text-dark">
-                <div class="card-body text-center">
-                    <h4 class="mb-0" id="pendingTasks">2</h4>
-                    <small>Pending</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <h4 class="mb-0" id="progressTasks">1</h4>
-                    <small>In Progress</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h4 class="mb-0" id="completedTasks">1</h4>
-                    <small>Completed</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card bg-secondary text-white">
-                <div class="card-body text-center">
-                    <h4 class="mb-0" id="historyCount">0</h4>
-                    <small>History</small>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner mb-4" style="display: none;"></div>
 
     <!-- Task Filters -->
     <div class="card mb-4">
@@ -139,14 +637,8 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
-                        <i class="fas fa-history me-2"></i>Task History
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
                     <button class="nav-link position-relative" id="alerts-tab" data-bs-toggle="tab" data-bs-target="#alerts" type="button" role="tab">
                         <i class="fas fa-exclamation-triangle me-2"></i>Alerts
-                        <span class="badge bg-danger rounded-pill ms-1" id="alertCount" style="display: none;">0</span>
                     </button>
                 </li>
             </ul>
@@ -181,66 +673,250 @@
                         </div>
                     </div>
                     <div class="row" id="taskList">
-                        <!-- Current tasks will be dynamically inserted here -->
-                    </div>
-                </div>
-
-                <!-- Task History Tab -->
-                <div class="tab-pane fade" id="history" role="tabpanel">
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Search History</label>
-                            <input type="text" class="form-control" id="historySearch" placeholder="Search completed tasks...">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Date Range</label>
-                            <select class="form-select" id="dateRange">
-                                <option value="7">Last 7 days</option>
-                                <option value="30">Last 30 days</option>
-                                <option value="90">Last 3 months</option>
-                                <option value="all">All time</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button class="btn btn-outline-primary w-100" id="applyHistoryFilter">
-                                <i class="fas fa-filter me-2"></i>Apply
-                            </button>
-                        </div>
-                    </div>
-                    <div class="row" id="historyList">
-                        <!-- Task history will be dynamically inserted here -->
+                        {% if tasks %}
+                            {% for task in tasks %}
+                                {% set priority_class = 'priority-'+task.priority %}
+                                {% set status_class = 'status-bg' + task.status.replace('-', '') %}
+                                <div class="col-md-6 col-lg-4 mb-4" data-task-id="{{ task.task_id }}">
+                                    <div class="card h-100 task-card {{ priority_class }} {{ status_class }}">
+                                        <div class="d-flex h-100">
+                                            <div class="task-priority priority-{{ task.priority }}"></div>
+                                            <div class="card-body d-flex flex-column">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <h5 class="card-title mb-1 task-title">{{ task.title }}</h5>
+                                                    {% if session.role == 'Admin' %}
+                                                    <div class="btn-group" role="group">
+                                                        <button class="btn btn-sm btn-outline-primary edit-task-btn" data-task-id="{{ task.task_id }}">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-danger delete-task-btn" data-task-id="{{ task.task_id }}" data-task-title="{{ task.title }}">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                {% if task.description %}
+                                                <p class="card-text text-muted small mb-2">
+                                                    {{ task.description[:80] }}{% if task.description|length > 80 %}...{% endif %}
+                                                </p>
+                                                {% endif %}
+                                                <div class="mt-auto pt-2">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <div>
+                                                            {% if task.category %}
+                                                            <span class="task-category me-2">{{ task.category }}</span>
+                                                            {% endif %}
+                                                            <span class="badge {{ 'bg-warning' if task.status == 'pending' else 'bg-info' if task.status == 'in-progress' else 'bg-success' }} status-badge">
+                                                                {{ task.status.replace('-', ' ').title() }}
+                                                            </span>
+                                                            <span class="badge {{ 'bg-danger' if task.priority == 'high' else 'bg-warning' if task.priority == 'medium' else 'bg-success' }} priority-badge ms-1">
+                                                                {{ task.priority.title() }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <small class="text-muted task-due-date">
+                                                            <i class="far fa-calendar-alt me-1"></i>{{ task.due_date.strftime('%b %d, %Y') if task.due_date else 'No due date' }}
+                                                        </small>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-user-tie me-1"></i>{{ task.assigned_to_name }}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12">
+                                <div class="empty-state">
+                                    <i class="fas fa-tasks fa-3x mb-3 text-muted"></i>
+                                    <h5 class="text-muted">No tasks available</h5>
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
 
                 <!-- Alerts Tab -->
                 <div class="tab-pane fade" id="alerts" role="tabpanel">
                     <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Alert Type</label>
-                            <select class="form-select" id="alertTypeFilter">
+                        <div class="col-md-6">
+                            <label class="form-label">Filter by Status</label>
+                            <select class="form-select" id="alertStatusFilter">
                                 <option value="all">All Alerts</option>
-                                <option value="restock">Restock Needed</option>
-                                <option value="out-of-stock">Out of Stock</option>
-                                <option value="low-stock">Low Stock</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Priority</label>
-                            <select class="form-select" id="alertPriorityFilter">
-                                <option value="all">All Priorities</option>
-                                <option value="high">High</option>
-                                <option value="medium">Medium</option>
-                                <option value="low">Low</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button class="btn btn-danger w-100" id="clearAllAlerts">
-                                <i class="fas fa-trash me-2"></i>Clear All Alerts
-                            </button>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="dropdown w-100">
+                                <button class="btn btn-outline-primary w-100 dropdown-toggle" type="button" id="alertTypeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-filter me-2"></i>Quick Filter
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="alertTypeDropdown">
+                                    <li><a class="dropdown-item" href="#" id="showArrivalAlerts">
+                                        <i class="fas fa-truck me-2 text-primary"></i>New Arrival Alerts
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" id="showStockRequests">
+                                        <i class="fas fa-box me-2 text-success"></i>Stock Requests
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" id="showAllAlerts">
+                                        <i class="fas fa-list me-2 text-info"></i>Show All Alerts
+                                    </a></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                     <div class="row" id="alertList">
-                        <!-- Alerts will be dynamically inserted here -->
+                        {% set has_arrival_alerts = arrival_alerts and arrival_alerts|length > 0 %}
+                        {% set has_stock_alerts = stock_alerts and stock_alerts|length > 0 %}
+                        {% if has_arrival_alerts %}
+                            <div class="col-12">
+                                <h5 class="fw-semibold mb-3">New Arrival Alerts</h5>
+                            </div>
+                            {% for alert in arrival_alerts %}
+                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100 alert-status-{{ alert.status.lower() }}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h5 class="card-title mb-1">{{ alert.product_name }}</h5>
+                                                    <p class="text-muted small mb-0">
+                                                        Received by {{ alert.staff_name }}{% if alert.supplier_name %} · {{ alert.supplier_name }}{% endif %}
+                                                    </p>
+                                                </div>
+                                                {% if session.role == 'Admin' %}
+                                                <button class="btn btn-sm btn-outline-danger delete-alert-btn" 
+                                                        data-alert-id="{{ alert.arrival_id }}" 
+                                                        data-alert-type="arrival"
+                                                        data-product-name="{{ alert.product_name }}"
+                                                        title="Delete Alert">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                            <p class="small text-muted mb-2">{{ alert.staff_notes or 'No notes provided' }}</p>
+                                            {% if session.role == 'Admin' and alert.status == 'Pending' %}
+                                            <div class="d-flex gap-2 mb-2">
+                                                <button class="btn btn-sm btn-success approve-arrival-btn" 
+                                                        data-arrival-id="{{ alert.arrival_id }}" 
+                                                        data-product-name="{{ alert.product_name }}">
+                                                    <i class="fas fa-check me-1"></i>Approve
+                                                </button>
+                                                <button class="btn btn-sm btn-danger deny-arrival-btn" 
+                                                        data-arrival-id="{{ alert.arrival_id }}" 
+                                                        data-product-name="{{ alert.product_name }}">
+                                                    <i class="fas fa-times me-1"></i>Deny
+                                                </button>
+                                            </div>
+                                            {% endif %}
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-layer-group me-1"></i>Qty: {{ alert.quantity_received }}
+                                                </small>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    {% if alert.status != 'Pending' %}
+                                                    <span class="badge {{ 'bg-success' if alert.status == 'Approved' else 'bg-danger' }}">
+                                                        {{ alert.status }}
+                                                    </span>
+                                                    {% endif %}
+                                                    <small class="text-muted">
+                                                        <i class="far fa-clock me-1"></i>{{ alert.created_at.strftime('%b %d, %Y') if alert.created_at else '' }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if has_stock_alerts %}
+                            <div class="col-12 pt-2">
+                                <h5 class="fw-semibold mb-3">Stock Requests</h5>
+                            </div>
+                            {% for alert in stock_alerts %}
+                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100 alert-status-{{ alert.status.lower() }}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h5 class="card-title mb-1">{{ alert.product_name }}</h5>
+                                                    <p class="text-muted small mb-0">Requested by {{ alert.staff_name }}</p>
+                                                </div>
+                                                {% if session.role == 'Admin' %}
+                                                <button class="btn btn-sm btn-outline-danger delete-alert-btn" 
+                                                        data-alert-id="{{ alert.request_id }}" 
+                                                        data-alert-type="stock"
+                                                        data-product-name="{{ alert.product_name }}"
+                                                        title="Delete Alert">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                            <p class="small text-muted mb-2">{{ alert.reason or 'No details provided' }}</p>
+                                            {% if session.role == 'Admin' and alert.status == 'Pending' %}
+                                            <div class="d-flex gap-2 mb-2">
+                                                <button class="btn btn-sm btn-success approve-stock-btn" 
+                                                        data-request-id="{{ alert.request_id }}" 
+                                                        data-product-name="{{ alert.product_name }}">
+                                                    <i class="fas fa-check me-1"></i>Approve
+                                                </button>
+                                                <button class="btn btn-sm btn-danger deny-stock-btn" 
+                                                        data-request-id="{{ alert.request_id }}" 
+                                                        data-product-name="{{ alert.product_name }}">
+                                                    <i class="fas fa-times me-1"></i>Deny
+                                                </button>
+                                            </div>
+                                            {% endif %}
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-layer-group me-1"></i>Requested: {{ alert.requested_quantity }}
+                                                </small>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    {% if alert.status != 'Pending' %}
+                                                    <span class="badge {{ 'bg-success' if alert.status == 'Approved' else 'bg-danger' }}">
+                                                        {{ alert.status }}
+                                                    </span>
+                                                    {% endif %}
+                                                    <small class="text-muted">
+                                                        <i class="far fa-clock me-1"></i>{{ alert.created_at.strftime('%b %d, %Y') if alert.created_at else '' }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if not has_arrival_alerts and not has_stock_alerts %}
+                            <div class="col-12" id="noAlertsMessage" style="display: none;">
+                                <div class="empty-state">
+                                    <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                                    <h5 class="text-muted">No alerts found</h5>
+                                    <p class="text-muted small">Try adjusting your filters</p>
+                                </div>
+                            </div>
+                            <div class="col-12" id="noAlertsAtAll">
+                                <div class="empty-state">
+                                    <i class="fas fa-bell-slash fa-3x mb-3 text-muted"></i>
+                                    <h5 class="text-muted">No alerts right now</h5>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12" id="noAlertsMessage" style="display: none;">
+                                <div class="empty-state">
+                                    <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                                    <h5 class="text-muted">No alerts found</h5>
+                                    <p class="text-muted small">Try adjusting your filters</p>
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -289,9 +965,285 @@
                     <strong>Assigned By:</strong>
                     <p id="detailAssignedBy" class="mb-2"></p>
                 </div>
+                <div class="mb-3">
+                    <strong>Assigned Date:</strong>
+                    <p id="detailAssignedDate" class="mb-2"></p>
+                </div>
+                <div id="taskNotesSection" style="display: none;">
+                    <strong>Notes:</strong>
+                    <p id="detailNotes" class="mb-2"></p>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="updateTaskStatusBtn" style="display: none;">
+                    Update Status
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Delete Confirmation Modal -->
+<div class="delete-confirm-modal" id="deleteConfirmModal">
+    <div class="delete-confirm-content">
+        <div class="delete-confirm-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h5 class="delete-confirm-title">Delete Task</h5>
+        </div>
+        <div class="delete-confirm-body">
+            Are you sure you want to delete the task "<span class="delete-confirm-task-title" id="deleteTaskTitle"></span>"? This action cannot be undone.
+        </div>
+        <div class="delete-confirm-footer">
+            <button class="delete-confirm-btn delete-confirm-btn-cancel" id="deleteCancelBtn">
+                Cancel
+            </button>
+            <button class="delete-confirm-btn delete-confirm-btn-delete" id="deleteConfirmBtn">
+                <i class="fas fa-trash me-1"></i> Delete Task
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Delete Confirmation Modal -->
+<div class="delete-confirm-modal" id="alertDeleteConfirmModal">
+    <div class="delete-confirm-content">
+        <div class="delete-confirm-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h5 class="delete-confirm-title">Delete Alert</h5>
+        </div>
+        <div class="delete-confirm-body">
+            Are you sure you want to delete the alert for "<span class="delete-confirm-task-title" id="deleteAlertProductName"></span>"? This action cannot be undone.
+        </div>
+        <div class="delete-confirm-footer">
+            <button class="delete-confirm-btn delete-confirm-btn-cancel" id="alertDeleteCancelBtn">
+                Cancel
+            </button>
+            <button class="delete-confirm-btn delete-confirm-btn-delete" id="alertDeleteConfirmBtn">
+                <i class="fas fa-trash me-1"></i> Delete Alert
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Add New Task
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addTaskForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="taskTitle" class="form-label">Task Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="taskTitle" name="title" required maxlength="255" placeholder="Enter task title...">
+                                <div class="invalid-feedback">
+                                    Task title is required (minimum 3 characters).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="taskCategory" class="form-label">Category</label>
+                                <input type="text" class="form-control" id="taskCategory" name="category" maxlength="100" placeholder="General">
+                                <div class="invalid-feedback">
+                                    Category must be less than 100 characters.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="taskDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="taskDescription" name="description" maxlength="500" placeholder="Enter brief description...">
+                        <div class="invalid-feedback">
+                            Description must be less than 500 characters.
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="taskPriority" class="form-label">Priority</label>
+                                <select class="form-select" id="taskPriority" name="priority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="taskDueDate" class="form-label">Due Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="taskDueDate" name="due_date" required>
+                                <div class="invalid-feedback">
+                                    Due date must be today or a future date.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="taskAssignedTo" class="form-label">Assigned To <span class="text-danger">*</span></label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control" id="taskAssignedTo" name="assigned_to_display" required placeholder="Search staff member..." autocomplete="off">
+                                    <input type="hidden" id="taskAssignedToValue" name="assigned_to" required>
+                                    <div id="staffDropdown" class="position-absolute w-100 bg-white border border-top-0 rounded-bottom" style="max-height: 200px; overflow-y: auto; z-index: 1050; display: none;">
+                                        <!-- Staff options will be populated dynamically -->
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Please select a staff member to assign this task.
+                                </div>
+                                <script type="application/json" id="staffMembersData">
+                                    {{ staff_members|tojson|safe }}
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Create Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Inline Edit Task Modal -->
+<div class="modal fade" id="inlineEditTaskModal" tabindex="-1" aria-labelledby="inlineEditTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inlineEditTaskModalLabel">Edit Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editTaskId">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editTaskTitle" class="form-label">Task Title</label>
+                            <input type="text" class="form-control" id="editTaskTitle" placeholder="Enter task title..." required>
+                            <div class="invalid-feedback">
+                                Task title is required (minimum 3 characters).
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editTaskCategory" class="form-label">Category</label>
+                            <input type="text" class="form-control" id="editTaskCategory" placeholder="Enter category...">
+                            <div class="invalid-feedback">
+                                Category must be less than 100 characters.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="editTaskDescription" class="form-label">Description</label>
+                    <input type="text" class="form-control" id="editTaskDescription" maxlength="500" placeholder="Enter brief description...">
+                    <div class="invalid-feedback">
+                        Description must be less than 500 characters.
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editTaskPriority" class="form-label">Priority</label>
+                            <select class="form-select" id="editTaskPriority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editTaskStatus" class="form-label">Status</label>
+                            <select class="form-select" id="editTaskStatus">
+                                <option value="pending">Pending</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editTaskDueDate" class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="editTaskDueDate">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editTaskAssignedTo" class="form-label">Assigned To <span class="text-danger">*</span></label>
+                            <div class="position-relative">
+                                <input type="text" class="form-control" id="editTaskAssignedTo" name="edit_assigned_to_display" required placeholder="Search staff member..." autocomplete="off">
+                                <input type="hidden" id="editTaskAssignedToValue" name="edit_assigned_to" required>
+                                <div id="editStaffDropdown" class="position-absolute w-100 bg-white border border-top-0 rounded-bottom" style="max-height: 200px; overflow-y: auto; z-index: 1050; display: none;">
+                                    <!-- Staff options will be populated dynamically -->
+                                </div>
+                            </div>
+                            <div class="invalid-feedback">
+                                Please select a staff member to assign this task.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveInlineEditBtn">
+                    <i class="fas fa-save me-1"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Task Modal -->
+<div class="modal fade" id="updateTaskModal" tabindex="-1" aria-labelledby="updateTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateTaskModalLabel">Update Task Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="updateTaskId">
+                <div class="mb-3">
+                    <label for="updateStatus" class="form-label">Status</label>
+                    <select class="form-select" id="updateStatus">
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="updateNotes" class="form-label">Notes (Optional)</label>
+                    <textarea class="form-control" id="updateNotes" rows="3" placeholder="Add any notes or comments..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveTaskUpdateBtn">
+                    <i class="fas fa-save me-1"></i> Save Changes
+                </button>
             </div>
         </div>
     </div>
@@ -301,263 +1253,1674 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Sample tasks data assigned to this staff member
-    let tasks = [
-        {
-            id: 1,
-            title: 'Complete inventory count',
-            description: 'Count all items in the stationery section and update the inventory system',
-            dueDate: '2024-01-15',
-            priority: 'high',
-            status: 'pending',
-            category: 'Inventory',
-            assignedBy: 'Admin User',
-            assignedDate: '2024-01-05'
-        },
-        {
-            id: 2,
-            title: 'Restock printer paper',
-            description: 'Check printer paper levels and restock if needed',
-            dueDate: '2024-01-10',
-            priority: 'medium',
-            status: 'in-progress',
-            category: 'Restocking',
-            assignedBy: 'Manager Smith',
-            assignedDate: '2024-01-03'
-        },
-        {
-            id: 3,
-            title: 'Organize pen display',
-            description: 'Arrange pen display by type and color',
-            dueDate: '2024-01-08',
-            priority: 'low',
-            status: 'completed',
-            category: 'Merchandising',
-            assignedBy: 'Admin User',
-            assignedDate: '2024-01-02'
-        },
-        {
-            id: 4,
-            title: 'Update price tags',
-            description: 'Replace old price tags with new ones for items on sale',
-            dueDate: '2024-01-12',
-            priority: 'medium',
-            status: 'pending',
-            category: 'Pricing',
-            assignedBy: 'Manager Smith',
-            assignedDate: '2024-01-04'
-        }
-    ];
-
-    // DOM Elements
-    const taskList = document.getElementById('taskList');
-    const statusFilter = document.getElementById('statusFilter');
-    const priorityFilter = document.getElementById('priorityFilter');
-    const resetFiltersBtn = document.getElementById('resetFilters');
-    const taskDetailsModal = new bootstrap.Modal(document.getElementById('taskDetailsModal'));
-
-    // Initialize the task list
-    function renderTasks() {
-        const status = statusFilter.value;
-        const priority = priorityFilter.value;
+    console.log('Task page loaded, initializing edit functionality...');
+    
+    // Tab persistence functionality
+    function initializeTabPersistence() {
+        // Get the tab elements
+        const currentTab = document.getElementById('current-tab');
+        const alertsTab = document.getElementById('alerts-tab');
+        const currentPane = document.getElementById('current');
+        const alertsPane = document.getElementById('alerts');
         
-        const filteredTasks = tasks.filter(task => {
-            const statusMatch = status === 'all' || task.status === status;
-            const priorityMatch = priority === 'all' || task.priority === priority;
-            return statusMatch && priorityMatch;
-        });
-
-        updateTaskSummary();
-        taskList.innerHTML = '';
-
-        if (filteredTasks.length === 0) {
-            taskList.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="fas fa-tasks fa-3x mb-3 text-muted"></i>
-                    <h5 class="text-muted">No tasks found</h5>
-                    <p class="text-muted">Try adjusting your filters</p>
-                </div>
-            `;
+        if (!currentTab || !alertsTab || !currentPane || !alertsPane) {
+            console.log('Tab elements not found');
             return;
         }
-
-        filteredTasks.forEach(task => {
-            const taskElement = createTaskElement(task);
-            taskList.appendChild(taskElement);
+        
+        // Function to save active tab to localStorage
+        function saveActiveTab(tabId) {
+            localStorage.setItem('activeTaskTab', tabId);
+        }
+        
+        // Function to restore active tab from localStorage
+        function restoreActiveTab() {
+            const savedTab = localStorage.getItem('activeTaskTab');
+            if (savedTab === 'alerts') {
+                // Switch to alerts tab
+                currentTab.classList.remove('active');
+                alertsTab.classList.add('active');
+                currentPane.classList.remove('show', 'active');
+                alertsPane.classList.add('show', 'active');
+            }
+        }
+        
+        // Add click event listeners to tabs
+        currentTab.addEventListener('click', function() {
+            saveActiveTab('current');
+        });
+        
+        alertsTab.addEventListener('click', function() {
+            saveActiveTab('alerts');
+        });
+        
+        // Restore the active tab on page load
+        restoreActiveTab();
+    }
+    
+    // Initialize tab persistence
+    initializeTabPersistence();
+    
+    // Initialize searchable staff dropdown
+    function initializeStaffSearch() {
+        const searchInput = document.getElementById('taskAssignedTo');
+        const hiddenInput = document.getElementById('taskAssignedToValue');
+        const dropdown = document.getElementById('staffDropdown');
+        const staffDataElement = document.getElementById('staffMembersData');
+        
+        if (!searchInput || !hiddenInput || !dropdown || !staffDataElement) return;
+        
+        let staffMembers = [];
+        
+        // Parse staff data
+        try {
+            staffMembers = JSON.parse(staffDataElement.textContent);
+        } catch (error) {
+            console.error('Error parsing staff members data:', error);
+            return;
+        }
+        
+        // Function to render dropdown options
+        function renderDropdown(filteredStaff) {
+            dropdown.innerHTML = '';
+            
+            if (filteredStaff.length === 0) {
+                dropdown.innerHTML = '<div class="p-2 text-muted">No staff members found</div>';
+                return;
+            }
+            
+            filteredStaff.forEach(staff => {
+                const option = document.createElement('div');
+                option.className = 'p-2 border-bottom cursor-pointer hover-bg-light';
+                option.style.cursor = 'pointer';
+                option.innerHTML = `
+                    <div class="fw-semibold">${staff.full_name}</div>
+                    <div class="small text-muted">${staff.email}</div>
+                `;
+                
+                option.addEventListener('click', function() {
+                    searchInput.value = staff.full_name;
+                    hiddenInput.value = staff.user_id;
+                    dropdown.style.display = 'none';
+                    searchInput.classList.remove('is-invalid');
+                    searchInput.classList.add('is-valid');
+                });
+                
+                option.addEventListener('mouseenter', function() {
+                    this.classList.add('bg-light');
+                });
+                
+                option.addEventListener('mouseleave', function() {
+                    this.classList.remove('bg-light');
+                });
+                
+                dropdown.appendChild(option);
+            });
+        }
+        
+        // Show dropdown when input is focused
+        searchInput.addEventListener('focus', function() {
+            const query = this.value.toLowerCase().trim();
+            const filteredStaff = query ? 
+                staffMembers.filter(staff => 
+                    staff.full_name.toLowerCase().includes(query) || 
+                    staff.email.toLowerCase().includes(query)
+                ) : staffMembers;
+            
+            renderDropdown(filteredStaff);
+            dropdown.style.display = 'block';
+        });
+        
+        // Filter dropdown on input
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            
+            if (query === '') {
+                hiddenInput.value = '';
+                this.classList.remove('is-valid', 'is-invalid');
+            }
+            
+            const filteredStaff = staffMembers.filter(staff => 
+                staff.full_name.toLowerCase().includes(query) || 
+                staff.email.toLowerCase().includes(query)
+            );
+            
+            renderDropdown(filteredStaff);
+            dropdown.style.display = 'block';
+        });
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+        
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            const options = dropdown.querySelectorAll('div[style*="cursor: pointer"]');
+            let currentIndex = -1;
+            
+            // Find current selected index
+            options.forEach((option, index) => {
+                if (option.classList.contains('bg-light')) {
+                    currentIndex = index;
+                }
+            });
+            
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (currentIndex < options.length - 1) {
+                        if (currentIndex >= 0) options[currentIndex].classList.remove('bg-light');
+                        options[currentIndex + 1].classList.add('bg-light');
+                        options[currentIndex + 1].scrollIntoView({ block: 'nearest' });
+                    }
+                    break;
+                    
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (currentIndex > 0) {
+                        options[currentIndex].classList.remove('bg-light');
+                        options[currentIndex - 1].classList.add('bg-light');
+                        options[currentIndex - 1].scrollIntoView({ block: 'nearest' });
+                    }
+                    break;
+                    
+                case 'Enter':
+                    e.preventDefault();
+                    if (currentIndex >= 0 && options[currentIndex]) {
+                        options[currentIndex].click();
+                    }
+                    break;
+                    
+                case 'Escape':
+                    dropdown.style.display = 'none';
+                    break;
+            }
+        });
+        
+        // Initial render
+        renderDropdown(staffMembers);
+    }
+    
+    // Initialize staff search for add modal
+    initializeStaffSearch();
+    
+    // Initialize staff search for edit modal
+    function initializeEditStaffSearch() {
+        const searchInput = document.getElementById('editTaskAssignedTo');
+        const hiddenInput = document.getElementById('editTaskAssignedToValue');
+        const dropdown = document.getElementById('editStaffDropdown');
+        const staffDataElement = document.getElementById('staffMembersData');
+        
+        if (!searchInput || !hiddenInput || !dropdown || !staffDataElement) return;
+        
+        let staffMembers = [];
+        
+        // Parse staff data
+        try {
+            staffMembers = JSON.parse(staffDataElement.textContent);
+        } catch (error) {
+            console.error('Error parsing staff members data:', error);
+            return;
+        }
+        
+        // Function to render dropdown options
+        function renderDropdown(filteredStaff) {
+            dropdown.innerHTML = '';
+            
+            if (filteredStaff.length === 0) {
+                dropdown.innerHTML = '<div class="p-2 text-muted">No staff members found</div>';
+                return;
+            }
+            
+            filteredStaff.forEach(staff => {
+                const option = document.createElement('div');
+                option.className = 'p-2 border-bottom cursor-pointer hover-bg-light';
+                option.style.cursor = 'pointer';
+                option.innerHTML = `
+                    <div class="fw-semibold">${staff.full_name}</div>
+                    <div class="small text-muted">${staff.email}</div>
+                `;
+                
+                option.addEventListener('click', function() {
+                    searchInput.value = staff.full_name;
+                    hiddenInput.value = staff.user_id;
+                    dropdown.style.display = 'none';
+                    searchInput.classList.remove('is-invalid');
+                    searchInput.classList.add('is-valid');
+                });
+                
+                option.addEventListener('mouseenter', function() {
+                    this.classList.add('bg-light');
+                });
+                
+                option.addEventListener('mouseleave', function() {
+                    this.classList.remove('bg-light');
+                });
+                
+                dropdown.appendChild(option);
+            });
+        }
+        
+        // Show dropdown when input is focused
+        searchInput.addEventListener('focus', function() {
+            const query = this.value.toLowerCase().trim();
+            const filteredStaff = query ? 
+                staffMembers.filter(staff => 
+                    staff.full_name.toLowerCase().includes(query) || 
+                    staff.email.toLowerCase().includes(query)
+                ) : staffMembers;
+            
+            renderDropdown(filteredStaff);
+            dropdown.style.display = 'block';
+        });
+        
+        // Filter dropdown on input
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            
+            if (query === '') {
+                hiddenInput.value = '';
+                this.classList.remove('is-valid', 'is-invalid');
+            }
+            
+            const filteredStaff = staffMembers.filter(staff => 
+                staff.full_name.toLowerCase().includes(query) || 
+                staff.email.toLowerCase().includes(query)
+            );
+            
+            renderDropdown(filteredStaff);
+            dropdown.style.display = 'block';
+        });
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+        
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            const options = dropdown.querySelectorAll('div[style*="cursor: pointer"]');
+            let currentIndex = -1;
+            
+            // Find current selected index
+            options.forEach((option, index) => {
+                if (option.classList.contains('bg-light')) {
+                    currentIndex = index;
+                }
+            });
+            
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (currentIndex < options.length - 1) {
+                        if (currentIndex >= 0) options[currentIndex].classList.remove('bg-light');
+                        options[currentIndex + 1].classList.add('bg-light');
+                        options[currentIndex + 1].scrollIntoView({ block: 'nearest' });
+                    }
+                    break;
+                    
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (currentIndex > 0) {
+                        options[currentIndex].classList.remove('bg-light');
+                        options[currentIndex - 1].classList.add('bg-light');
+                        options[currentIndex - 1].scrollIntoView({ block: 'nearest' });
+                    }
+                    break;
+                    
+                case 'Enter':
+                    e.preventDefault();
+                    if (currentIndex >= 0 && options[currentIndex]) {
+                        options[currentIndex].click();
+                    }
+                    break;
+                    
+                case 'Escape':
+                    dropdown.style.display = 'none';
+                    break;
+            }
+        });
+        
+        // Initial render
+        renderDropdown(staffMembers);
+    }
+    
+    // Initialize edit staff search
+    initializeEditStaffSearch();
+    
+    // Validate Add Task form fields
+    function validateAddTaskForm() {
+        let isValid = true;
+        let firstInvalidField = null;
+        
+        // Clear previous validation states
+        const formFields = ['taskTitle', 'taskDueDate', 'taskAssignedTo'];
+        formFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.classList.remove('is-invalid', 'is-valid');
+            }
+        });
+        
+        // Validate Task Title (required)
+        const titleField = document.getElementById('taskTitle');
+        const titleValue = titleField ? titleField.value.trim() : '';
+        if (!titleValue) {
+            titleField.classList.add('is-invalid');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = titleField;
+        } else if (titleValue.length < 3) {
+            titleField.classList.add('is-invalid');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = titleField;
+        } else {
+            titleField.classList.add('is-valid');
+        }
+        
+        // Validate Due Date (required)
+        const dueDateField = document.getElementById('taskDueDate');
+        const dueDateValue = dueDateField ? dueDateField.value : '';
+        if (!dueDateValue) {
+            dueDateField.classList.add('is-invalid');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = dueDateField;
+        } else if (!validateDueDate(dueDateField)) {
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = dueDateField;
+        }
+        
+        // Validate Assigned To (required) - check hidden input value
+        const assignedToField = document.getElementById('taskAssignedTo');
+        const assignedToValue = document.getElementById('taskAssignedToValue').value;
+        if (!assignedToValue) {
+            assignedToField.classList.add('is-invalid');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = assignedToField;
+        } else {
+            assignedToField.classList.add('is-valid');
+        }
+        
+        // Focus first invalid field
+        if (firstInvalidField) {
+            firstInvalidField.focus();
+        }
+        
+        return isValid;
+    }
+    
+    // Add real-time validation for all fields
+    function setupRealTimeValidation() {
+        // Title validation
+        const titleField = document.getElementById('taskTitle');
+        if (titleField) {
+            titleField.addEventListener('input', function() {
+                const value = this.value.trim();
+                if (value.length >= 3) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else if (value.length > 0) {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                } else {
+                    this.classList.remove('is-invalid', 'is-valid');
+                }
+            });
+        }
+        
+        // Assigned To validation
+        const assignedToField = document.getElementById('taskAssignedTo');
+        if (assignedToField) {
+            assignedToField.addEventListener('input', function() {
+                const hiddenValue = document.getElementById('taskAssignedToValue').value;
+                if (hiddenValue) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    // Don't add is-invalid here as user might still be typing
+                }
+            });
+        }
+        
+        // Description validation (optional but with max length)
+        const descField = document.getElementById('taskDescription');
+        if (descField) {
+            descField.addEventListener('input', function() {
+                const value = this.value.trim();
+                if (value.length > 500) {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                } else if (value.length > 0) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-invalid', 'is-valid');
+                }
+            });
+        }
+        
+        // Category validation (optional but with max length)
+        const categoryField = document.getElementById('taskCategory');
+        if (categoryField) {
+            categoryField.addEventListener('input', function() {
+                const value = this.value.trim();
+                if (value.length > 100) {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                } else if (value.length > 0) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-invalid', 'is-valid');
+                }
+            });
+        }
+    }
+    
+    // Initialize real-time validation
+    setupRealTimeValidation();
+    
+    // Set minimum date for due date inputs (today onwards)
+    function setMinDateForDueDate() {
+        const today = new Date().toISOString().split('T')[0];
+        const addTaskDueDate = document.getElementById('taskDueDate');
+        const editTaskDueDate = document.getElementById('editTaskDueDate');
+        
+        if (addTaskDueDate) {
+            addTaskDueDate.min = today;
+        }
+        if (editTaskDueDate) {
+            editTaskDueDate.min = today;
+        }
+    }
+    
+    // Initialize minimum dates
+    setMinDateForDueDate();
+    
+    // Validate due date on form submission
+    function validateDueDate(dueDateInput) {
+        const selectedDate = new Date(dueDateInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to beginning of day
+        
+        if (selectedDate < today) {
+            dueDateInput.classList.add('is-invalid');
+            dueDateInput.classList.remove('is-valid');
+            return false;
+        } else {
+            dueDateInput.classList.remove('is-invalid');
+            dueDateInput.classList.add('is-valid');
+            return true;
+        }
+    }
+    
+    // Add real-time validation for due date inputs
+    const taskDueDateInput = document.getElementById('taskDueDate');
+    if (taskDueDateInput) {
+        taskDueDateInput.addEventListener('change', function() {
+            validateDueDate(this);
         });
     }
-
-    // Update task summary counters
-    function updateTaskSummary() {
-        const totalTasks = tasks.length;
-        const pendingTasks = tasks.filter(task => task.status === 'pending').length;
-        const progressTasks = tasks.filter(task => task.status === 'in-progress').length;
-        const completedTasks = tasks.filter(task => task.status === 'completed').length;
-        
-        document.getElementById('totalTasks').textContent = totalTasks;
-        document.getElementById('pendingTasks').textContent = pendingTasks;
-        document.getElementById('progressTasks').textContent = progressTasks;
-        document.getElementById('completedTasks').textContent = completedTasks;
+    
+    const editTaskDueDateInput = document.getElementById('editTaskDueDate');
+    if (editTaskDueDateInput) {
+        editTaskDueDateInput.addEventListener('change', function() {
+            validateDueDate(this);
+        });
     }
-
-    // Create task card HTML
-    function createTaskElement(task) {
-        const priorityClass = `priority-${task.priority}`;
-        const isCompleted = task.status === 'completed';
-        const completedClass = isCompleted ? 'completed' : '';
+    
+    // Filter tasks based on status and priority
+    function filterTasks() {
+        const statusFilter = document.getElementById('statusFilter').value;
+        const priorityFilter = document.getElementById('priorityFilter').value;
+        const taskCards = document.querySelectorAll('#taskList [data-task-id]');
         
-        return document.createRange().createContextualFragment(`
-            <div class="col-md-6 col-lg-4 mb-4" data-task-id="${task.id}">
-                <div class="card h-100 task-card ${completedClass}">
-                    <div class="d-flex h-100">
-                        <div class="task-priority ${priorityClass}"></div>
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title mb-1 task-title">${task.title}</h5>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><button class="dropdown-item view-task" data-task-id="${task.id}">
-                                            <i class="fas fa-eye me-2"></i>View Details
-                                        </button></li>
-                                        <li><button class="dropdown-item mark-complete" data-task-id="${task.id}">
-                                            <i class="fas fa-check me-2"></i>Mark as Complete
-                                        </button></li>
-                                        <li><button class="dropdown-item mark-in-progress" data-task-id="${task.id}">
-                                            <i class="fas fa-play me-2"></i>Mark In Progress
-                                        </button></li>
-                                    </ul>
+        taskCards.forEach((card, index) => {
+            const statusBadge = card.querySelector('.status-badge');
+            const statusText = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
+            
+            // Get priority from card class - check both the card and the inner task-card
+            let priority = 'medium';
+            const taskCardInner = card.querySelector('.task-card');
+            
+            if (taskCardInner) {
+                if (taskCardInner.classList.contains('priority-high')) priority = 'high';
+                else if (taskCardInner.classList.contains('priority-low')) priority = 'low';
+                else if (taskCardInner.classList.contains('priority-medium')) priority = 'medium';
+            }
+            
+            // Fallback: check card itself
+            if (priority === 'medium') {
+                if (card.classList.contains('priority-high')) priority = 'high';
+                else if (card.classList.contains('priority-low')) priority = 'low';
+                else if (card.classList.contains('priority-medium')) priority = 'medium';
+            }
+            
+            // Additional fallback: check the priority indicator div
+            if (priority === 'medium') {
+                const priorityDiv = card.querySelector('.task-priority');
+                if (priorityDiv) {
+                    if (priorityDiv.classList.contains('priority-high')) priority = 'high';
+                    else if (priorityDiv.classList.contains('priority-low')) priority = 'low';
+                    else if (priorityDiv.classList.contains('priority-medium')) priority = 'medium';
+                }
+            }
+            
+            const statusMatch = statusFilter === 'all' || statusText.includes(statusFilter.toLowerCase().replace('-', ' '));
+            const priorityMatch = priorityFilter === 'all' || priority === priorityFilter;
+            
+            const shouldShow = statusMatch && priorityMatch;
+            card.style.display = shouldShow ? 'block' : 'none';
+        });
+    }
+    
+    // Add event listeners for filters
+    const statusFilter = document.getElementById('statusFilter');
+    const priorityFilter = document.getElementById('priorityFilter');
+    const resetFilters = document.getElementById('resetFilters');
+    
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterTasks);
+    }
+    
+    if (priorityFilter) {
+        priorityFilter.addEventListener('change', filterTasks);
+    }
+    
+    if (resetFilters) {
+        resetFilters.addEventListener('click', function() {
+            statusFilter.value = 'all';
+            priorityFilter.value = 'all';
+            filterTasks();
+        });
+    }
+    
+    // Function to add new task dynamically
+    function addTaskToList(taskData) {
+        const taskList = document.getElementById('taskList');
+        if (!taskList) return;
+        
+        const priorityClass = 'priority-' + taskData.priority;
+        const statusClass = 'status-bg' + taskData.status.replace('-', '');
+        
+        const taskCard = document.createElement('div');
+        taskCard.className = 'col-md-6 col-lg-4 mb-4';
+        taskCard.setAttribute('data-task-id', taskData.task_id);
+        
+        taskCard.innerHTML = `
+            <div class="card h-100 task-card ${priorityClass} ${statusClass}">
+                <div class="d-flex h-100">
+                    <div class="task-priority priority-${taskData.priority}"></div>
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-1 task-title">${taskData.title}</h5>
+                            {% if session.role == 'Admin' %}
+                            <button class="btn btn-sm btn-outline-primary edit-task-btn" data-task-id="${taskData.task_id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        ${taskData.description ? `
+                        <p class="card-text text-muted small mb-2">
+                            ${taskData.description.length > 80 ? taskData.description.substring(0, 80) + '...' : taskData.description}
+                        </p>` : ''}
+                        <div class="mt-auto pt-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    ${taskData.category ? `<span class="task-category me-2">${taskData.category}</span>` : ''}
+                                    <span class="badge ${taskData.status === 'pending' ? 'bg-warning' : taskData.status === 'in-progress' ? 'bg-info' : 'bg-success'} status-badge">
+                                        ${taskData.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                    </span>
                                 </div>
                             </div>
-                            
-                            ${task.description ? `<p class="card-text text-muted small mb-2">${task.description.substring(0, 80)}${task.description.length > 80 ? '...' : ''}</p>` : ''}
-                            
-                            <div class="mt-auto pt-2">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div>
-                                        ${task.category ? `<span class="task-category me-2">${task.category}</span>` : ''}
-                                        <span class="badge ${getStatusBadgeClass(task.status)} status-badge">${formatStatus(task.status)}</span>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted task-due-date">
-                                        <i class="far fa-calendar-alt me-1"></i>${formatDate(task.dueDate)}
-                                    </small>
-                                    <small class="text-muted">
-                                        <i class="fas fa-user-tie me-1"></i>${task.assignedBy}
-                                    </small>
-                                </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted task-due-date">
+                                    <i class="far fa-calendar-alt me-1"></i>${taskData.due_date ? new Date(taskData.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No due date'}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-user-tie me-1"></i>${taskData.assigned_to_name || 'Unassigned'}
+                                </small>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        `);
-    }
-
-    // Helper functions
-    function formatDate(dateString) {
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    }
-
-    function formatStatus(status) {
-        return status.split('-').map(word => 
-            word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
-    }
-
-    function getStatusBadgeClass(status) {
-        const statusClasses = {
-            'pending': 'bg-warning',
-            'in-progress': 'bg-info',
-            'completed': 'bg-success'
-        };
-        return statusClasses[status] || 'bg-secondary';
-    }
-
-    // Event Listeners
-    // Mark task as complete
-    taskList.addEventListener('click', function(e) {
-        if (e.target.closest('.mark-complete')) {
-            const taskId = parseInt(e.target.closest('[data-task-id]').dataset.taskId);
-            const task = tasks.find(t => t.id === taskId);
-            if (task) {
-                task.status = 'completed';
-                renderTasks();
-                showAlert('Task marked as complete!', 'success');
-            }
-        }
-        
-        // Mark task as in progress
-        else if (e.target.closest('.mark-in-progress')) {
-            const taskId = parseInt(e.target.closest('[data-task-id]').dataset.taskId);
-            const task = tasks.find(t => t.id === taskId);
-            if (task) {
-                task.status = 'in-progress';
-                renderTasks();
-                showAlert('Task marked as in progress!', 'info');
-            }
-        }
-        
-        // View task details
-        else if (e.target.closest('.view-task')) {
-            const taskId = parseInt(e.target.closest('[data-task-id]').dataset.taskId);
-            const task = tasks.find(t => t.id === taskId);
-            if (task) {
-                document.getElementById('detailTitle').textContent = task.title;
-                document.getElementById('detailDescription').textContent = task.description || 'No description provided';
-                document.getElementById('detailDueDate').textContent = formatDate(task.dueDate);
-                document.getElementById('detailPriority').textContent = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
-                document.getElementById('detailCategory').textContent = task.category || 'General';
-                document.getElementById('detailStatus').textContent = formatStatus(task.status);
-                document.getElementById('detailAssignedBy').textContent = task.assignedBy;
-                
-                taskDetailsModal.show();
-            }
-        }
-    });
-
-    // Filter tasks
-    [statusFilter, priorityFilter].forEach(filter => {
-        filter.addEventListener('change', renderTasks);
-    });
-
-    // Reset filters
-    resetFiltersBtn.addEventListener('click', function() {
-        statusFilter.value = 'all';
-        priorityFilter.value = 'all';
-        renderTasks();
-    });
-
-    // Show alert function
-    function showAlert(message, type = 'success') {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-        alertDiv.role = 'alert';
-        alertDiv.style.zIndex = '1100';
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         `;
         
-        document.body.appendChild(alertDiv);
+        // Add to beginning of task list
+        taskList.insertBefore(taskCard, taskList.firstChild);
         
-        // Auto-remove alert after 3 seconds
+        // Re-attach event listeners to new edit button
+        const newEditBtn = taskCard.querySelector('.edit-task-btn');
+        if (newEditBtn) {
+            newEditBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Trigger existing edit functionality
+                const taskId = this.getAttribute('data-task-id');
+                console.log('Edit new task:', taskId);
+            });
+        }
+        
+        // Apply current filters
+        filterTasks();
+    }
+    
+    // Function to update task in list
+    function updateTaskInList(taskId, taskData) {
+        const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+        if (!taskCard) return;
+        
+        // Update task content
+        const titleElement = taskCard.querySelector('.task-title');
+        const descElement = taskCard.querySelector('.card-text');
+        const statusBadge = taskCard.querySelector('.status-badge');
+        const dueDateElement = taskCard.querySelector('.task-due-date');
+        
+        if (titleElement) titleElement.textContent = taskData.title;
+        if (descElement && taskData.description) {
+            descElement.textContent = taskData.description.length > 80 ? 
+                taskData.description.substring(0, 80) + '...' : taskData.description;
+        }
+        if (statusBadge) {
+            statusBadge.textContent = taskData.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            statusBadge.className = `badge ${taskData.status === 'pending' ? 'bg-warning' : taskData.status === 'in-progress' ? 'bg-info' : 'bg-success'} status-badge`;
+        }
+        if (dueDateElement && taskData.due_date) {
+            dueDateElement.innerHTML = `<i class="far fa-calendar-alt me-1"></i>${new Date(taskData.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        }
+        
+        // Update classes
+        taskCard.className = `col-md-6 col-lg-4 mb-4`;
+        taskCard.setAttribute('data-task-id', taskId);
+        const cardInner = taskCard.querySelector('.task-card');
+        cardInner.className = `card h-100 task-card priority-${taskData.priority} status-bg${taskData.status.replace('-', '')}`;
+        
+        // Apply filters
+        filterTasks();
+    }
+    
+    // Function to remove task from list
+    function removeTaskFromList(taskId) {
+        const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+        if (taskCard) {
+            taskCard.remove();
+        }
+    }
+    
+    // Toast notification function
+    function showToast(message, type = 'success', duration = 5000) {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+            `;
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} fade show`;
+        toast.style.cssText = `
+            min-width: 300px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease-out;
+        `;
+        toast.innerHTML = message;
+        
+        // Add animation styles
+        if (!document.getElementById('toastStyles')) {
+            const style = document.createElement('style');
+            style.id = 'toastStyles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Add to container and auto-remove after specified duration
+        toastContainer.appendChild(toast);
         setTimeout(() => {
-            const alert = bootstrap.Alert.getOrCreateInstance(alertDiv);
-            alert.close();
-        }, 3000);
+            toast.classList.add('hide');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, duration);
+    }
+    
+    // Handle Add Task form submission
+    const addTaskForm = document.getElementById('addTaskForm');
+    if (addTaskForm) {
+        addTaskForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate all form fields
+            if (!validateAddTaskForm()) {
+                showToast('Please fill in all required fields correctly.', 'danger');
+                return false;
+            }
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+            }
+
+            try {
+                const response = await fetch('{{ url_for("main.add_task") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to create task');
+                }
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addTaskModal'));
+                modal.hide();
+                
+                this.reset();
+                document.getElementById('taskAssignedToValue').value = '';
+                const formFields = ['taskTitle', 'taskDescription', 'taskCategory', 'taskDueDate', 'taskAssignedTo'];
+                formFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.classList.remove('is-invalid', 'is-valid');
+                    }
+                });
+
+                showToast(data.message || 'Task created successfully!', 'success');
+                if (data.task) {
+                    addTaskToList(data.task);
+                }
+                
+                // Reload page immediately for faster update
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } catch (error) {
+                console.error('Task creation failed:', error);
+                showToast(error.message || 'Failed to create task. Please try again.', 'danger');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+            }
+        });
+    }
+    
+    // Handle inline edit button clicks
+    const editTaskButtons = document.querySelectorAll('.edit-task-btn');
+    console.log('Found edit buttons:', editTaskButtons.length);
+    
+    if (editTaskButtons.length === 0) {
+        console.log('No edit buttons found - user may not be admin');
+    }
+    
+    // Check if Bootstrap is loaded
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap is not loaded!');
+        return;
+    }
+    
+    // Check if modal exists
+    const modalElement = document.getElementById('inlineEditTaskModal');
+    if (!modalElement) {
+        console.error('Modal element not found!');
+        return;
+    }
+    
+    const inlineEditModal = new bootstrap.Modal(modalElement);
+    console.log('Modal instance created');
+    
+    // Populate staff dropdown for edit modal
+    function populateEditStaffDropdown() {
+        const editStaffDropdown = document.getElementById('editTaskAssignedTo');
+        if (!editStaffDropdown) return;
+        
+        editStaffDropdown.innerHTML = '<option value="">Select staff member...</option>';
+        
+        const staffMembersData = document.getElementById('staffMembersData');
+        if (staffMembersData) {
+            try {
+                const staffMembers = JSON.parse(staffMembersData.textContent);
+                staffMembers.forEach(staff => {
+                    const option = document.createElement('option');
+                    option.value = staff.user_id;
+                    option.textContent = staff.full_name;
+                    editStaffDropdown.appendChild(option);
+                });
+            } catch (e) {
+                console.error('Error parsing staff data:', e);
+            }
+        }
+    }
+    
+    editTaskButtons.forEach((button, index) => {
+        console.log(`Adding click listener to button ${index}`);
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const taskId = this.getAttribute('data-task-id');
+            
+            const taskCard = this.closest('.col-md-6[data-task-id]') || this.closest('[data-task-id].col-md-6') || 
+                              this.closest('div[data-task-id]:not(.edit-task-btn)');
+            
+            if (!taskCard) {
+                console.error('Could not find task card');
+                return;
+            }
+            
+            // Extract task data from the card with null checks
+            let title = '';
+            let description = '';
+            let category = '';
+            let status = 'pending';
+            let dueDateText = '';
+            let assignedToName = '';
+            let assignedToId = '';
+            
+            // Get title
+            const titleElement = taskCard.querySelector('.task-title');
+            if (titleElement) {
+                title = titleElement.textContent.trim();
+            }
+            
+            // Get description
+            const descriptionElement = taskCard.querySelector('.card-text');
+            if (descriptionElement) {
+                description = descriptionElement.textContent.trim().replace('...', '');
+            }
+            
+            // Get category
+            const categoryElement = taskCard.querySelector('.task-category');
+            if (categoryElement) {
+                category = categoryElement.textContent.trim();
+            }
+            
+            // Get status
+            const statusBadge = taskCard.querySelector('.status-badge');
+            if (statusBadge) {
+                status = statusBadge.textContent.trim().toLowerCase().replace(' ', '-');
+            }
+            
+            // Get due date
+            const dueDateElement = taskCard.querySelector('.task-due-date');
+            if (dueDateElement) {
+                dueDateText = dueDateElement.textContent.trim();
+            }
+            
+            // Get assigned to name and ID
+            const userTieIcon = taskCard.querySelector('.fa-user-tie');
+            if (userTieIcon) {
+                const assignedToElement = userTieIcon.parentElement;
+                if (assignedToElement) {
+                    assignedToName = assignedToElement.textContent.trim();
+                    
+                    // Find staff member ID by name
+                    const staffMembersData = document.getElementById('staffMembersData');
+                    if (staffMembersData) {
+                        try {
+                            const staffMembers = JSON.parse(staffMembersData.textContent);
+                            const staffMember = staffMembers.find(staff => staff.full_name === assignedToName);
+                            if (staffMember) {
+                                assignedToId = staffMember.user_id.toString();
+                            }
+                        } catch (e) {
+                            console.error('Error parsing staff data for ID lookup:', e);
+                        }
+                    }
+                }
+            }
+            
+            // Determine priority from card class - check multiple elements
+            let priority = 'medium';
+            const taskCardInner = taskCard.querySelector('.task-card');
+            
+            if (taskCardInner) {
+                if (taskCardInner.classList.contains('priority-high')) priority = 'high';
+                else if (taskCardInner.classList.contains('priority-low')) priority = 'low';
+                else if (taskCardInner.classList.contains('priority-medium')) priority = 'medium';
+            }
+            
+            // Fallback: check card itself
+            if (priority === 'medium') {
+                if (taskCard.classList.contains('priority-high')) priority = 'high';
+                else if (taskCard.classList.contains('priority-low')) priority = 'low';
+                else if (taskCard.classList.contains('priority-medium')) priority = 'medium';
+            }
+            
+            // Additional fallback: check the priority indicator div
+            if (priority === 'medium') {
+                const priorityDiv = taskCard.querySelector('.task-priority');
+                if (priorityDiv) {
+                    if (priorityDiv.classList.contains('priority-high')) priority = 'high';
+                    else if (priorityDiv.classList.contains('priority-low')) priority = 'low';
+                    else if (priorityDiv.classList.contains('priority-medium')) priority = 'medium';
+                }
+            }
+            
+            console.log('Task data:', { title, description, category, status, priority, dueDateText, assignedToName, assignedToId });
+            
+            // Populate modal fields with debug logging
+            console.log('Populating modal fields...');
+            
+            const editTaskId = document.getElementById('editTaskId');
+            const editTaskTitle = document.getElementById('editTaskTitle');
+            const editTaskDescription = document.getElementById('editTaskDescription');
+            const editTaskCategory = document.getElementById('editTaskCategory');
+            const editTaskPriority = document.getElementById('editTaskPriority');
+            const editTaskStatus = document.getElementById('editTaskStatus');
+            const editTaskAssignedTo = document.getElementById('editTaskAssignedTo');
+            const editTaskAssignedToValue = document.getElementById('editTaskAssignedToValue');
+            
+            console.log('Found elements:', {
+                editTaskId: !!editTaskId,
+                editTaskTitle: !!editTaskTitle,
+                editTaskDescription: !!editTaskDescription,
+                editTaskCategory: !!editTaskCategory,
+                editTaskPriority: !!editTaskPriority,
+                editTaskStatus: !!editTaskStatus,
+                editTaskAssignedTo: !!editTaskAssignedTo,
+                editTaskAssignedToValue: !!editTaskAssignedToValue
+            });
+            
+            if (editTaskId) editTaskId.value = taskId;
+            if (editTaskTitle) editTaskTitle.value = title;
+            if (editTaskDescription) editTaskDescription.value = description;
+            if (editTaskCategory) editTaskCategory.value = category;
+            if (editTaskPriority) editTaskPriority.value = priority;
+            if (editTaskStatus) editTaskStatus.value = status;
+            
+            // Populate the searchable staff dropdown
+            if (editTaskAssignedTo && editTaskAssignedToValue) {
+                editTaskAssignedTo.value = assignedToName;
+                editTaskAssignedToValue.value = assignedToId;
+                if (assignedToId) {
+                    editTaskAssignedTo.classList.add('is-valid');
+                }
+            }
+            
+            console.log('Set values:', {
+                taskId: editTaskId?.value,
+                title: editTaskTitle?.value,
+                description: editTaskDescription?.value,
+                category: editTaskCategory?.value,
+                priority: editTaskPriority?.value,
+                status: editTaskStatus?.value,
+                assignedTo: editTaskAssignedTo?.value
+            });
+            
+            // Parse and set due date
+            if (dueDateText && dueDateText !== 'No due date') {
+                try {
+                    const dateMatch = dueDateText.match(/(\w+)\s+(\d+),\s*(\d+)/);
+                    if (dateMatch) {
+                        const [, month, day, year] = dateMatch;
+                        const monthMap = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+                                        'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'};
+                        const formattedDate = `${year}-${monthMap[month]}-${day.padStart(2, '0')}`;
+                        document.getElementById('editTaskDueDate').value = formattedDate;
+                        console.log('Set due date:', formattedDate);
+                    }
+                } catch (e) {
+                    console.log('Could not parse date:', dueDateText);
+                }
+            } else {
+                document.getElementById('editTaskDueDate').value = '';
+            }
+            
+            // Show the modal
+            console.log('Attempting to show modal...');
+            try {
+                inlineEditModal.show();
+                console.log('Modal show() called successfully');
+            } catch (error) {
+                console.error('Error showing modal:', error);
+            }
+        });
+    });
+    
+    // Handle save button for edit task
+    const saveBtn = document.getElementById('saveInlineEditBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', async function() {
+            const taskId = document.getElementById('editTaskId').value;
+            const title = document.getElementById('editTaskTitle').value.trim();
+            const description = document.getElementById('editTaskDescription').value.trim();
+            const category = document.getElementById('editTaskCategory').value.trim() || 'General';
+            const priority = document.getElementById('editTaskPriority').value;
+            const status = document.getElementById('editTaskStatus').value;
+            const dueDate = document.getElementById('editTaskDueDate').value;
+            const assignedTo = document.getElementById('editTaskAssignedToValue').value;
+            
+            // Validation
+            if (!taskId) {
+                showToast('Task ID is missing', 'danger');
+                return;
+            }
+
+            if (!title) {
+                showToast('Task title is required', 'danger');
+                return;
+            }
+
+            if (!dueDate) {
+                showToast('Due date is required', 'danger');
+                return;
+            }
+
+            // Validate assigned to using hidden input value
+            const assignedToField = document.getElementById('editTaskAssignedTo');
+            const assignedToValue = document.getElementById('editTaskAssignedToValue').value;
+            if (!assignedToValue) {
+                assignedToField.classList.add('is-invalid');
+                showToast('Please assign the task to a staff member', 'danger');
+                return;
+            } else {
+                assignedToField.classList.remove('is-invalid');
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('task_id', taskId);
+                formData.append('title', title);
+                formData.append('description', description);
+                formData.append('category', category);
+                formData.append('priority', priority);
+                formData.append('status', status);
+                formData.append('due_date', dueDate);
+                formData.append('assigned_to', assignedTo);
+                
+                const response = await fetch('{{ url_for("main.update_task") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to update task');
+                }
+
+                // Close modal
+                inlineEditModal.hide();
+                
+                // Show appropriate message based on response
+                if (data.message && data.message.includes('No changes made')) {
+                    showToast(data.message, 'info', 2000);
+                } else {
+                    showToast(data.message || 'Task updated successfully!', 'success');
+                    
+                    // Reload page immediately for faster update
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+                
+            } catch (error) {
+                console.error('Task update failed:', error);
+                showToast(error.message || 'Failed to update task. Please try again.', 'danger');
+            } finally {
+                // Restore button state
+                this.disabled = false;
+                this.innerHTML = originalBtnHtml;
+            }
+        });
     }
 
-    // Initialize the task list on page load
-    renderTasks();
+    // Handle delete task buttons
+    const deleteTaskButtons = document.querySelectorAll('.delete-task-btn');
+    deleteTaskButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const taskId = this.getAttribute('data-task-id');
+            const taskTitle = this.getAttribute('data-task-title');
+            
+            // Show custom confirmation modal
+            showDeleteConfirmModal(taskId, taskTitle);
+        });
+    });
+
+    // Function to show delete confirmation modal
+    function showDeleteConfirmModal(taskId, taskTitle) {
+        const modal = document.getElementById('deleteConfirmModal');
+        const titleElement = document.getElementById('deleteTaskTitle');
+        const confirmBtn = document.getElementById('deleteConfirmBtn');
+        const cancelBtn = document.getElementById('deleteCancelBtn');
+        
+        // Set task title
+        titleElement.textContent = taskTitle;
+        
+        // Show modal with animation
+        modal.classList.add('show');
+        
+        // Handle confirm button
+        confirmBtn.onclick = function() {
+            modal.classList.remove('show');
+            deleteTask(taskId, taskTitle);
+        };
+        
+        // Handle cancel button
+        cancelBtn.onclick = function() {
+            modal.classList.remove('show');
+        };
+        
+        // Handle click outside modal
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        };
+    }
+
+    // Function to delete task
+    async function deleteTask(taskId, taskTitle) {
+        try {
+            const response = await fetch(`/tasks/delete/${taskId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Failed to delete task');
+            }
+
+            // Remove task from the list
+            removeTaskFromList(taskId);
+            
+            // Show success message for 2 seconds
+            showToast(`Task "${taskTitle}" deleted successfully!`, 'success', 2000);
+            
+            // Reload page after toast fades (2.5 seconds total)
+            setTimeout(() => {
+                window.location.reload();
+            }, 2500);
+            
+        } catch (error) {
+            console.error('Task deletion failed:', error);
+            showToast(error.message || 'Failed to delete task. Please try again.', 'danger');
+        }
+    }
+
+    // Handle approve stock request buttons
+    const approveStockButtons = document.querySelectorAll('.approve-stock-btn');
+    approveStockButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const requestId = this.getAttribute('data-request-id');
+            const productName = this.getAttribute('data-product-name');
+            
+            updateStockRequestStatus(requestId, productName, 'Approved');
+        });
+    });
+
+    // Handle deny stock request buttons
+    const denyStockButtons = document.querySelectorAll('.deny-stock-btn');
+    denyStockButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const requestId = this.getAttribute('data-request-id');
+            const productName = this.getAttribute('data-product-name');
+            
+            updateStockRequestStatus(requestId, productName, 'Rejected');
+        });
+    });
+
+    // Function to update stock request status
+    async function updateStockRequestStatus(requestId, productName, status) {
+        try {
+            const response = await fetch(`/stock-requests/${requestId}/status`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: status })
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Failed to update stock request status');
+            }
+
+            // Show success message
+            showToast(`Stock request for "${productName}" ${status.toLowerCase()} successfully!`, 'success', 2000);
+            
+            // Reload page after 2.5 seconds to update the list
+            setTimeout(() => {
+                window.location.reload();
+            }, 2500);
+            
+        } catch (error) {
+            console.error('Stock request status update failed:', error);
+            showToast(error.message || 'Failed to update stock request status. Please try again.', 'danger');
+        }
+    }
+
+    // Handle approve arrival buttons
+    const approveArrivalButtons = document.querySelectorAll('.approve-arrival-btn');
+    approveArrivalButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const arrivalId = this.getAttribute('data-arrival-id');
+            const productName = this.getAttribute('data-product-name');
+            
+            updateArrivalStatus(arrivalId, productName, 'Approved');
+        });
+    });
+
+    // Handle deny arrival buttons
+    const denyArrivalButtons = document.querySelectorAll('.deny-arrival-btn');
+    denyArrivalButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const arrivalId = this.getAttribute('data-arrival-id');
+            const productName = this.getAttribute('data-product-name');
+            
+            updateArrivalStatus(arrivalId, productName, 'Rejected');
+        });
+    });
+
+    // Function to update arrival status
+    async function updateArrivalStatus(arrivalId, productName, status) {
+        try {
+            const response = await fetch(`/arrivals/${arrivalId}/status`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: status })
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Failed to update arrival status');
+            }
+
+            // Show success message
+            showToast(`Arrival for "${productName}" ${status.toLowerCase()} successfully!`, 'success', 2000);
+            
+            // Reload page after 2.5 seconds to update the list
+            setTimeout(() => {
+                window.location.reload();
+            }, 2500);
+            
+        } catch (error) {
+            console.error('Arrival status update failed:', error);
+            showToast(error.message || 'Failed to update arrival status. Please try again.', 'danger');
+        }
+    }
+
+    // Alert filtering functionality
+    const alertStatusFilter = document.getElementById('alertStatusFilter');
+    const resetAlertFilters = document.getElementById('resetAlertFilters');
+
+    // Function to filter alerts by both status and type
+    function filterAlertsByTypeAndStatus() {
+        const statusFilter = alertStatusFilter ? alertStatusFilter.value : 'all';
+        const alertCards = document.querySelectorAll('#alertList .col-12.col-md-6.col-lg-4');
+        let visibleCards = 0;
+        
+        alertCards.forEach(card => {
+            const statusClass = card.querySelector('.card').className;
+            let showCard = true;
+            
+            // Filter by status
+            if (statusFilter !== 'all') {
+                if (!statusClass.includes(`alert-status-${statusFilter}`)) {
+                    showCard = false;
+                }
+            }
+            
+            // Show or hide the card
+            card.style.display = showCard ? 'block' : 'none';
+            if (showCard) visibleCards++;
+        });
+        
+        // Show/hide "No alerts found" message - ALWAYS check for visible cards
+        const noAlertsMessage = document.getElementById('noAlertsMessage');
+        const noAlertsAtAll = document.getElementById('noAlertsAtAll');
+        
+        if (noAlertsMessage) {
+            noAlertsMessage.style.display = visibleCards === 0 ? 'block' : 'none';
+        }
+        if (noAlertsAtAll) {
+            noAlertsAtAll.style.display = 'none'; // Hide "no alerts at all" when filtering
+        }
+    }
+
+    // Function to show only arrival alerts (respecting status filter)
+    function showArrivalAlertsOnly() {
+        // Hide all section headers and alert cards first
+        const allElements = document.querySelectorAll('#alertList .col-12');
+        allElements.forEach(element => {
+            element.style.display = 'none';
+        });
+        
+        // Show only arrival alerts section and cards (respecting status filter)
+        const alertCards = document.querySelectorAll('#alertList .col-12.col-md-6.col-lg-4');
+        let hasVisibleArrivalAlerts = false;
+        
+        alertCards.forEach(card => {
+            const cardContent = card.innerHTML;
+            const isArrivalAlert = cardContent.includes('Received by') || 
+                                cardContent.includes('arrival_id') ||
+                                card.querySelector('.approve-arrival-btn, .deny-arrival-btn');
+            
+            if (isArrivalAlert) {
+                // Check status filter
+                const statusFilter = alertStatusFilter ? alertStatusFilter.value : 'all';
+                const statusClass = card.querySelector('.card').className;
+                let showCard = true;
+                
+                if (statusFilter !== 'all') {
+                    if (!statusClass.includes(`alert-status-${statusFilter}`)) {
+                        showCard = false;
+                    }
+                }
+                
+                card.style.display = showCard ? 'block' : 'none';
+                if (showCard) {
+                    hasVisibleArrivalAlerts = true;
+                }
+            }
+        });
+        
+        // Show the "New Arrival Alerts" header only if there are visible alerts
+        if (hasVisibleArrivalAlerts) {
+            const headers = document.querySelectorAll('#alertList .col-12 h5');
+            headers.forEach(header => {
+                // Explicitly hide Stock Requests header
+                if (header.textContent.trim() === 'Stock Requests') {
+                    header.parentElement.style.display = 'none';
+                }
+                // Show New Arrival Alerts header
+                if (header.textContent.trim() === 'New Arrival Alerts') {
+                    header.parentElement.style.display = 'block';
+                }
+            });
+        }
+        
+        // ALWAYS show "No alerts found" message if no visible arrival alerts
+        const noAlertsMessage = document.getElementById('noAlertsMessage');
+        const noAlertsAtAll = document.getElementById('noAlertsAtAll');
+        
+        if (noAlertsMessage) {
+            noAlertsMessage.style.display = !hasVisibleArrivalAlerts ? 'block' : 'none';
+        }
+        if (noAlertsAtAll) {
+            noAlertsAtAll.style.display = 'none';
+        }
+    }
+
+    // Function to show only stock requests (respecting status filter)
+    function showStockRequestsOnly() {
+        // Hide all section headers and alert cards first
+        const allElements = document.querySelectorAll('#alertList .col-12');
+        allElements.forEach(element => {
+            element.style.display = 'none';
+        });
+        
+        // Show only stock requests section and cards (respecting status filter)
+        const alertCards = document.querySelectorAll('#alertList .col-12.col-md-6.col-lg-4');
+        let hasVisibleStockRequests = false;
+        
+        alertCards.forEach(card => {
+            const cardContent = card.innerHTML;
+            const isStockRequest = cardContent.includes('Requested by') || 
+                                 cardContent.includes('request_id') ||
+                                 card.querySelector('.approve-stock-btn, .deny-stock-btn');
+            
+            if (isStockRequest) {
+                // Check status filter
+                const statusFilter = alertStatusFilter ? alertStatusFilter.value : 'all';
+                const statusClass = card.querySelector('.card').className;
+                let showCard = true;
+                
+                if (statusFilter !== 'all') {
+                    if (!statusClass.includes(`alert-status-${statusFilter}`)) {
+                        showCard = false;
+                    }
+                }
+                
+                card.style.display = showCard ? 'block' : 'none';
+                if (showCard) {
+                    hasVisibleStockRequests = true;
+                }
+            }
+        });
+        
+        // Show the "Stock Requests" header only if there are visible alerts
+        if (hasVisibleStockRequests) {
+            const headers = document.querySelectorAll('#alertList .col-12 h5');
+            headers.forEach(header => {
+                // Explicitly hide New Arrival Alerts header
+                if (header.textContent.trim() === 'New Arrival Alerts') {
+                    header.parentElement.style.display = 'none';
+                }
+                // Show Stock Requests header
+                if (header.textContent.trim() === 'Stock Requests') {
+                    header.parentElement.style.display = 'block';
+                }
+            });
+        }
+        
+        // ALWAYS show "No alerts found" message if no visible stock requests
+        const noAlertsMessage = document.getElementById('noAlertsMessage');
+        const noAlertsAtAll = document.getElementById('noAlertsAtAll');
+        
+        if (noAlertsMessage) {
+            noAlertsMessage.style.display = !hasVisibleStockRequests ? 'block' : 'none';
+        }
+        if (noAlertsAtAll) {
+            noAlertsAtAll.style.display = 'none';
+        }
+    }
+
+    // Function to show all alerts (respecting status filter)
+    function showAllAlerts() {
+        // Show all section headers first
+        const allElements = document.querySelectorAll('#alertList .col-12');
+        allElements.forEach(element => {
+            element.style.display = 'block';
+        });
+        
+        // Apply status filter to all cards
+        filterAlertsByTypeAndStatus();
+    }
+
+    // Add event listeners for alert filters
+    if (alertStatusFilter) {
+        alertStatusFilter.addEventListener('change', filterAlertsByTypeAndStatus);
+    }
+
+    if (resetAlertFilters) {
+        resetAlertFilters.addEventListener('click', function() {
+            if (alertStatusFilter) {
+                alertStatusFilter.value = 'all';
+            }
+            // Show all alerts and hide "no alerts" messages
+            const allElements = document.querySelectorAll('#alertList .col-12');
+            allElements.forEach(element => {
+                element.style.display = 'block';
+            });
+            
+            // Hide the "no alerts found" message
+            const noAlertsMessage = document.getElementById('noAlertsMessage');
+            if (noAlertsMessage) {
+                noAlertsMessage.style.display = 'none';
+            }
+            
+            // Show "no alerts at all" only if it exists
+            const noAlertsAtAll = document.getElementById('noAlertsAtAll');
+            if (noAlertsAtAll) {
+                noAlertsAtAll.style.display = 'block';
+            }
+        });
+    }
+
+    // Handle New Arrival Alerts dropdown item
+    const showArrivalAlertsItem = document.getElementById('showArrivalAlerts');
+    if (showArrivalAlertsItem) {
+        showArrivalAlertsItem.addEventListener('click', function(e) {
+            e.preventDefault();
+            showArrivalAlertsOnly();
+        });
+    }
+
+    // Handle Stock Requests dropdown item
+    const showStockRequestsItem = document.getElementById('showStockRequests');
+    if (showStockRequestsItem) {
+        showStockRequestsItem.addEventListener('click', function(e) {
+            e.preventDefault();
+            showStockRequestsOnly();
+        });
+    }
+
+    // Handle Show All Alerts dropdown item
+    const showAllAlertsItem = document.getElementById('showAllAlerts');
+    if (showAllAlertsItem) {
+        showAllAlertsItem.addEventListener('click', function(e) {
+            e.preventDefault();
+            showAllAlerts();
+        });
+    }
+
+    // Alert Delete Functionality
+    let currentAlertId = null;
+    let currentAlertType = null;
+
+    // Handle delete alert buttons
+    const deleteAlertButtons = document.querySelectorAll('.delete-alert-btn');
+    deleteAlertButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            currentAlertId = this.getAttribute('data-alert-id');
+            currentAlertType = this.getAttribute('data-alert-type');
+            const productName = this.getAttribute('data-product-name');
+            
+            // Set product name in modal
+            document.getElementById('deleteAlertProductName').textContent = productName;
+            
+            // Show modal
+            const modal = document.getElementById('alertDeleteConfirmModal');
+            modal.classList.add('show');
+        });
+    });
+
+    // Handle alert delete cancel button
+    const alertDeleteCancelBtn = document.getElementById('alertDeleteCancelBtn');
+    if (alertDeleteCancelBtn) {
+        alertDeleteCancelBtn.addEventListener('click', function() {
+            const modal = document.getElementById('alertDeleteConfirmModal');
+            modal.classList.remove('show');
+            currentAlertId = null;
+            currentAlertType = null;
+        });
+    }
+
+    // Handle alert delete confirm button
+    const alertDeleteConfirmBtn = document.getElementById('alertDeleteConfirmBtn');
+    if (alertDeleteConfirmBtn) {
+        alertDeleteConfirmBtn.addEventListener('click', async function() {
+            if (!currentAlertId || !currentAlertType) return;
+            
+            try {
+                const endpoint = currentAlertType === 'arrival' ? 
+                    `/arrivals/${currentAlertId}/delete` : 
+                    `/stock-requests/${currentAlertId}/delete`;
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to delete alert');
+                }
+                
+                // Hide modal
+                const modal = document.getElementById('alertDeleteConfirmModal');
+                modal.classList.remove('show');
+                
+                // Show success message
+                showToast('Alert deleted successfully', 'success', 2000, { top: '80px' });
+                
+                // Reload the page to update the alerts list
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Alert delete failed:', error);
+                showToast(error.message || 'Failed to delete alert. Please try again.', 'danger');
+            }
+            
+            currentAlertId = null;
+            currentAlertType = null;
+        });
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(e) {
+        const alertModal = document.getElementById('alertDeleteConfirmModal');
+        if (alertModal && alertModal.classList.contains('show') && 
+            e.target === alertModal) {
+            alertModal.classList.remove('show');
+            currentAlertId = null;
+            currentAlertType = null;
+        }
+    });
+
 });
 </script>
 {% endblock %}
-
-
-
-

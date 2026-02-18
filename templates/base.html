@@ -6,6 +6,20 @@
     <meta name="description" content="{% block meta_description %}SmartStationery - Your one-stop shop for premium office supplies and stationery. Find everything you need for your workspace.{% endblock %}">
     <title>{% block title %}SmartStationery - Premium Office Supplies{% endblock %}</title>
 
+    <!-- Apply theme immediately to prevent flash -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+            
+            if (isDark) {
+                document.documentElement.classList.add('dark-theme');
+                document.body.classList.add('dark-theme');
+            }
+        })();
+    </script>
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
@@ -329,7 +343,9 @@
 
         /* Logout modal theme support */
         #logoutModal .modal-dialog {
-            max-width: 420px;
+            max-width: 420px !important;
+            width: 420px !important;
+            margin: 1.75rem auto !important;
         }
 
         #logoutModal .modal-content {
@@ -833,6 +849,17 @@
             margin-right: 12px;
         }
 
+        /* Hide desktop theme toggle on medium screens */
+        @media (max-width: 1099px) {
+            .desktop-theme-toggle {
+                display: none;
+            }
+            
+            .mobile-theme-toggle {
+                display: block;
+            }
+        }
+        
         /* Hide desktop theme toggle on mobile */
         @media (max-width: 768px) {
             .desktop-theme-toggle {
@@ -841,6 +868,97 @@
             
             .mobile-theme-toggle {
                 display: block;
+            }
+        }
+
+        /* Responsive design for medium screens */
+        @media (max-width: 1099px) {
+            .burger-menu {
+                display: flex;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                max-width: 300px;
+                height: 100vh;
+                background: var(--white);
+                flex-direction: column;
+                padding: 80px 20px 30px;
+                transition: right 0.3s ease-in-out;
+                z-index: 100;
+                box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .dark-theme .nav-menu {
+                background: var(--dark-bg-2);
+                box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+            }
+
+            .nav-menu.active {
+                right: 0;
+            }
+
+            .nav-menu .nav-item.dropdown {
+                width: 100%;
+            }
+
+            .nav-menu .dropdown-menu {
+                position: static;
+                transform: none !important;
+                width: 100%;
+                margin: 0.35rem 0 0;
+                box-shadow: none;
+                border: 1px solid var(--gray-200);
+                background: var(--gray-50);
+            }
+
+            .dark-theme .nav-menu .dropdown-menu {
+                background: var(--dark-bg-1);
+                border-color: var(--gray-700);
+            }
+
+            .nav-menu .dropdown-menu::before {
+                display: none;
+            }
+
+            .nav-link {
+                width: 100%;
+                padding: 0.75rem 1rem;
+                margin: 0.5rem 0;
+                border-radius: var(--radius);
+                display: flex;
+                align-items: center;
+                height: 44px;
+                text-decoration: none;
+                color: var(--gray-800);
+            }
+            
+            .dark-theme .nav-link {
+                color: var(--white);
+            }
+            
+            .nav-link i {
+                margin-right: 12px;
+                width: 20px;
+                text-align: center;
+            }
+
+            .dark-theme .nav-link {
+                color: var(--dark-text-2);
+            }
+
+            .dark-theme .nav-link:hover {
+                background: var(--dark-bg-3);
+                color: var(--white);
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: var(--space-lg);
+                text-align: center;
             }
         }
 
@@ -1138,10 +1256,10 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item {{ 'active' if request.endpoint == 'main.manage_products' else '' }}"
-                                   href="{{ url_for('main.manage_products') }}"
+                                <a class="dropdown-item {{ 'active' if request.endpoint == 'main.demand_forecasting' else '' }}"
+                                   href="{{ url_for('main.demand_forecasting') }}"
                                    data-nav-link>
-                                    🛠️ Manage Products
+                                    📈 Demand Forecasting
                                 </a>
                             </li>
                             <li>
@@ -1149,6 +1267,13 @@
                                    href="{{ url_for('main.users') }}"
                                    data-nav-link>
                                     👤 Users
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ 'active' if request.endpoint == 'main.suppliers' else '' }}"
+                                   href="{{ url_for('main.suppliers') }}"
+                                   data-nav-link>
+                                    🏭 Suppliers
                                 </a>
                             </li>
                         </ul>
@@ -1166,10 +1291,10 @@
                            data-nav-link>
                             📋 Orders
                         </a>
-                        <a href="{{ url_for('main.manage_products') }}"
-                           class="nav-link {{ 'active' if request.endpoint == 'main.manage_products' else '' }}"
+                        <a href="{{ url_for('main.demand_forecasting') }}"
+                           class="nav-link {{ 'active' if request.endpoint == 'main.demand_forecasting' else '' }}"
                            data-nav-link>
-                            🛠️ Manage Products
+                            📈 Demand Forecasting
                         </a>
                         {% if session.get('role') == 'Admin' %}
                         <a href="{{ url_for('main.users') }}"

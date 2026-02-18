@@ -178,6 +178,7 @@ margin: -2rem 0 1.5rem;
     .add-to-cart {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 0.5rem;
         font-weight: 600;
         border-radius: 6px;
@@ -187,6 +188,8 @@ margin: -2rem 0 1.5rem;
         color: white;
         cursor: pointer;
         transition: background 0.3s ease;
+        min-width: 140px;
+        white-space: nowrap;
     }
 
     .add-to-cart:hover {
@@ -466,6 +469,18 @@ margin: -2rem 0 1.5rem;
             </div>
         {% endif %}
     </div>
+    
+    <!-- Load More Button -->
+    {% if total_products and total_products > 50 %}
+    <div class="load-more-container text-center mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted">Showing <span id="shown-count">50</span> of {{ total_products }} products</span>
+        </div>
+        <button id="loadMoreBtn" class="btn btn-primary" onclick="loadMoreProducts()">
+            <i class="fas fa-plus-circle me-2"></i>Load More Products
+        </button>
+    </div>
+    {% endif %}
 </main>
 
 <!-- Product Modal -->
@@ -920,6 +935,106 @@ input[type="number"] {
             filterProducts();
         });
         document.getElementById('clearAllFilters').addEventListener('click', clearAllFilters);
+        
+        // Load more products function
+        window.loadMoreProducts = async function() {
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const shownCount = document.getElementById('shown-count');
+            const currentCount = parseInt(shownCount.textContent);
+            
+            // Show loading state
+            loadMoreBtn.disabled = true;
+            loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+            
+            try {
+                // Fetch more products
+                const response = await fetch('/api/products?limit=20&offset=' + currentCount);
+                const data = await response.json();
+                
+                if (data.success && data.products.length > 0) {
+                    // Add new products to the grid
+                    const productsGrid = document.getElementById('products-grid');
+                    data.products.forEach(product => {
+                        const productCard = createProductCard(product);
+                        productsGrid.appendChild(productCard);
+                        
+                        // Add to allProducts array
+                        allProducts.push({
+                            element: productCard,
+                            data: product
+                        });
+                    });
+                    
+                    // Update shown count
+                    const newCount = currentCount + data.products.length;
+                    shownCount.textContent = newCount;
+                    
+                    // Hide button if all products are loaded
+                    if (newCount >= parseInt('{{ total_products }}')) {
+                        loadMoreBtn.style.display = 'none';
+                    }
+                    
+                    // Re-initialize product images
+                    document.querySelectorAll('.product-image-asset').forEach(function(img) {
+                        img.addEventListener('error', function handleError() {
+                            img.removeEventListener('error', handleError);
+                            img.src = placeholderImage;
+                        });
+                    });
+                    
+                } else {
+                    // No more products
+                    loadMoreBtn.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading more products:', error);
+                loadMoreBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Error loading products';
+                setTimeout(() => {
+                    loadMoreBtn.disabled = false;
+                    loadMoreBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Load More Products';
+                }, 2000);
+            } finally {
+                if (loadMoreBtn.style.display !== 'none') {
+                    loadMoreBtn.disabled = false;
+                    loadMoreBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Load More Products';
+                }
+            }
+        };
+        
+        // Create product card function
+        function createProductCard(product) {
+            const div = document.createElement('div');
+            div.className = 'product-card';
+            
+            let imgSrc = product.image_url;
+            if (imgSrc && !imgSrc.startsWith('http') && !imgSrc.startsWith('/static/')) {
+                imgSrc = '/static/' + imgSrc.replace('static/', '');
+            }
+            
+            div.innerHTML = `
+                <div class="product-image">
+                    <img src="${imgSrc || placeholderImage}" 
+                         alt="${product.name}"
+                         class="product-image-asset">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">${product.name}</h3>
+                    <div class="product-description">
+                        ${product.brand ? 'Brand: ' + product.brand : ''}
+                    </div>
+                    <div class="product-footer">
+                        <span class="product-price">रु ${product.price ? parseFloat(product.price).toFixed(2) : '0.00'}</span>
+                        <button class="add-to-cart"
+                                data-product-id="${product.product_id}">
+                            <i class="fas fa-shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
         
         // Initialize
         initializeProducts();

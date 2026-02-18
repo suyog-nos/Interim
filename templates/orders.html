@@ -5,6 +5,65 @@
 {% block styles %}
 {{ super() }}
 <style>
+    /* Professional nav-pills styling - no horizontal lines */
+    .nav-pills {
+        background: none;
+        border: none;
+        padding: 0;
+        gap: 12px;
+        display: flex;
+    }
+    
+    .nav-pills .nav-link {
+        border: none;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: #495057;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .nav-pills .nav-link:hover {
+        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        color: #343a40;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 16px rgba(13, 110, 253, 0.3);
+        transform: translateY(-1px);
+    }
+    
+    .nav-pills .nav-link.active:hover {
+        background: linear-gradient(135deg, #0b5ed7 0%, #004085 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
+    }
+    
+    .nav-pills .nav-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .nav-pills .nav-link:hover::before {
+        left: 100%;
+    }
+    
     /* Status-based button styles */
     .btn-status {
         transition: all 0.2s ease-in-out;
@@ -146,6 +205,37 @@
         background-color: rgba(220, 53, 69, 0.15) !important;
         border-left-color: #dc3545 !important;
     }
+    
+    /* Dark theme card body and header */
+    .dark-theme .card-body {
+        background-color: var(--dark-bg-2) !important;
+        color: var(--gray-200) !important;
+    }
+    
+    .dark-theme .card-header {
+        background-color: var(--dark-bg-2) !important;
+        color: var(--gray-200) !important;
+        border-bottom-color: var(--gray-700) !important;
+    }
+    
+    .dark-theme .card {
+        background-color: var(--dark-bg-2) !important;
+        border-color: var(--gray-700) !important;
+    }
+    
+    .dark-theme .table {
+        color: var(--gray-200) !important;
+    }
+    
+    .dark-theme .table-light {
+        background-color: var(--dark-bg-1) !important;
+        color: var(--gray-300) !important;
+    }
+    
+    .dark-theme .table th,
+    .dark-theme .table td {
+        border-color: var(--gray-700) !important;
+    }
 </style>
 {% endblock %}
 
@@ -252,20 +342,78 @@ function confirmPaymentChange() {
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('confirmPaidBtn').addEventListener('click', confirmPaymentChange);
+    
+    // Show More/Less Items functionality for individual orders
+    document.querySelectorAll('.show-more-items').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-order-id');
+            const additionalItems = document.querySelectorAll(`.additional-items-${orderId}`);
+            const showLessBtn = document.querySelector(`.show-less-items[data-order-id="${orderId}"]`);
+            
+            // Show additional items
+            additionalItems.forEach(item => {
+                item.style.display = '';
+            });
+            
+            // Hide show more button, show show less button
+            this.style.display = 'none';
+            if (showLessBtn) {
+                showLessBtn.style.display = '';
+            }
+        });
+    });
+    
+    document.querySelectorAll('.show-less-items').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-order-id');
+            const additionalItems = document.querySelectorAll(`.additional-items-${orderId}`);
+            const showMoreBtn = document.querySelector(`.show-more-items[data-order-id="${orderId}"]`);
+            
+            // Hide additional items
+            additionalItems.forEach(item => {
+                item.style.display = 'none';
+            });
+            
+            // Show show more button, hide show less button
+            this.style.display = 'none';
+            if (showMoreBtn) {
+                showMoreBtn.style.display = '';
+            }
+        });
+    });
 });
 </script>
-<div class="container py-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+<div class="container py-2">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
         <div>
-            <h2 class="mb-0">All Orders</h2>
-            <p class="text-muted mb-0">Monitor every transaction placed by customers or POS staff.</p>
+            <h2 class="mb-0">Orders Management</h2>
+            <p class="text-muted mb-0">Monitor and manage customer orders efficiently.</p>
         </div>
-        <!-- Action buttons have been removed -->
     </div>
 
-    {% if orders %}
-        {% for order in orders %}
-            <div class="card shadow-sm border-0 mb-4 {% if order.payment_status == 'Paid' %}payment-paid{% elif order.payment_status == 'Unpaid' %}payment-unpaid{% endif %}">
+    <!-- Tab Navigation -->
+    <div class="mb-4">
+        <nav>
+            <div class="nav nav-pills" id="ordersTab" role="tablist">
+                <button class="nav-link active" id="active-orders-tab" data-bs-toggle="pill" data-bs-target="#active-orders" type="button" role="tab" aria-controls="active-orders" aria-selected="true">
+                    <i class="fas fa-clock me-2"></i>Active Orders
+                </button>
+                <button class="nav-link" id="order-history-tab" data-bs-toggle="pill" data-bs-target="#order-history" type="button" role="tab" aria-controls="order-history" aria-selected="false">
+                    <i class="fas fa-history me-2"></i>Order History
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="ordersTabContent">
+        <!-- Active Orders Tab -->
+        <div class="tab-pane fade show active" id="active-orders" role="tabpanel" aria-labelledby="active-orders-tab">
+            {% set active_orders = orders | selectattr('order_status', 'in', ['pending', 'processing', 'ready_for_pickup']) | list %}
+            {% if active_orders %}
+                <div id="active-orders-container">
+                    {% for order in active_orders %}
+                <div class="card shadow-sm border-0 mb-4 {% if order.payment_status == 'Paid' %}payment-paid{% elif order.payment_status == 'Unpaid' %}payment-unpaid{% endif %}" data-order-id="{{ order.order_id }}">
                 <div class="card-header bg-white border-0 pb-0">
                     <div class="row g-3 align-items-start align-items-md-center">
                         <div class="col-md-3">
@@ -284,7 +432,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="d-flex flex-wrap gap-2 justify-content-md-end">
                                 <span class="badge bg-info text-dark">{{ order.order_type or 'Online' }}</span>
                                 
-                                <!-- Payment Status Dropdown -->
+                                <!-- Payment Status Dropdown - Admin Only -->
+                                {% if session.get('role') == 'Admin' %}
                                 <div class="dropdown">
                                     <button class="btn btn-sm dropdown-toggle {% if order.payment_status == 'Paid' %}btn-success{% else %}btn-danger{% endif %}" type="button" id="paymentDropdown{{ order.order_id }}" data-bs-toggle="dropdown" aria-expanded="false">
                                         {{ order.payment_status }}
@@ -314,8 +463,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </li>
                                     </ul>
                                 </div>
+                                {% else %}
+                                <span class="badge {% if order.payment_status == 'Paid' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ order.payment_status }}
+                                </span>
+                                {% endif %}
                                 
                                 <!-- Order Status Dropdown -->
+                                {% if session.get('role') == 'Admin' or (session.get('role') == 'Staff' and order.order_status not in ['completed', 'cancelled']) %}
                                 <div class="dropdown">
                                     <button class="btn btn-sm dropdown-toggle {% if order.order_status == 'cancelled' %}btn-danger{% elif order.order_status == 'completed' %}btn-success{% elif order.order_status == 'processing' %}btn-warning{% elif order.order_status == 'ready_for_pickup' %}btn-primary{% else %}btn-outline-secondary{% endif %}" type="button" id="statusDropdown{{ order.order_id }}" data-bs-toggle="dropdown" aria-expanded="false">
                                         {% if order.order_status == 'processing' %}Processing{% elif order.order_status == 'ready_for_pickup' %}Ready for Pickup{% elif order.order_status == 'completed' %}Completed{% elif order.order_status == 'cancelled' %}Cancelled{% else %}{{ order.order_status | capitalize }}{% endif %}
@@ -336,21 +491,31 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </form>
                                         </li>
                                         <li>
+                                            {% if session.get('role') == 'Admin' %}
                                             <form method="POST" action="/orders/update-status" style="margin: 0;">
                                                 <input type="hidden" name="order_id" value="{{ order.order_id }}">
                                                 <input type="hidden" name="new_status" value="completed">
                                                 <button type="submit" class="dropdown-item text-start w-100">Completed</button>
                                             </form>
+                                            {% endif %}
                                         </li>
                                         <li>
+                                            {% if session.get('role') == 'Admin' %}
                                             <form method="POST" action="/orders/update-status" style="margin: 0;">
                                                 <input type="hidden" name="order_id" value="{{ order.order_id }}">
                                                 <input type="hidden" name="new_status" value="cancelled">
                                                 <button type="submit" class="dropdown-item text-start w-100">Cancelled</button>
                                             </form>
+                                            {% endif %}
                                         </li>
                                     </ul>
                                 </div>
+                                {% else %}
+                                <!-- Show status as badge when dropdown is hidden -->
+                                <span class="badge {% if order.order_status == 'cancelled' %}bg-danger{% elif order.order_status == 'completed' %}bg-success{% elif order.order_status == 'processing' %}bg-warning{% elif order.order_status == 'ready_for_pickup' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                    {% if order.order_status == 'processing' %}Processing{% elif order.order_status == 'ready_for_pickup' %}Ready for Pickup{% elif order.order_status == 'completed' %}Completed{% elif order.order_status == 'cancelled' %}Cancelled{% else %}{{ order.order_status | capitalize }}{% endif %}
+                                </span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -367,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="col-md-4">
                             <small class="text-muted text-uppercase">Order Status</small>
-                            <div class="fw-semibold">{{ order.order_status | upper }}</div>
+                            <div class="fw-semibold text-primary">{{ order.order_status | upper or 'N/A' }}</div>
                         </div>
                     </div>
 
@@ -386,8 +551,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             </thead>
                             <tbody>
                                 {% if order.line_items %}
-                                    {% for item in order.line_items %}
-                                        <tr>
+                                    {% for item in order.line_items[:3] %}
+                                        <tr class="order-item-{{ order.order_id }}">
+                                            <td>{{ item.product_name }}</td>
+                                            <td class="text-center">{{ item.quantity }}</td>
+                                            <td class="text-center">{{ item.unit }}</td>
+                                            <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
+                                            <td class="text-end">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    
+                                    <!-- Additional items (hidden initially) -->
+                                    {% for item in order.line_items[3:] %}
+                                        <tr class="additional-items-{{ order.order_id }}" style="display: none;">
                                             <td>{{ item.product_name }}</td>
                                             <td class="text-center">{{ item.quantity }}</td>
                                             <td class="text-center">{{ item.unit }}</td>
@@ -402,20 +578,198 @@ document.addEventListener('DOMContentLoaded', function() {
                                 {% endif %}
                             </tbody>
                         </table>
+                        
+                        <!-- Show More/Less buttons for individual order -->
+                        {% if order.line_items and order.line_items|length > 3 %}
+                        <div class="text-center mt-3">
+                            <button class="btn btn-sm btn-outline-primary show-more-items" data-order-id="{{ order.order_id }}" data-total="{{ order.line_items|length }}">
+                                <i class="fas fa-chevron-down me-1"></i>
+                                Show {{ order.line_items|length - 3 }} More Items
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary show-less-items" data-order-id="{{ order.order_id }}" style="display: none;">
+                                <i class="fas fa-chevron-up me-1"></i>
+                                Show Less
+                            </button>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         {% endfor %}
-    {% else %}
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-5">
-                <div class="mb-3">
-                    <i class="fas fa-receipt fa-3x text-muted"></i>
                 </div>
-                <h4>No orders found</h4>
-                <p class="text-muted">New orders will appear here as soon as customers place them or your staff records a sale.</p>
-            </div>
+            {% else %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-clock fa-3x text-muted"></i>
+                        </div>
+                        <h4>No Active Orders</h4>
+                        <p class="text-muted">Active orders will appear here when customers place new orders or when orders are in progress.</p>
+                    </div>
+                </div>
+            {% endif %}
         </div>
-    {% endif %}
-</div>
+
+        <!-- Order History Tab -->
+        <div class="tab-pane fade" id="order-history" role="tabpanel" aria-labelledby="order-history-tab">
+            {% set history_orders = orders | selectattr('order_status', 'in', ['completed', 'cancelled']) | list %}
+            {% if history_orders %}
+                <div id="order-history-container">
+                    {% for order in history_orders %}
+                    <div class="card shadow-sm border-0 mb-4 {% if order.payment_status == 'Paid' %}payment-paid{% elif order.payment_status == 'Unpaid' %}payment-unpaid{% endif %}" data-order-id="{{ order.order_id }}">
+                    <div class="card-header bg-white border-0 pb-0">
+                        <div class="row g-3 align-items-start align-items-md-center">
+                            <div class="col-md-3">
+                                <small class="text-muted text-uppercase">Order ID</small>
+                                <h5 class="mb-0">#{{ order.order_id }}</h5>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted text-uppercase">Customer</small>
+                                <h6 class="mb-0">{{ order.customer_name or 'Walk-in Customer' }}</h6>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted text-uppercase">Created</small>
+                                <div>{{ order.created_at }}</div>
+                            </div>
+                            <div class="col-md-3 text-md-end">
+                                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                                    <span class="badge bg-info text-dark">{{ order.order_type or 'Online' }}</span>
+                                    
+                                    <!-- Payment Status Badge (Read-only for history) -->
+                                    <span class="badge {% if order.payment_status == 'Paid' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ order.payment_status }}
+                                    </span>
+                                    
+                                    <!-- Order Status Badge (Read-only for history) -->
+                                    <span class="badge {% if order.order_status == 'cancelled' %}bg-danger{% elif order.order_status == 'completed' %}bg-success{% elif order.order_status == 'processing' %}bg-warning{% elif order.order_status == 'ready_for_pickup' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                        {% if order.order_status == 'processing' %}Processing{% elif order.order_status == 'ready_for_pickup' %}Ready for Pickup{% elif order.order_status == 'completed' %}Completed{% elif order.order_status == 'cancelled' %}Cancelled{% else %}{{ order.order_status | capitalize }}{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <small class="text-muted text-uppercase">Total Amount</small>
+                                <h4 class="mb-0">Rs. {{ '%.2f' | format(order.total_amount) }}</h4>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted text-uppercase">Transaction Code</small>
+                                <div class="fw-semibold">{{ order.transaction_code or '—' }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted text-uppercase">Order Status</small>
+                                <div class="fw-semibold text-primary">{{ order.order_status | upper or 'N/A' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-center" style="width: 120px;">Qty</th>
+                                        <th class="text-center" style="width: 120px;">Unit</th>
+                                        <th class="text-end" style="width: 150px;">Unit Price</th>
+                                        <th class="text-end" style="width: 150px;">Line Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if order.line_items %}
+                                        {% for item in order.line_items[:3] %}
+                                            <tr class="order-item-{{ order.order_id }}">
+                                                <td>{{ item.product_name }}</td>
+                                                <td class="text-center">{{ item.quantity }}</td>
+                                                <td class="text-center">{{ item.unit }}</td>
+                                                <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
+                                                <td class="text-end">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        
+                                        <!-- Additional items (hidden initially) -->
+                                        {% for item in order.line_items[3:] %}
+                                            <tr class="additional-items-{{ order.order_id }}" style="display: none;">
+                                                <td>{{ item.product_name }}</td>
+                                                <td class="text-center">{{ item.quantity }}</td>
+                                                <td class="text-center">{{ item.unit }}</td>
+                                                <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
+                                                <td class="text-end">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">No products recorded for this order.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                            
+                            <!-- Show More/Less buttons for individual order -->
+                            {% if order.line_items and order.line_items|length > 3 %}
+                            <div class="text-center mt-3">
+                                <button class="btn btn-sm btn-outline-primary show-more-items" data-order-id="{{ order.order_id }}" data-total="{{ order.line_items|length }}">
+                                    <i class="fas fa-chevron-down me-1"></i>
+                                    Show {{ order.line_items|length - 3 }} More Items
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary show-less-items" data-order-id="{{ order.order_id }}" style="display: none;">
+                                    <i class="fas fa-chevron-up me-1"></i>
+                                    Show Less
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-history fa-3x text-muted"></i>
+                        </div>
+                        <h4>No Order History</h4>
+                        <p class="text-muted">Completed and cancelled orders will appear here in the order history.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- JavaScript for persistent tabs -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the saved active tab from localStorage
+        const savedTab = localStorage.getItem('activeOrdersTab');
+        
+        if (savedTab) {
+            // Remove active class from all tabs and panes
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('show', 'active');
+            });
+            
+            // Activate the saved tab
+            const savedTabButton = document.querySelector(`[data-bs-target="${savedTab}"]`);
+            const savedTabPane = document.querySelector(savedTab);
+            
+            if (savedTabButton && savedTabPane) {
+                savedTabButton.classList.add('active');
+                savedTabPane.classList.add('show', 'active');
+            }
+        }
+        
+        // Save tab changes to localStorage
+        const tabButtons = document.querySelectorAll('[data-bs-toggle="pill"]');
+        tabButtons.forEach(button => {
+            button.addEventListener('shown.bs.tab', function (e) {
+                const target = e.target.getAttribute('data-bs-target');
+                localStorage.setItem('activeOrdersTab', target);
+            });
+        });
+    });
+    </script>
 {% endblock %}

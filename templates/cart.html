@@ -320,6 +320,12 @@
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
+                            <th>
+                                <div class="d-flex align-items-center">
+                                    <input type="checkbox" id="selectAllCheckbox" class="form-check-input me-2">
+                                    <label for="selectAllCheckbox" class="form-check-label mb-0 small">Select All</label>
+                                </div>
+                            </th>
                             <th>Product</th>
                             <th>Price</th>
                             <th>Quantity</th>
@@ -448,26 +454,39 @@ function updateCartUI(data) {
     
     let itemsHTML = '';
     data.cart_items.forEach(item => {
+        const isUnavailable = item.status !== 'active';
+        const unavailableBadge = isUnavailable ? '<span class="badge bg-warning text-dark">Unavailable</span>' : '';
+        const unavailableClass = isUnavailable ? 'table-warning' : '';
+        const disabledAttr = isUnavailable ? 'disabled' : '';
+        
         itemsHTML += `
-            <tr data-cart-item-id="${item.cart_item_id}">
+            <tr data-cart-item-id="${item.cart_item_id}" class="${unavailableClass}">
+                <td>
+                    <div class="form-check">
+                        <input class="form-check-input select-for-order" type="checkbox" 
+                               data-cart-item-id="${item.cart_item_id}" 
+                               ${disabledAttr}>
+                    </div>
+                </td>
                 <td>
                     <div class="d-flex align-items-center">
                         <img src="${item.image_url}" alt="${item.name}" class="cart-product-image me-3">
                         <div>
                             <h6 class="mb-1">${item.name}</h6>
                             <small class="text-muted">${item.category_name || 'Product'}</small>
+                            ${unavailableBadge}
                         </div>
                     </div>
                 </td>
                 <td>${formatPrice(item.price)}</td>
                 <td>
                     <div class="input-group" style="width: 120px;">
-                        <button class="btn btn-outline-secondary btn-sm decrease-qty" type="button">
+                        <button class="btn btn-outline-secondary btn-sm decrease-qty" type="button" ${disabledAttr}>
                             <i class="fas fa-minus"></i>
                         </button>
                         <input type="number" class="form-control text-center cart-quantity-input" 
-                               value="${item.quantity}" min="1" max="999" data-cart-item-id="${item.cart_item_id}">
-                        <button class="btn btn-outline-secondary btn-sm increase-qty" type="button">
+                               value="${item.quantity}" min="1" max="999" data-cart-item-id="${item.cart_item_id}" ${disabledAttr}>
+                        <button class="btn btn-outline-secondary btn-sm increase-qty" type="button" ${disabledAttr}>
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
@@ -482,7 +501,8 @@ function updateCartUI(data) {
     });
     
     cartItemsEl.innerHTML = itemsHTML;
-    subtotalEl.textContent = formatPrice(data.total_amount);
+    updateSelectAllCheckbox();
+    updateSelectedSubtotal();
     payOnlineBtn.disabled = false;
     payStoreBtn.disabled = false;
     
@@ -490,7 +510,57 @@ function updateCartUI(data) {
     attachItemEventListeners();
 }
 
+function updateSelectAllCheckbox() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const availableCheckboxes = document.querySelectorAll('.select-for-order:not(:disabled)');
+    const checkedCheckboxes = document.querySelectorAll('.select-for-order:checked:not(:disabled)');
+    
+    if (selectAllCheckbox) {
+        if (availableCheckboxes.length === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.disabled = true;
+        } else {
+            selectAllCheckbox.disabled = false;
+            selectAllCheckbox.checked = availableCheckboxes.length === checkedCheckboxes.length;
+        }
+    }
+}
+
+function updateSelectedSubtotal() {
+    const subtotalEl = document.getElementById('cartSubtotal');
+    let selectedTotal = 0;
+    
+    document.querySelectorAll('.select-for-order:checked').forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const totalCell = row.querySelector('td:nth-child(5)');
+        const totalText = totalCell.textContent.replace('रु ', '').replace(',', '');
+        selectedTotal += parseFloat(totalText);
+    });
+    
+    subtotalEl.textContent = formatPrice(selectedTotal);
+}
+
 function attachItemEventListeners() {
+    // Select all checkbox functionality
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            document.querySelectorAll('.select-for-order:not(:disabled)').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            updateSelectedSubtotal();
+        });
+    }
+    
+    // Select for order checkboxes
+    document.querySelectorAll('.select-for-order').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectAllCheckbox();
+            updateSelectedSubtotal();
+        });
+    });
+    
     // Quantity decrease buttons
     document.querySelectorAll('.decrease-qty').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -704,6 +774,24 @@ function showPaymentModal() {
         return;
     }
     
+    // Get selected items
+    const selectedItems = [];
+    document.querySelectorAll('.select-for-order:checked').forEach(checkbox => {
+        const cartItemId = checkbox.dataset.cartItemId;
+        const item = cartData.cart_items.find(item => item.cart_item_id == cartItemId);
+        if (item) {
+            selectedItems.push(item);
+        }
+    });
+    
+    if (selectedItems.length === 0) {
+        alert('Please select at least one item for order');
+        return;
+    }
+    
+    // Calculate selected total
+    const selectedTotal = selectedItems.reduce((sum, item) => sum + item.subtotal, 0);
+    
     // Create payment modal content
     const modalHtml = `
         <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
@@ -720,7 +808,7 @@ function showPaymentModal() {
                         <div class="text-center mb-4">
                             <i class="fas fa-shopping-cart fa-4x text-primary mb-3"></i>
                             <h6 class="fw-bold">Complete your payment at our store</h6>
-                            <p class="text-muted">Please review your order details below before confirming.</p>
+                            <p class="text-muted">Please review your selected order details below before confirming.</p>
                         </div>
                         
                         <div class="table-responsive mb-3">
@@ -734,7 +822,7 @@ function showPaymentModal() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${cartData.cart_items.map(item => `
+                                    ${selectedItems.map(item => `
                                         <tr>
                                             <td>${item.name}</td>
                                             <td>${item.quantity}</td>
@@ -746,7 +834,7 @@ function showPaymentModal() {
                                 <tfoot>
                                     <tr class="table-active fw-bold">
                                         <td colspan="3">Total Amount:</td>
-                                        <td>${formatPrice(cartData.total_amount)}</td>
+                                        <td>${formatPrice(selectedTotal)}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -759,7 +847,7 @@ function showPaymentModal() {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-success" onclick="confirmStoreOrder()">
+                        <button type="button" class="btn btn-success" onclick="confirmStoreOrder(${JSON.stringify(selectedItems.map(item => item.cart_item_id))})">
                             <i class="fas fa-shopping-cart me-2"></i>Order
                         </button>
                     </div>
@@ -787,16 +875,29 @@ function showPaymentModal() {
     });
 }
 
-function confirmStoreOrder() {
+function confirmStoreOrder(selectedCartItemIds) {
     if (!cartData || !cartData.cart_items) return;
     
-    // Call API to clear cart from database
+    // Filter cart data to only include selected items
+    const selectedItems = cartData.cart_items.filter(item => 
+        selectedCartItemIds.includes(item.cart_item_id)
+    );
+    
+    if (selectedItems.length === 0) {
+        alert('No items selected for order');
+        return;
+    }
+    
+    // Call API to create order for selected items only
     fetch('/products/api/cart/pay-store', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        body: JSON.stringify({
+            selected_items: selectedCartItemIds
+        })
     })
     .then(response => response.json())
     .then(data => {
@@ -805,6 +906,8 @@ function confirmStoreOrder() {
         paymentModal.hide();
         
         // Show order confirmation modal
+        const selectedTotal = selectedItems.reduce((sum, item) => sum + item.subtotal, 0);
+        
         const modalHtml = `
             <div class="modal fade" id="orderConfirmationModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
@@ -825,8 +928,8 @@ function confirmStoreOrder() {
                             
                             <div class="alert alert-info">
                                 <strong>Order Reference:</strong> <code>${data.transaction_code}</code><br>
-                                <strong>Total Items:</strong> ${cartData.cart_items.length}<br>
-                                <strong>Total Amount:</strong> ${formatPrice(cartData.total_amount)}
+                                <strong>Total Items:</strong> ${selectedItems.length}<br>
+                                <strong>Total Amount:</strong> ${formatPrice(selectedTotal)}
                             </div>
                             
                             <div class="alert alert-success">

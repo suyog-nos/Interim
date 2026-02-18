@@ -14,7 +14,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="addProductForm" method="POST">
+            <form id="addProductForm" action="{{ url_for('main.add_product') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -25,9 +25,9 @@
                             <label for="productCategory" class="form-label">Category<span class="text-danger"> *</span></label>
                             <select class="form-control" id="productCategory" name="category_id" required>
                                 <option value="">Select category...</option>
-                                <option value="1">Pens</option>
-                                <option value="2">Notebooks</option>
-                                <option value="3">Stationery</option>
+                                {% for category in categories %}
+                                <option value="{{ category.category_id }}">{{ category.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="productUnit" class="form-label">Unit Type</label>
-                            <select class="form-control" id="productUnit" name="unit_type">
+                            <select class="form-control" id="productUnit" name="unit_type" onchange="updateUnitsPerPack()">
                                 <option value="piece">Piece</option>
                                 <option value="pack">Pack</option>
                                 <option value="dozen">Dozen</option>
@@ -53,32 +53,44 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="productUnitsPerPack" class="form-label">Units Per Pack</label>
-                            <input type="number" class="form-control" id="productUnitsPerPack" name="units_per_pack" min="1" value="1">
+                        <div class="col-md-6 mb-3">
+                            <label for="unitsPerPack" class="form-label">Units Per Pack</label>
+                            <input type="number" class="form-control" id="unitsPerPack" name="units_per_pack" min="1" value="1" placeholder="e.g. 10" readonly>
+                            <div class="form-text">Number of pieces per pack/dozen/bundle</div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="productSKU" class="form-label">SKU</label>
+                            <input type="text" class="form-control" id="productSKU" name="sku" placeholder="e.g. BALL-003-B07" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label for="productBrand" class="form-label">Brand</label>
                             <input type="text" class="form-control" id="productBrand" name="brand" placeholder="e.g. Pentonic">
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="productSupplier" class="form-label">Supplier</label>
                             <select class="form-control" id="productSupplier" name="supplier_id">
                                 <option value="">Select supplier...</option>
-                                <option value="1">Supplier A</option>
-                                <option value="2">Supplier B</option>
+                                {% for supplier in suppliers %}
+                                <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="productImageURL" class="form-label">Image URL</label>
-                            <input type="text" class="form-control" id="productImageURL" name="image_url" placeholder="static/images/Pentonic.png">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="productSKU" class="form-label">SKU (optional)</label>
-                            <input type="text" class="form-control" id="productSKU" name="sku" placeholder="e.g. BALL-003-B07">
+                            <label for="productImage" class="form-label">Product Image</label>
+                            <input type="file" id="productImage" name="product_image" accept="image/*" style="display: none;" onchange="updateFileName(this)">
+                            <div class="file-input-wrapper">
+                                <label for="productImage" class="file-input-label">
+                                    <i class="fas fa-cloud-upload-alt me-2"></i>
+                                    <span id="fileLabel">Choose Product Image</span>
+                                </label>
+                            </div>
+                            <div class="form-text">Upload product image (JPG, PNG, GIF, WebP)</div>
                         </div>
                     </div>
                 </div>
@@ -95,33 +107,38 @@
 </div>
 
 
-<div class="container d-flex flex-column min-vh-100 py-4">
-    <div class="row justify-content-center my-auto">
-        <div class="col-12 col-lg-10">
-            <div class="card shadow-lg rounded-3 border-0">
-                <div class="card-header bg-gradient-primary-to-secondary text-white py-3">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
-                        <h2 class="h4 mb-3 mb-md-0 fw-bold">
-                            <i class="fas fa-boxes me-2"></i>Product Inventory
-                        </h2>
-                        <div class="d-flex flex-column flex-md-row align-items-center gap-3 w-100 w-md-auto">
-                            <!-- Search Bar -->
-                            <div class="search-container">
-                                <div class="input-group search-input-group">
-                                    <span class="input-group-text">
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="stock-page-card">
+                <div class="stock-header">
+                    <div class="stock-header-content">
+                        <div class="stock-title-section">
+                            <h1 class="stock-title">
+                                <i class="fas fa-boxes me-3"></i>Product Inventory
+                            </h1>
+                            <p class="stock-subtitle">Manage your stationery stock and inventory</p>
+                        </div>
+                        <div class="stock-actions">
+                            <div class="search-wrapper">
+                                <div class="search-input-group">
+                                    <span class="search-icon">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" id="searchInput" class="form-control" placeholder="Search products by name or category...">
+                                    <input type="text" id="searchInput" class="search-input" placeholder="Search products...">
                                 </div>
+                                <div class="search-results" id="searchResults"></div>
                             </div>
-                            <!-- Add Product Button - Admin Only -->
                             {% if session.get('role') == 'Admin' %}
-                            <button type="button" class="btn btn-add-product" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                            <button type="button" class="btn-primary-action" data-bs-toggle="modal" data-bs-target="#addProductModal">
                                 <i class="fas fa-plus-circle me-2"></i> Add Product
+                            </button>
+                            <button type="button" class="btn-primary-action" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                                <i class="fas fa-tags me-2"></i> Add Category
                             </button>
                             {% endif %}
                             {% if session.get('role') == 'Staff' %}
-                            <button type="button" class="btn btn-info ms-2" data-bs-toggle="modal" data-bs-target="#stockRequestModal">
+                            <button type="button" class="btn-secondary-action" data-bs-toggle="modal" data-bs-target="#stockRequestModal">
                                 <i class="fas fa-truck-loading me-2"></i> Stock Arrival
                             </button>
                             {% endif %}
@@ -129,68 +146,124 @@
                     </div>
                 </div>
                 
-                <div class="card-body p-0">
+                <div class="stock-content">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show m-3" role="alert">
-                                    <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            {% endfor %}
+                            <div class="messages-container">
+                                {% for category, message in messages %}
+                                    {% if category == 'success' %}
+                                        <!-- Success Toast - Same Style as Logout, No Close Button -->
+                                        <div class="toast-container position-fixed toast-floating" style="z-index: 1050; top: 80px; right: 20px;">
+                                            <div class="toast border-0 shadow-lg welcome-toast inventory-toast" role="status" aria-live="polite" aria-atomic="true" id="successToast-{{ loop.index }}">
+                                                <div class="toast-body text-white">
+                                                    <i class="fas fa-check-circle me-2"></i>
+                                                    {{ message }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <!-- Error Toast - Same Style as Logout, No Close Button -->
+                                        <div class="toast-container position-fixed toast-floating" style="z-index: 1050; top: 80px; right: 20px;">
+                                            <div class="toast border-0 shadow-lg error-toast inventory-toast" role="alert" aria-live="assertive" aria-atomic="true" id="errorToast-{{ loop.index }}">
+                                                <div class="toast-body text-white">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    {{ message }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                         {% endif %}
                     {% endwith %}
                     
-                    
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr class="table-light">
-                                    <th class="text-uppercase fw-semibold small text-muted text-start" style="width: 35%; text-align: left;">Product Name</th>
-                                    <th class="text-uppercase fw-semibold small text-muted text-start" style="width: 20%; text-align: left;">Category</th>
+                    <div class="table-container">
+                        <table class="stock-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-product">
+                                        <i class="fas fa-box me-2"></i>Product Name
+                                    </th>
+                                    <th class="col-category">
+                                        <i class="fas fa-tag me-2"></i>Category
+                                    </th>
                                     {% if session.get('role') == 'Admin' %}
-                                    <th class="text-uppercase fw-semibold small text-muted text-start" style="width: 15%; text-align: left;">Supplier</th>
+                                    <th class="col-supplier">
+                                        <i class="fas fa-truck me-2"></i>Supplier
+                                    </th>
                                     {% endif %}
-                                    <th class="text-uppercase fw-semibold small text-muted ps-3" style="width: 10%; text-align: left;">In Stock(pcs)</th>
-                                    <th class="text-uppercase fw-semibold small text-muted pe-4" style="width: 10%; text-align: left;">Price (Rs.)</th>
+                                    <th class="col-stock">
+                                        <i class="fas fa-cubes me-2"></i>In Stock
+                                    </th>
+                                    <th class="col-price">
+                                        <i class="fas fa-rupee-sign me-2"></i>Price
+                                    </th>
+                                    <th class="col-status">
+                                        <i class="fas fa-toggle-on me-2"></i>Status
+                                    </th>
                                     {% if session.get('role') == 'Staff' %}
-                                    <th class="text-uppercase fw-semibold small text-muted pe-4" style="width: 5%; text-align: center;">Actions</th>
+                                    <th class="col-actions">Actions</th>
+                                    {% endif %}
+                                    {% if session.get('role') == 'Admin' %}
+                                    <th class="col-actions">Actions</th>
                                     {% endif %}
                                 </tr>
                             </thead>
                             <tbody id="productTableBody">
                                 {% for product in products %}
                                 <tr class="product-row">
-                                    <td class="ps-4 py-3 fw-medium">
-                                        {{ product.name }}
+                                    <td class="product-cell">
+                                        <div class="product-info">
+                                            <div class="product-icon {{ product.status or 'active' }}-icon">
+                                                <i class="fas fa-box"></i>
+                                            </div>
+                                            <div class="product-details">
+                                                <div class="product-name">{{ product.name }}</div>
+                                                <div class="product-sku">SKU: {{ product.sku }}</div>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td>
-                                        <span class="badge rounded-pill bg-light text-dark border border-1 border-light-subtle px-3 py-2">
-                                            <i class="fas fa-tag me-1 text-primary"></i>
+                                    <td class="category-cell">
+                                        <span class="category-badge">
+                                            <i class="fas fa-tag me-1"></i>
                                             {{ product.category }}
                                         </span>
                                     </td>
                                     {% if session.get('role') == 'Admin' %}
-                                    <td>
-                                        <span class="badge rounded-pill bg-info text-white border border-1 border-info-subtle px-3 py-2">
+                                    <td class="supplier-cell">
+                                        <span class="supplier-badge">
                                             <i class="fas fa-truck me-1"></i>
                                             {{ product.supplier or 'No Supplier' }}
                                         </span>
                                     </td>
                                     {% endif %}
-                                    <td class="ps-3">
-                                        <span class="d-inline-flex align-items-center">
-                                            <span class="quantity-indicator me-2 {% if product.quantity <= 10 %}bg-danger{% else %}bg-success{% endif %}"></span>
-                                            {{ product.quantity }}
-                                        </span>
+                                    <td class="stock-cell">
+                                        <div class="stock-info">
+                                            <div class="stock-indicator {% if product.quantity <= 10 %}low-stock{% else %}in-stock{% endif %}"></div>
+                                            <div class="stock-details">
+                                                <div class="stock-quantity">{{ product.quantity }}</div>
+                                                <div class="stock-unit">pieces</div>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="pe-4 fw-medium">
-                                        Rs. {{ "%.2f"|format(product.price) }}
+                                    <td class="price-cell">
+                                        <div class="price">Rs. {{ "%.2f"|format(product.price) }}</div>
                                     </td>
-                                    <td class="text-center">
-                                        {% if session.get('role') == 'Staff' %}
-                                        <button class="btn btn-sm btn-outline-warning alert-btn" 
+                                    <td class="status-cell">
+                                        <select class="form-select form-select-sm status-dropdown {{ 'hidden-status' if product.status == 'hidden' else 'active-status' }}" 
+                                                data-product-id="{{ product.product_id }}"
+                                                onchange="updateProductStatus(this)">
+                                            <option value="active" {% if product.status == 'active' or not product.status %}selected{% endif %}>
+                                                Active
+                                            </option>
+                                            <option value="hidden" {% if product.status == 'hidden' %}selected{% endif %}>
+                                                Hidden
+                                            </option>
+                                        </select>
+                                    </td>
+                                    {% if session.get('role') == 'Staff' %}
+                                    <td class="actions-cell">
+                                        <button class="btn-action alert-btn" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#productAlertModal"
                                                 data-product-id="{{ product.product_id }}"
@@ -199,51 +272,1802 @@
                                                 data-quantity="{{ product.quantity }}">
                                             <i class="fas fa-bell"></i> Alert
                                         </button>
-                                        {% endif %}
                                     </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-5">
-                                        <div class="empty-state">
-                                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                            <h5 class="mb-1">No Products Found</h5>
-                                            <p class="text-muted mb-3">Get started by adding your first product</p>
-                                            <a href="{{ url_for('add_product') }}" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-plus me-1"></i> Add Product
-                                            </a>
-                                        </div>
+                                    {% endif %}
+                                    {% if session.get('role') == 'Admin' %}
+                                    <td class="actions-cell">
+                                        <button class="btn-action edit-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editProductModal"
+                                                data-product-id="{{ product.product_id }}"
+                                                data-name="{{ product.name }}" 
+                                                data-category="{{ product.category_id }}"
+                                                data-price="{{ product.price }}"
+                                                data-quantity="{{ product.quantity }}"
+                                                data-brand="{{ product.brand or '' }}"
+                                                data-supplier="{{ product.supplier_id or '' }}"
+                                                data-sku="{{ product.sku }}"
+                                                data-image-url="{{ product.image_url or '' }}"
+                                                data-status="{{ product.status or 'active' }}">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
                                     </td>
+                                    {% endif %}
                                 </tr>
                                 {% endfor %}
-                                <tr id="noResults" style="display: none;">
-                                    <td colspan="5" class="text-center py-4">
-                                        <i class="fas fa-search fa-2x text-muted mb-2"></i>
-                                        <p class="mb-0">No products found matching your search.</p>
-                                    </td>
-                                </tr>
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    {% if not products %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <h3 class="empty-title">No Products Found</h3>
+                        <p class="empty-description">Start by adding your first product to the inventory.</p>
+                        {% if session.get('role') == 'Admin' %}
+                        <button type="button" class="btn-primary-action" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                            <i class="fas fa-plus me-1"></i> Add Product
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- No Results State -->
+                    <div id="noResults" class="no-results" style="display: none;">
+                        <div class="no-results-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 class="no-results-title">No matching products found</h3>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<style>
+    /* Modern Stock Page Design System */
+    
+    /* Base Layout */
+    .container-fluid {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+    
+    /* Main Card Container */
+    .stock-page-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .stock-page-card:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    /* Header Section */
+    .stock-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+    }
+    
+    .stock-header-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .stock-title-section {
+        text-align: center;
+    }
+    
+    .stock-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .stock-subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin: 0;
+        font-weight: 400;
+    }
+    
+    /* Actions Section */
+    .stock-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    /* Search Component */
+    .search-wrapper {
+        position: relative;
+        max-width: 400px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    
+    .search-input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 2rem;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .search-input-group:focus-within {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .search-icon {
+        padding: 0 1.25rem;
+        color: rgba(255, 255, 255, 0.8);
+        transition: all 0.2s ease;
+    }
+    
+    .search-input-group:focus-within .search-icon {
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .search-input {
+        background: transparent;
+        border: none;
+        color: white;
+        padding: 0.75rem 1.25rem 0.75rem 0;
+        font-size: 0.95rem;
+        font-weight: 500;
+        width: 100%;
+        outline: none;
+    }
+    
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 400;
+    }
+    
+    .search-input:focus::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Action Buttons */
+    .btn-primary-action, .btn-secondary-action {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        min-height: 44px;
+    }
+    
+    .btn-primary-action {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    .btn-primary-action:hover {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .btn-secondary-action {
+        background: rgba(23, 162, 184, 0.9);
+        color: white;
+        border: 2px solid rgba(23, 162, 184, 1);
+    }
+    
+    .btn-secondary-action:hover {
+        background: rgba(20, 138, 151, 1);
+        border-color: rgba(20, 138, 151, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+        color: white;
+    }
+    
+    /* Content Area */
+    .stock-content {
+        padding: 2rem;
+        background: #fafbfc;
+        min-height: 400px;
+    }
+    
+    /* Messages */
+    .messages-container {
+        margin-bottom: 2rem;
+    }
+    
+    .message {
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+        position: relative;
+        animation: slideInRight 0.3s ease;
+    }
+    
+    .message-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .message-error, .message-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    
+    .message-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    
+    .message-info {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .message-close {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+        transition: all 0.2s ease;
+        margin-left: auto;
+    }
+    
+    .message-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    /* Table Container */
+    .table-container {
+        background: white;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Table Styles */
+    .stock-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.95rem;
+    }
+    
+    .stock-table thead {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .stock-table th {
+        padding: 1.25rem 1.5rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+    
+    .stock-table th i {
+        color: #94a3b8;
+        margin-right: 0.5rem;
+    }
+    
+    .stock-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.2s ease;
+    }
+    
+    .stock-table tbody tr:hover {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stock-table td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+        border: none;
+    }
+    
+    /* Column Widths */
+    .col-product { width: 35%; }
+    .col-category { width: 20%; }
+    .col-supplier { width: 15%; }
+    .col-stock { width: 10%; }
+    .col-price { width: 10%; }
+    .col-status { width: 12%; }
+    .col-actions { width: 10%; }
+    
+    /* Product Cell */
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .product-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    
+    .product-details {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .product-name {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+        line-height: 1.3;
+    }
+    
+    .product-sku {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    /* Category & Supplier Badges */
+    .category-badge, .supplier-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    
+    .category-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .category-badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .supplier-badge {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .supplier-badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3);
+    }
+    
+    /* Stock Cell */
+    .stock-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .stock-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        position: relative;
+    }
+    
+    .stock-indicator::after {
+        content: '';
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        right: -4px;
+        bottom: -4px;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    .stock-indicator.in-stock {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .stock-indicator.in-stock::after {
+        background: rgba(16, 185, 129, 0.2);
+    }
+    
+    .stock-indicator.low-stock {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        animation: pulse-danger 1.5s infinite;
+    }
+    
+    .stock-indicator.low-stock::after {
+        background: rgba(239, 68, 68, 0.3);
+    }
+    
+    .stock-details {
+        flex: 1;
+    }
+    
+    .stock-quantity {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+    
+    .stock-unit {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-top: 0.125rem;
+    }
+    
+    /* Price Cell */
+    .price {
+        font-weight: 700;
+        color: #667eea;
+        font-size: 1.1rem;
+    }
+    
+    /* Action Button */
+    .btn-action {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 2px solid #f59e0b;
+        color: #f59e0b;
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-action:hover {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border-color: #d97706;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    
+    .btn-action i {
+        transition: transform 0.2s ease;
+    }
+    
+    .btn-action:hover i {
+        transform: rotate(15deg);
+    }
+    
+    .btn-action.edit-btn {
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+    
+    .btn-action.edit-btn:hover {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border-color: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Empty State */
+    .empty-state, .no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 0.75rem;
+        margin-top: 2rem;
+    }
+    
+    .empty-icon, .no-results-icon {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-title, .no-results-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-description {
+        font-size: 1rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Search Results Dropdown */
+    .search-results {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        animation: slideDown 0.3s ease;
+    }
+    
+    .search-results.show {
+        display: block;
+    }
+    
+    .search-result-item {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f1f5f9;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .search-result-item:hover {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        padding-left: 1.5rem;
+    }
+    
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .search-result-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.9rem;
+    }
+    
+    .search-result-content {
+        flex: 1;
+    }
+    
+    .search-result-title {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+    
+    .search-result-subtitle {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+    
+    /* Animations */
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 0.3; }
+        100% { opacity: 0.6; }
+    }
+    
+    @keyframes pulse-danger {
+        0% { opacity: 0.8; }
+        50% { opacity: 0.4; }
+        100% { opacity: 0.8; }
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Responsive Design */
+    @media (min-width: 768px) {
+        .stock-header-content {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stock-title-section {
+            text-align: left;
+            margin-bottom: 0;
+        }
+        
+        .stock-actions {
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+            width: auto;
+        }
+        
+        .search-wrapper {
+            max-width: 300px;
+            margin: 0;
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .search-wrapper {
+            max-width: 350px;
+        }
+    }
+    
+    @media (max-width: 767px) {
+        .container-fluid {
+            padding: 0 1rem;
+        }
+        
+        .stock-header {
+            padding: 1.5rem 1rem;
+        }
+        
+        .stock-title {
+            font-size: 1.5rem;
+        }
+        
+        .stock-content {
+            padding: 1rem;
+        }
+        
+        .stock-table th,
+        .stock-table td {
+            padding: 1rem 0.75rem;
+        }
+        
+        .product-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+        
+        .product-name {
+            font-size: 0.95rem;
+        }
+        
+        .category-badge, .supplier-badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+        
+        .btn-action {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+        
+        .empty-state, .no-results {
+            padding: 3rem 1rem;
+        }
+        
+        .empty-icon, .no-results-icon {
+            font-size: 3rem;
+        }
+        
+        .empty-title, .no-results-title {
+            font-size: 1.25rem;
+        }
+    }
+    
+    /* Dark Theme Support */
+    .dark-theme .stock-page-card {
+        background: var(--dark-bg-2);
+        border-color: var(--dark-border);
+    }
+    
+    .dark-theme .stock-content {
+        background: var(--dark-bg-1);
+    }
+    
+    .dark-theme .table-container {
+        background: var(--dark-bg-2);
+        border-color: var(--dark-border);
+    }
+    
+    .dark-theme .stock-table thead {
+        background: linear-gradient(135deg, var(--dark-bg-3) 0%, var(--dark-bg-2) 100%);
+        border-bottom-color: var(--dark-border);
+    }
+    
+    .dark-theme .stock-table th {
+        color: var(--dark-text-2);
+    }
+    
+    .dark-theme .stock-table tbody tr {
+        background: var(--dark-bg-1);
+        border-bottom-color: var(--dark-border);
+    }
+    
+    .dark-theme .stock-table tbody tr:hover {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    }
+    
+    .dark-theme .product-name {
+        color: var(--dark-text-1);
+    }
+    
+    .dark-theme .product-sku {
+        color: var(--dark-text-3);
+    }
+    
+    .dark-theme .stock-quantity {
+        color: var(--dark-text-1);
+    }
+    
+    .dark-theme .stock-unit {
+        color: var(--dark-text-3);
+    }
+    
+    .dark-theme .price {
+        color: #667eea;
+    }
+    
+    .dark-theme .btn-action {
+        background: var(--dark-bg-3);
+        color: var(--dark-text-1);
+        border-color: var(--dark-border);
+    }
+    
+    .dark-theme .btn-action:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .dark-theme .empty-state, .dark-theme .no-results {
+        background: var(--dark-bg-2);
+    }
+    
+    .dark-theme .empty-title, .dark-theme .no-results-title {
+        color: var(--dark-text-2);
+    }
+    
+    .dark-theme .empty-description {
+        color: var(--dark-text-3);
+    }
+    
+    .dark-theme .empty-icon, .dark-theme .no-results-icon {
+        color: var(--dark-text-3);
+    }
+    
+    .dark-theme .search-results {
+        background: var(--dark-bg-2);
+        border: 1px solid var(--dark-border);
+    }
+    
+    .dark-theme .search-result-item {
+        border-bottom-color: var(--dark-border);
+    }
+    
+    .dark-theme .search-result-item:hover {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    }
+    
+    .dark-theme .search-result-title {
+        color: var(--dark-text-1);
+    }
+    
+    .dark-theme .search-result-subtitle {
+        color: var(--dark-text-3);
+    }
+    
+    /* Status Badge Styles */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+    
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .status-hidden {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .dark-theme .status-active {
+        background-color: #1e7e34;
+        color: #fff;
+        border-color: #1e7e34;
+    }
+    
+    .dark-theme .status-hidden {
+        background-color: #856404;
+        color: #fff;
+        border-color: #856404;
+    }
+    
+    .status-cell {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    /* Status Dropdown Styles */
+    .status-dropdown {
+        min-width: 100px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        border: 1px solid #dee2e6;
+        background-color: #ffffff;
+        color: #495057;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .status-dropdown:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+    }
+    
+    .status-dropdown:hover {
+        border-color: #667eea;
+        background-color: #f8f9fa;
+    }
+    
+    .status-dropdown:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: #e9ecef;
+    }
+    
+    /* Dark theme status dropdown */
+    .dark-theme .status-dropdown {
+        background-color: var(--dark-bg-1);
+        border-color: var(--dark-border);
+        color: var(--dark-text-1);
+    }
+    
+    .dark-theme .status-dropdown:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .dark-theme .status-dropdown:hover {
+        border-color: #667eea;
+        background-color: var(--dark-bg-2);
+    }
+    
+    .dark-theme .status-dropdown:disabled {
+        background-color: var(--dark-bg-3);
+        color: var(--dark-text-3);
+    }
+    
+    /* Status-based Product Icon Colors */
+    .active-icon {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: 2px solid #10b981;
+    }
+    
+    .hidden-icon {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: 2px solid #ef4444;
+    }
+    
+    .active-icon i {
+        color: white;
+    }
+    
+    .hidden-icon i {
+        color: white;
+    }
+    
+    /* Status dropdown color based on selection */
+    .status-dropdown.hidden-status {
+        background-color: #fee2e2 !important;
+        border-color: #ef4444 !important;
+        color: #dc2626 !important;
+    }
+    
+    .status-dropdown.hidden-status:focus {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.25) !important;
+    }
+    
+    .status-dropdown.hidden-status:hover {
+        background-color: #f8d7da !important;
+        border-color: #dc2626 !important;
+    }
+    
+    .status-dropdown.active-status {
+        background-color: #dcfce7 !important;
+        border-color: #10b981 !important;
+        color: #059669 !important;
+    }
+    
+    .status-dropdown.active-status:focus {
+        border-color: #059669 !important;
+        box-shadow: 0 0 0 0.2rem rgba(5, 150, 105, 0.25) !important;
+    }
+    
+    .status-dropdown.active-status:hover {
+        background-color: #d1fae5 !important;
+        border-color: #059669 !important;
+    }
+    
+    /* Dark theme status icons */
+    .dark-theme .active-icon {
+        background: linear-gradient(135deg, #059669, #047857);
+        border-color: #059669;
+    }
+    
+    .dark-theme .hidden-icon {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        border-color: #dc2626;
+    }
+    
+    /* Dark theme status dropdown color based on selection */
+    .dark-theme .status-dropdown.hidden-status {
+        background-color: #7f1d1d !important;
+        border-color: #dc2626 !important;
+        color: #fca5a5 !important;
+    }
+.dark-theme .status-dropdown.hidden-status:focus {
+        border-color: #b91c1c !important;
+        box-shadow: 0 0 0 0.2rem rgba(185, 28, 28, 0.25) !important;
+    }
+    
+    .dark-theme .status-dropdown.hidden-status:hover {
+        background-color: #991b1b !important;
+        border-color: #dc2626 !important;
+    }
+    
+    .dark-theme .status-dropdown.active-status {
+        background-color: #064e3b !important;
+        border-color: #10b981 !important;
+        color: #6ee7b7 !important;
+    }
+    
+    .dark-theme .status-dropdown.active-status:focus {
+        border-color: #059669 !important;
+        box-shadow: 0 0 0 0.2rem rgba(5, 150, 105, 0.25) !important;
+    }
+    
+    .dark-theme .status-dropdown.active-status:hover {
+        background-color: #065f46 !important;
+        border-color: #059669 !important;
+    }
+    
+    /* Custom dropdown arrow styling */
+    .status-dropdown {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1.2em;
+        padding-right: 2.5rem !important;
+    }
+    
+    .status-dropdown.hidden-status {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    }
+    
+    .status-dropdown.active-status {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    }
+    
+    .dark-theme .status-dropdown.hidden-status {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fca5a5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    }
+    
+    .dark-theme .status-dropdown.active-status {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236ee7b7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    }
+</style>
+<style>
+    /* Custom file input */
+    .file-input-wrapper {
+        border: 2px dashed rgba(102, 126, 234, 0.4);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .file-input-wrapper:hover {
+        border-color: rgba(102, 126, 234, 0.8);
+        background: rgba(102, 126, 234, 0.08);
+    }
+
+    .file-input-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #4c1d95;
+        font-weight: 600;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    /* Highlight styles for table filtering */
+    .category-highlight {
+        animation: highlightPulse 1s ease;
+    }
+
+    @keyframes highlightPulse {
+        0% {
+            background: rgba(102, 126, 234, 0.15);
+        }
+        100% {
+            background: transparent;
+        }
+    }
+    
+    /* Dark theme styles for Product Alert Modal */
+    .dark-theme #productAlertModal .modal-content {
+        background: var(--dark-bg-2);
+        border-color: var(--gray-700);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #productAlertModal .modal-header {
+        background: #f59e0b !important;
+        color: #000000 !important;
+        border-color: var(--gray-700);
+    }
+    
+    .dark-theme #productAlertModal .modal-body {
+        color: var(--gray-300);
+    }
+    
+    .dark-theme #productAlertModal .form-label {
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #productAlertModal .form-control {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #productAlertModal .form-control::placeholder {
+        color: var(--gray-500);
+    }
+    
+    .dark-theme #productAlertModal .form-control:focus {
+        background: var(--dark-bg-1);
+        border-color: var(--warning);
+        color: var(--gray-200);
+        box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.25);
+    }
+    
+    .dark-theme #productAlertModal .modal-footer {
+        border-color: var(--gray-700);
+    }
+    
+    .dark-theme #productAlertModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    
+    .dark-theme #productAlertModal .btn-close:hover {
+        opacity: 1;
+    }
+    
+    /* Dark theme styles for Edit Product Modal */
+    .dark-theme #editProductModal .modal-content {
+        background: var(--dark-bg-2);
+        border-color: var(--gray-700);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #editProductModal .modal-header {
+        background: var(--info) !important;
+        color: var(--white) !important;
+        border-color: var(--gray-700);
+    }
+    
+    .dark-theme #editProductModal .modal-body {
+        color: var(--gray-300);
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    #editProductModal .modal-body {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .dark-theme #editProductModal .form-label {
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #editProductModal .form-control {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #editProductModal .form-control::placeholder {
+        color: var(--gray-500);
+    }
+    
+    .dark-theme #editProductModal .form-control:focus {
+        background: var(--dark-bg-1);
+        border-color: var(--info);
+        color: var(--gray-200);
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+    
+    .dark-theme #editProductModal .modal-footer {
+        border-color: var(--gray-700);
+    }
+    
+    .dark-theme #editProductModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    
+    .dark-theme #editProductModal .btn-close:hover {
+        opacity: 1;
+    }
+    
+    .dark-theme #editProductModal .text-danger {
+        color: #ef4444 !important;
+    }
+    
+    .dark-theme #editProductModal .current-image-preview {
+        color: var(--gray-300);
+    }
+    
+    /* Dark theme styles for Add Product Modal */
+    .dark-theme #addProductModal .modal-content {
+        background: var(--dark-bg-2);
+        border-color: var(--gray-700);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #addProductModal .modal-header {
+        background: var(--primary) !important;
+        color: var(--white) !important;
+        border-color: var(--gray-700);
+    }
+    
+    .dark-theme #addProductModal .modal-body {
+        color: var(--gray-300);
+    }
+    
+    .dark-theme #addProductModal .form-label {
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #addProductModal .form-control {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #addProductModal .form-control::placeholder {
+        color: var(--gray-500);
+    }
+    
+    .dark-theme #addProductModal .form-control:focus {
+        background: var(--dark-bg-1);
+        border-color: var(--primary);
+        color: var(--gray-200);
+        box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.25);
+    }
+    
+    .dark-theme #addProductModal .form-select {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #addProductModal .form-select:focus {
+        background: var(--dark-bg-1);
+        border-color: var(--primary);
+        color: var(--gray-200);
+        box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.25);
+    }
+    
+    .dark-theme #addProductModal .form-text {
+        color: var(--gray-400);
+    }
+    
+    .dark-theme #addProductModal .modal-footer {
+        background: var(--dark-bg-2);
+        border-color: var(--gray-700);
+    }
+    
+    .dark-theme #addProductModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    
+    .dark-theme #addProductModal .btn-close:hover {
+        opacity: 1;
+    }
+    
+    .dark-theme #addProductModal .file-input-wrapper {
+        border-color: rgba(102, 126, 234, 0.6);
+        background: rgba(102, 126, 234, 0.05);
+    }
+    
+    .dark-theme #addProductModal .file-input-wrapper:hover {
+        border-color: rgba(102, 126, 234, 0.8);
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .dark-theme #addProductModal .file-input-label {
+        color: #667eea;
+    }
+    
+    .dark-theme #addProductModal .btn-outline-secondary {
+        background: var(--dark-bg-3);
+        border-color: var(--gray-600);
+        color: var(--gray-300);
+    }
+    
+    .dark-theme #addProductModal .btn-outline-secondary:hover {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-500);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #addProductModal .btn-primary {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: var(--white);
+    }
+    
+    .dark-theme #addProductModal .btn-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        color: var(--white);
+    }
+    
+    .dark-theme #editProductModal #currentImage {
+        border-color: var(--gray-600);
+    }
+    
+    /* Dark theme styles for Add Category Modal */
+    .dark-theme #addCategoryModal .modal-content {
+        background: var(--dark-bg-2);
+        border-color: var(--gray-700);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #addCategoryModal .modal-header {
+        background: #198754 !important;
+        color: white !important;
+        border-color: var(--gray-700);
+    }
+    
+    .dark-theme #addCategoryModal .modal-body {
+        color: var(--gray-300);
+    }
+    
+    .dark-theme #addCategoryModal .form-label {
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #addCategoryModal .form-control {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+    
+    .dark-theme #addCategoryModal .form-control::placeholder {
+        color: var(--gray-500);
+    }
+    
+    .dark-theme #addCategoryModal .form-control:focus {
+        background: var(--dark-bg-1);
+        border-color: var(--success);
+        color: var(--gray-200);
+        box-shadow: 0 0 0 0.2rem rgba(34, 197, 94, 0.25);
+    }
+    
+    .dark-theme #addCategoryModal .modal-footer {
+        border-color: var(--gray-700);
+    }
+    
+    .dark-theme #addCategoryModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    
+    .dark-theme #addCategoryModal .btn-close:hover {
+        opacity: 1;
+    }
+    
+    .dark-theme #addCategoryModal .text-danger {
+        color: #ef4444 !important;
+    }
+    
+    .dark-theme #addCategoryModal .form-text {
+        color: var(--gray-400);
+    }
+    
+    .toast-floating,
+    .toast-floating * {
+        user-select: none;
+        pointer-events: none;
+    }
+    
+    .inventory-toast .toast-body {
+        font-weight: 500;
+        letter-spacing: 0.01rem;
+    }
+    
+    /* Error Toast Styles - Same as success but with error colors */
+    .error-toast {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        border-radius: 0.75rem;
+        min-width: 20rem;
+    }
+    
+    .dark-theme .error-toast {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+    
+        
+    /* Hide number input arrows */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+    input[type="number"] {
+        appearance: textfield;
+        -moz-appearance: textfield;
+    }
+</style>
+    
+</head>
+<body>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addProductModalLabel">
+                    <i class="fas fa-box-open me-2"></i> Add New Product
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addProductForm" action="{{ url_for('main.add_product') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="productName" class="form-label">Product Name<span class="text-danger"> *</span></label>
+                            <input type="text" class="form-control" id="productName" name="name" placeholder="e.g. Pentonic Blue 0.7mm" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productCategory" class="form-label">Category<span class="text-danger"> *</span></label>
+                            <select class="form-control" id="productCategory" name="category_id" required>
+                                <option value="">Select category...</option>
+                                {% for category in categories %}
+                                <option value="{{ category.category_id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="productPrice" class="form-label">Price (Rs.)<span class="text-danger"> *</span></label>
+                            <input type="number" class="form-control" id="productPrice" name="price" step="0.01" min="0" placeholder="e.g. 50.00" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="productStock" class="form-label">Stock Quantity<span class="text-danger"> *</span></label>
+                            <input type="number" class="form-control" id="productStock" name="stock_quantity" min="0" value="0" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="productUnit" class="form-label">Unit Type</label>
+                            <select class="form-control" id="productUnit" name="unit_type" onchange="updateUnitsPerPack()">
+                                <option value="piece">Piece</option>
+                                <option value="pack">Pack</option>
+                                <option value="dozen">Dozen</option>
+                                <option value="bundle">Bundle</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="unitsPerPack" class="form-label">Units Per Pack</label>
+                            <input type="number" class="form-control" id="unitsPerPack" name="units_per_pack" min="1" value="1" placeholder="e.g. 10" readonly>
+                            <div class="form-text">Number of pieces per pack/dozen/bundle</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productSKU" class="form-label">SKU</label>
+                            <input type="text" class="form-control" id="productSKU" name="sku" placeholder="e.g. BALL-003-B07" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="productBrand" class="form-label">Brand</label>
+                            <input type="text" class="form-control" id="productBrand" name="brand" placeholder="e.g. Pentonic">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productSupplier" class="form-label">Supplier</label>
+                            <select class="form-control" id="productSupplier" name="supplier_id">
+                                <option value="">Select supplier...</option>
+                                {% for supplier in suppliers %}
+                                <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="productImage" class="form-label">Product Image</label>
+                            <input type="file" id="productImage" name="product_image" accept="image/*" style="display: none;" onchange="updateFileName(this)">
+                            <div class="file-input-wrapper">
+                                <label for="productImage" class="file-input-label">
+                                    <i class="fas fa-cloud-upload-alt me-2"></i>
+                                    <span id="fileLabel">Choose Product Image</span>
+                                </label>
+                            </div>
+                            <div class="form-text">Upload product image (JPG, PNG, GIF, WebP)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveProductBtn">
+                        <i class="fas fa-save me-1"></i> Save Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="editProductModalLabel">
+                    <i class="fas fa-edit me-2"></i> Edit Product
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editProductForm" action="{{ url_for('products.update_product') }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" id="editProductId" name="product_id">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="editProductName" class="form-label">Product Name<span class="text-danger"> *</span></label>
+                            <input type="text" class="form-control" id="editProductName" name="name" placeholder="e.g. Pentonic Blue 0.7mm" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="editProductCategory" class="form-label">Category<span class="text-danger"> *</span></label>
+                            <select class="form-control" id="editProductCategory" name="category_id" required>
+                                <option value="">Select category...</option>
+                                {% for category in categories %}
+                                <option value="{{ category.category_id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="editProductPrice" class="form-label">Price (Rs.)<span class="text-danger"> *</span></label>
+                            <input type="number" class="form-control" id="editProductPrice" name="price" step="0.01" min="0" placeholder="e.g. 50.00" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="editProductStock" class="form-label">Stock Quantity<span class="text-danger"> *</span></label>
+                            <input type="number" class="form-control" id="editProductStock" name="stock_quantity" min="0" value="0" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="editProductUnit" class="form-label">Unit Type</label>
+                            <select class="form-control" id="editProductUnit" name="unit_type" onchange="updateEditUnitsPerPack()">
+                                <option value="piece">Piece</option>
+                                <option value="pack">Pack</option>
+                                <option value="dozen">Dozen</option>
+                                <option value="bundle">Bundle</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="editUnitsPerPack" class="form-label">Units Per Pack</label>
+                            <input type="number" class="form-control" id="editUnitsPerPack" name="units_per_pack" min="1" value="1" placeholder="e.g. 10" readonly>
+                            <div class="form-text">Number of pieces per pack/dozen/bundle</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="editProductSKU" class="form-label">SKU</label>
+                            <input type="text" class="form-control" id="editProductSKU" name="sku" placeholder="e.g. BALL-003-B07">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="editProductBrand" class="form-label">Brand</label>
+                            <input type="text" class="form-control" id="editProductBrand" name="brand" placeholder="e.g. Pentonic">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="editProductSupplier" class="form-label">Supplier<span class="text-danger"> *</span></label>
+                            <select class="form-control" id="editProductSupplier" name="supplier_id" required>
+                                <option value="">Select supplier...</option>
+                                {% for supplier in suppliers %}
+                                <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="editProductImage" class="form-label">Product Image</label>
+                            <input type="file" id="editProductImage" name="product_image" accept="image/*" style="display: none;" onchange="updateEditFileName(this)">
+                            <div class="file-input-wrapper">
+                                <label for="editProductImage" class="file-input-label">
+                                    <i class="fas fa-cloud-upload-alt me-2"></i>
+                                    <span id="editFileLabel">Change Product Image</span>
+                                </label>
+                            </div>
+                            <div class="form-text">Upload new product image (JPG, PNG, GIF, WebP)</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="current-image-preview" id="currentImagePreview" style="display: none;">
+                                <label class="form-label">Current Image:</label>
+                                <img id="currentImage" src="" alt="Current product image" style="max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info" id="updateProductBtn">
+                        <i class="fas fa-save me-1"></i> Update Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addCategoryModalLabel">
+                    <i class="fas fa-tags me-2"></i> Add New Category
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addCategoryForm" action="{{ url_for('main.add_category') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">Category Name<span class="text-danger"> *</span></label>
+                        <input type="text" class="form-control" id="categoryName" name="name" placeholder="e.g. Pens, Notebooks, Office Supplies" required>
+                        <div class="form-text">Enter a descriptive name for the product category</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="categoryDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="categoryDescription" name="description" rows="3" placeholder="Optional description for this category..."></textarea>
+                        <div class="form-text">Provide additional details about this category (optional)</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="saveCategoryBtn">
+                        <i class="fas fa-save me-1"></i> Save Category
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Bootstrap toasts for success messages (same as logout)
+        const successToasts = document.querySelectorAll('.welcome-toast');
+        successToasts.forEach(toast => {
+            const toastInstance = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 2000  // Auto-hide after 2 seconds
+            });
+            toastInstance.show();
+            
+            // Remove toast element after it's hidden
+            toast.addEventListener('hidden.bs.toast', function() {
+                toast.closest('.toast-container').remove();
+            });
+        });
+        
+        // Initialize Bootstrap toasts for error messages (same as success but error styling)
+        const errorToasts = document.querySelectorAll('.error-toast');
+        errorToasts.forEach(toast => {
+            const toastInstance = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 2000  // Auto-hide after 2 seconds
+            });
+            toastInstance.show();
+            
+            // Remove toast element after it's hidden
+            toast.addEventListener('hidden.bs.toast', function() {
+                toast.closest('.toast-container').remove();
+            });
+        });
         // Search functionality
         const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
         const productRows = document.querySelectorAll('.product-row');
+        
+        // Product data for search results
+        const products = [];
+        productRows.forEach(row => {
+            const name = row.querySelector('.product-name')?.textContent?.trim() || row.querySelector('td:first-child')?.textContent?.trim() || '';
+            const category = row.querySelector('.category-badge')?.textContent?.trim() || '';
+            const skuText = row.querySelector('.product-sku')?.textContent?.trim() || '';
+            const sku = skuText.replace('SKU:', '').trim();
+            const quantity = row.querySelector('.stock-quantity')?.textContent?.trim() || '';
+            const price = row.querySelector('.price')?.textContent?.trim() || '';
+            
+            products.push({ name, category, sku, quantity, price, element: row });
+        });
         
         // Add input event listener for real-time search
         if (searchInput) {
             searchInput.addEventListener('input', function() {
-                filterProducts(this.value);
+                const searchTerm = this.value.trim();
+                if (searchTerm.length > 0) {
+                    showSearchResults(searchTerm);
+                } else {
+                    hideSearchResults();
+                    filterProducts('');
+                }
+            });
+            
+            // Hide search results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.parentElement.contains(e.target)) {
+                    hideSearchResults();
+                }
             });
         }
+        
+        function showSearchResults(searchTerm) {
+            const filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
+            if (filteredProducts.length === 0) {
+                searchResults.innerHTML = `
+                    <div class="search-result-item">
+                        <div class="search-result-content">
+                            <div class="search-result-title">No products found</div>
+                            <div class="search-result-subtitle">Try a different search term</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                searchResults.innerHTML = filteredProducts.slice(0, 5).map(product => `
+                    <div class="search-result-item" onclick="selectProduct('${product.name}')">
+                        <div class="search-result-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="search-result-content">
+                            <div class="search-result-title">${product.name}</div>
+                            <div class="search-result-subtitle">${product.category} • ${product.sku}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            searchResults.classList.add('show');
+        }
+        
+        function hideSearchResults() {
+            searchResults.classList.remove('show');
+        }
+        
+        window.selectProduct = function(productName) {
+            searchInput.value = productName;
+            hideSearchResults();
+            filterProducts(productName);
+        };
         
         function filterProducts(searchTerm) {
             const term = searchTerm.toLowerCase().trim();
@@ -261,12 +2085,15 @@
             
             productRows.forEach(row => {
                 try {
-                    const productName = row.querySelector('td:first-child').textContent.toLowerCase();
-                    const category = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    const productName = row.querySelector('.product-name')?.textContent.toLowerCase() || '';
+                    const category = row.querySelector('.category-badge')?.textContent.toLowerCase() || '';
+                    const sku = row.querySelector('.product-sku')?.textContent.toLowerCase() || '';
                     
-                    if (productName.includes(term) || category.includes(term)) {
+                    if (productName.includes(term) || category.includes(term) || sku.includes(term)) {
                         row.style.display = '';
                         hasResults = true;
+                        // Highlight matching text
+                        highlightMatchingText(row, term);
                     } else {
                         row.style.display = 'none';
                     }
@@ -282,10 +2109,19 @@
             }
         }
         
+        function highlightMatchingText(row, searchTerm) {
+            // Add highlight effect to matching rows
+            row.style.animation = 'highlightPulse 1s ease';
+            setTimeout(() => {
+                row.style.animation = '';
+            }, 1000);
+        }
+        
         // Add event listener for Escape key to clear search
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && searchInput) {
                 searchInput.value = '';
+                hideSearchResults();
                 filterProducts('');
             }
         });
@@ -324,509 +2160,6 @@
         }
     });
 </script>
-
-<style>
-    html, body {
-        height: 100%;
-        margin: 0;
-    }
-    
-    body {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
-    
-    .min-vh-100 {
-        min-height: 100vh;
-    }
-    
-    .my-auto {
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    
-    .card {
-        max-width: 1200px;
-        margin: 0 auto;
-        width: 100%;
-    }
-    
-    :root {
-        --primary-color: #4e73df;
-        --primary-hover: #2e59d9;
-        --secondary-color: #6c757d;
-        --success-color: #1cc88a;
-        --danger-color: #e74a3b;
-        --light-color: #f8f9fc;
-        --dark-color: #5a5c69;
-    }
-    
-    body {
-        background-color: #f8f9fc;
-        color: #5a5c69;
-    }
-    
-    .bg-gradient-primary-to-secondary {
-        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-    }
-    
-    .card-header {
-        border: none;
-        padding: 1.5rem 1.5rem;
-        text-align: center;
-    }
-    
-    .card {
-        border: none;
-        border-radius: 0.5rem;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        overflow: hidden;
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-    
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
-    }
-    
-    .table {
-        margin-bottom: 0;
-        border-collapse: separate;
-        border-spacing: 0;
-        width: 100%;
-    }
-    
-    .table th {
-        border-bottom: 2px solid #e3e6f0;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        padding: 1rem 1.5rem;
-        white-space: nowrap;
-    }
-    
-    .table td {
-        padding: 1rem 1.5rem;
-        vertical-align: middle;
-        border-color: #e3e6f0;
-    }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(78, 115, 223, 0.05);
-    }
-    
-    .quantity-indicator {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-right: 6px;
-    }
-    
-    .badge {
-        font-weight: 500;
-        font-size: 0.75rem;
-        padding: 0.35em 0.8em;
-    }
-    
-    .empty-state {
-        padding: 2rem 0;
-    }
-    
-    .empty-state i {
-        opacity: 0.5;
-    }
-    
-    .btn-primary {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-    }
-    
-    .btn-primary:hover {
-        background-color: var(--primary-hover);
-        border-color: var(--primary-hover);
-    }
-    
-    /* Add Product Button */
-    .btn-add-product {
-        background: rgba(255, 255, 255, 0.1);
-        color: white !important;
-        text-decoration: none !important;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 6px;
-        padding: 0.5rem 1.25rem;
-        font-weight: 500;
-        letter-spacing: 0.3px;
-        text-transform: none;
-        font-size: 0.85rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-    
-    .btn-add-product:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(34, 74, 190, 0.25);
-        color: white !important;
-        text-decoration: none !important;
-    }
-    
-    .btn-add-product i {
-        font-size: 0.95rem;
-        margin-right: 8px;
-        transition: none;
-    }
-    
-    .btn-add-product:hover i {
-        transform: translateX(2px);
-    }
-    
-    /* Header Search Styles */
-    .search-container {
-        min-width: 180px;
-        max-width: 250px;
-        width: 100%;
-        transition: all 0.2s ease;
-        margin-right: 0.75rem;
-    }
-    
-    @media (min-width: 768px) {
-        .search-container {
-            min-width: 200px;
-        }
-    }
-    
-    .search-input-group {
-        background: transparent;
-        border-radius: 0;
-        transition: all 0.2s ease;
-        border: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-        height: 36px;
-        box-shadow: none;
-    }
-    
-    .search-input-group:focus-within {
-        background: transparent;
-        box-shadow: none;
-        border-bottom-color: rgba(255, 255, 255, 0.8);
-    }
-    
-    .search-container .input-group-text {
-        background: transparent;
-        border: none;
-        color: rgba(255, 255, 255, 0.7);
-        padding: 0 0.5rem 0 0;
-        font-size: 0.9rem;
-    }
-    
-    .search-container .form-control {
-        background: transparent;
-        border: none;
-        color: white;
-        padding: 0.25rem 0.5rem 0.25rem 0.5rem;
-        height: 100%;
-        font-size: 0.9rem;
-        font-weight: 400;
-        box-shadow: none !important;
-    }
-    
-    .search-container .form-control::placeholder {
-        color: rgba(255, 255, 255, 0.6);
-        font-weight: 400;
-        font-size: 0.9rem;
-    }
-    
-    .search-container .form-control:focus {
-        background: transparent;
-        color: white;
-        box-shadow: none;
-        outline: none;
-        border: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.8);
-    }
-    
-    @media (max-width: 768px) {
-        .container {
-            padding: 0 1rem;
-        }
-        .table-responsive {
-            font-size: 0.875rem;
-        }
-    }
-    /* Category filter styling */
-    .category-filter {
-        max-width: 250px;
-    }
-    
-    /* Print styles */
-    @media print {
-        .no-print, .card-header, .card-footer, #category-filter {
-            display: none !important;
-        }
-        body, .card, .table {
-            background: white !important;
-            color: black !important;
-            font-size: 12px;
-        }
-        .container {
-            max-width: 100%;
-            padding: 0;
-        }
-        .table {
-            width: 100%;
-            margin-bottom: 1rem;
-        }
-        .table th, .table td {
-            padding: 4px 8px;
-            border: 1px solid #dee2e6;
-        }
-        .badge {
-            border: 1px solid #dee2e6;
-            background: white !important;
-            color: black !important;
-            padding: 2px 6px;
-            font-weight: normal;
-        }
-        .text-muted {
-            color: #6c757d !important;
-        }
-    }
-    
-    /* Category filter highlight */
-    .category-highlight {
-        background-color: rgba(13, 110, 253, 0.1) !important;
-        transition: none;
-    }
-    
-    .card-header h2, 
-    .card-header h2 i {
-        color: white !important;
-    }
-    
-    /* Alert button styles */
-    .alert-btn {
-        white-space: nowrap;
-    }
-    .alert-btn i {
-        margin-right: 4px;
-    }
-
-    /* Dark theme styles for Alert Modal */
-    .dark-theme #productAlertModal .modal-content {
-        background: var(--dark-bg-2);
-        border-color: var(--gray-700);
-        color: var(--gray-200);
-    }
-
-    .dark-theme #productAlertModal .modal-header {
-        background: #ffc107 !important;
-        color: #212529 !important;
-        border-color: var(--gray-700);
-    }
-
-    .dark-theme #productAlertModal .modal-body {
-        color: var(--gray-300);
-    }
-
-    .dark-theme #productAlertModal .form-label {
-        color: var(--gray-200);
-    }
-
-    .dark-theme #productAlertModal .form-control {
-        background: var(--dark-bg-1);
-        border-color: var(--gray-600);
-        color: var(--gray-200);
-    }
-
-    .dark-theme #productAlertModal .form-control::placeholder {
-        color: var(--gray-500);
-    }
-
-    .dark-theme #productAlertModal .modal-footer {
-        border-color: var(--gray-700);
-    }
-
-    .dark-theme #productAlertModal .btn-close {
-        filter: brightness(0) invert(1);
-        opacity: 0.8;
-    }
-
-    .dark-theme #productAlertModal .btn-close:hover {
-        opacity: 1;
-    }
-
-    /* Flying paper plane animation for Send Alert button */
-    #sendAlertBtn {
-        position: relative;
-        overflow: hidden;
-    }
-
-    #sendAlertBtn::before {
-        content: '✈️';
-        position: absolute;
-        font-size: 20px;
-        top: 50%;
-        left: -30px;
-        transform: translateY(-50%) rotate(-45deg);
-        opacity: 0;
-        transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        z-index: 1;
-    }
-
-    #sendAlertBtn:hover::before {
-        left: calc(100% + 30px);
-        opacity: 1;
-        transform: translateY(-50%) rotate(45deg);
-    }
-
-    #sendAlertBtn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
-    }
-
-    #sendAlertBtn i {
-        position: relative;
-        z-index: 2;
-        transition: transform 0.3s ease;
-    }
-
-    #sendAlertBtn:hover i {
-        transform: translateX(-5px);
-    }
-
-    /* Dark theme styles for Add Product Modal */
-    .dark-theme #addProductModal .modal-content {
-        background: var(--dark-bg-2);
-        border-color: var(--gray-700);
-        color: var(--gray-200);
-    }
-
-    .dark-theme #addProductModal .modal-header {
-        background: var(--primary) !important;
-        color: var(--white) !important;
-        border-color: var(--gray-700);
-    }
-
-    .dark-theme #addProductModal .modal-body {
-        color: var(--gray-300);
-    }
-
-    .dark-theme #addProductModal .form-label {
-        color: var(--gray-200);
-    }
-
-    .dark-theme #addProductModal .form-control {
-        background: var(--dark-bg-1);
-        border-color: var(--gray-600);
-        color: var(--gray-200);
-    }
-
-    .dark-theme #addProductModal .form-control::placeholder {
-        color: var(--gray-500);
-    }
-
-    .dark-theme #addProductModal .form-control:focus {
-        background: var(--dark-bg-1);
-        border-color: var(--primary);
-        color: var(--gray-200);
-        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-    }
-
-    .dark-theme #addProductModal .modal-footer {
-        border-color: var(--gray-700);
-    }
-
-    .dark-theme #addProductModal .btn-close {
-        filter: brightness(0) invert(1);
-        opacity: 0.8;
-    }
-
-    .dark-theme #addProductModal .btn-close:hover {
-        opacity: 1;
-    }
-
-    .dark-theme #addProductModal .text-danger {
-        color: #ef4444 !important;
-    }
-    
-    /* Success Popup Styles */
-    .alert-success-popup {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-        padding: 16px 20px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 320px;
-        z-index: 9999;
-        animation: slideInRight 0.3s ease-out;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .alert-success-popup .success-icon {
-        font-size: 24px;
-        animation: checkBounce 0.5s ease-out;
-    }
-    
-    .alert-success-popup .success-message {
-        flex: 1;
-        line-height: 1.4;
-    }
-    
-    .alert-success-popup strong {
-        display: block;
-        font-size: 14px;
-        margin-bottom: 2px;
-    }
-    
-    .alert-success-popup br + span {
-        font-size: 12px;
-        opacity: 0.9;
-    }
-    
-    /* Dark theme success popup */
-    .dark-theme .alert-success-popup {
-        background: linear-gradient(135deg, #059669, #047857);
-        box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    /* Animations */
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes checkBounce {
-        0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
-        }
-        40% {
-            transform: translateY(-10px);
-        }
-        60% {
-            transform: translateY(-5px);
-        }
-    }
-</style>
-
 <!-- Alert Modal -->
 <div class="modal fade" id="productAlertModal" tabindex="-1" aria-labelledby="productAlertModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -836,6 +2169,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <div id="alertError" class="alert alert-danger d-none"></div>
                 <div class="mb-3">
                     <p class="mb-1"><strong>Product:</strong> <span id="modalProductName"></span></p>
                     <p class="mb-1"><strong>Category:</strong> <span id="modalProductCategory"></span></p>
@@ -861,8 +2195,314 @@
 </div>
 
 <script>
+    // Function to update file name display
+    function updateFileName(input) {
+        const fileName = input.files[0]?.name || 'Choose Product Image';
+        document.getElementById('fileLabel').textContent = fileName;
+    }
+
+    // Function to update edit file name display
+    function updateEditFileName(input) {
+        const fileName = input.files[0]?.name || 'Change Product Image';
+        document.getElementById('editFileLabel').textContent = fileName;
+    }
+
+    // Function to update units per pack for edit modal
+    function updateEditUnitsPerPack() {
+        const unitType = document.getElementById('editProductUnit').value;
+        const unitsPerPackInput = document.getElementById('editUnitsPerPack');
+        
+        if (unitType === 'piece') {
+            unitsPerPackInput.value = 1;
+            unitsPerPackInput.readOnly = true;
+            unitsPerPackInput.classList.add('bg-light');
+            // Add dark theme compatible styling
+            if (document.body.classList.contains('dark-theme')) {
+                unitsPerPackInput.classList.remove('bg-light');
+                unitsPerPackInput.classList.add('bg-dark');
+                unitsPerPackInput.style.color = 'var(--gray-400)';
+                unitsPerPackInput.style.backgroundColor = 'var(--dark-bg-3)';
+            }
+        } else {
+            unitsPerPackInput.readOnly = false;
+            unitsPerPackInput.classList.remove('bg-light');
+            unitsPerPackInput.classList.remove('bg-dark');
+            unitsPerPackInput.style.color = '';
+            unitsPerPackInput.style.backgroundColor = '';
+            // Set default values for other unit types
+            if (unitType === 'dozen') {
+                unitsPerPackInput.value = 12;
+            } else if (unitType === 'bundle') {
+                unitsPerPackInput.value = 1;
+            } else {
+                unitsPerPackInput.value = 1;
+            }
+        }
+    }
+
     // Store the current product ID when modal is shown
     let currentProductId = null;
+
+    // Function to update units per pack based on unit type
+    function updateUnitsPerPack() {
+        const unitType = document.getElementById('productUnit').value;
+        const unitsPerPackInput = document.getElementById('unitsPerPack');
+        
+        if (unitType === 'piece') {
+            unitsPerPackInput.value = 1;
+            unitsPerPackInput.readOnly = true;
+            unitsPerPackInput.classList.add('bg-light');
+            // Add dark theme compatible styling
+            if (document.body.classList.contains('dark-theme')) {
+                unitsPerPackInput.classList.remove('bg-light');
+                unitsPerPackInput.classList.add('bg-dark');
+                unitsPerPackInput.style.color = 'var(--gray-400)';
+                unitsPerPackInput.style.backgroundColor = 'var(--dark-bg-3)';
+            }
+        } else {
+            unitsPerPackInput.readOnly = false;
+            unitsPerPackInput.classList.remove('bg-light');
+            unitsPerPackInput.classList.remove('bg-dark');
+            unitsPerPackInput.style.color = '';
+            unitsPerPackInput.style.backgroundColor = '';
+            // Set default values for other unit types
+            if (unitType === 'dozen') {
+                unitsPerPackInput.value = 12;
+            } else if (unitType === 'bundle') {
+                unitsPerPackInput.value = 1;
+            } else {
+                unitsPerPackInput.value = 1;
+            }
+        }
+    }
+
+    // Initialize the units per pack when modal is shown
+    const addProductModal = document.getElementById('addProductModal');
+    if (addProductModal) {
+        addProductModal.addEventListener('show.bs.modal', function () {
+            updateUnitsPerPack();
+        });
+    }
+    
+    // Update units per pack styling when theme changes
+    function updateUnitsPerPackTheme() {
+        const unitsPerPackInput = document.getElementById('unitsPerPack');
+        const editUnitsPerPackInput = document.getElementById('editUnitsPerPack');
+        
+        if (unitsPerPackInput && unitsPerPackInput.readOnly) {
+            if (document.body.classList.contains('dark-theme')) {
+                unitsPerPackInput.classList.remove('bg-light');
+                unitsPerPackInput.classList.add('bg-dark');
+                unitsPerPackInput.style.color = 'var(--gray-400)';
+                unitsPerPackInput.style.backgroundColor = 'var(--dark-bg-3)';
+            } else {
+                unitsPerPackInput.classList.remove('bg-dark');
+                unitsPerPackInput.classList.add('bg-light');
+                unitsPerPackInput.style.color = '';
+                unitsPerPackInput.style.backgroundColor = '';
+            }
+        }
+        
+        if (editUnitsPerPackInput && editUnitsPerPackInput.readOnly) {
+            if (document.body.classList.contains('dark-theme')) {
+                editUnitsPerPackInput.classList.remove('bg-light');
+                editUnitsPerPackInput.classList.add('bg-dark');
+                editUnitsPerPackInput.style.color = 'var(--gray-400)';
+                editUnitsPerPackInput.style.backgroundColor = 'var(--dark-bg-3)';
+            } else {
+                editUnitsPerPackInput.classList.remove('bg-dark');
+                editUnitsPerPackInput.classList.add('bg-light');
+                editUnitsPerPackInput.style.color = '';
+                editUnitsPerPackInput.style.backgroundColor = '';
+            }
+        }
+    }
+    
+    // Listen for theme changes
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            setTimeout(updateUnitsPerPackTheme, 100); // Small delay to ensure theme class is updated
+        });
+    }
+
+    // Handle Edit Product modal show event
+    const editProductModal = document.getElementById('editProductModal');
+    if (editProductModal) {
+        editProductModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            
+            // Get all product data attributes
+            const productId = button.getAttribute('data-product-id');
+            const productName = button.getAttribute('data-name');
+            const productCategory = button.getAttribute('data-category');
+            const productPrice = button.getAttribute('data-price');
+            const productQuantity = button.getAttribute('data-quantity');
+            const productBrand = button.getAttribute('data-brand');
+            const productSupplier = button.getAttribute('data-supplier');
+            const productSku = button.getAttribute('data-sku');
+            const productImageUrl = button.getAttribute('data-image-url');
+            
+            console.log('Edit Product Data:', { productId, productName, productCategory, productPrice, productQuantity, productBrand, productSupplier, productSku, productImageUrl });
+            
+            // Populate the edit form with product data
+            document.getElementById('editProductId').value = productId || '';
+            document.getElementById('editProductName').value = productName || '';
+            document.getElementById('editProductPrice').value = productPrice || '';
+            document.getElementById('editProductStock').value = productQuantity || '';
+            document.getElementById('editProductBrand').value = productBrand || '';
+            document.getElementById('editProductSKU').value = productSku || '';
+            
+            // Set category
+            const categorySelect = document.getElementById('editProductCategory');
+            console.log('Setting category:', productCategory, 'Available options:', Array.from(categorySelect.options).map(opt => ({value: opt.value, text: opt.text})));
+            if (productCategory) {
+                // Try to find and set the category by ID
+                categorySelect.value = productCategory;
+                // If not set, try to find by matching text (in case we're passing category name instead of ID)
+                if (categorySelect.value !== productCategory) {
+                    const options = categorySelect.options;
+                    for (let i = 0; i < options.length; i++) {
+                        if (options[i].text === productCategory || options[i].value === productCategory) {
+                            categorySelect.value = options[i].value;
+                            break;
+                        }
+                    }
+                }
+                // Final check - if still not set, add it as new option
+                if (categorySelect.value !== productCategory) {
+                    console.warn('Category not found, adding new option:', productCategory);
+                    const newOption = document.createElement('option');
+                    newOption.value = productCategory;
+                    newOption.textContent = productCategory;
+                    categorySelect.appendChild(newOption);
+                    categorySelect.value = productCategory;
+                }
+                console.log('Final category value:', categorySelect.value);
+            }
+            
+            // Set supplier (ensure it's a valid option)
+            const supplierSelect = document.getElementById('editProductSupplier');
+            if (productSupplier && supplierSelect.querySelector(`option[value="${productSupplier}"]`)) {
+                supplierSelect.value = productSupplier;
+            } else {
+                supplierSelect.value = '';
+            }
+            
+            // Initialize units per pack
+            updateEditUnitsPerPack();
+            
+            // Show current image if available
+            const currentImagePreview = document.getElementById('currentImagePreview');
+            const currentImage = document.getElementById('currentImage');
+            if (productImageUrl && productImageUrl.trim() !== '') {
+                currentImage.src = productImageUrl;
+                currentImagePreview.style.display = 'block';
+            } else {
+                currentImagePreview.style.display = 'none';
+            }
+        });
+        
+        // Reset form when modal is hidden
+        editProductModal.addEventListener('hidden.bs.modal', function () {
+            document.getElementById('editProductForm').reset();
+            document.getElementById('currentImagePreview').style.display = 'none';
+            document.getElementById('editFileLabel').textContent = 'Change Product Image';
+        });
+    }
+
+    // Inline status update function
+    function updateProductStatus(selectElement) {
+        const productId = selectElement.getAttribute('data-product-id');
+        const newStatus = selectElement.value;
+        const originalValue = selectElement.getAttribute('data-original-value') || selectElement.value;
+        
+        // Store original value if not already stored
+        if (!selectElement.getAttribute('data-original-value')) {
+            selectElement.setAttribute('data-original-value', originalValue);
+        }
+        
+        // Show loading state
+        const originalText = selectElement.options[selectElement.selectedIndex].text;
+        selectElement.disabled = true;
+        selectElement.style.opacity = '0.6';
+        
+        fetch(`/products/api/products/${productId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Success - keep the new value
+                selectElement.setAttribute('data-original-value', newStatus);
+                
+                // Update classes based on new status
+                selectElement.classList.remove('hidden-status', 'active-status');
+                if (newStatus === 'hidden') {
+                    selectElement.classList.add('hidden-status');
+                } else {
+                    selectElement.classList.add('active-status');
+                }
+                
+                selectElement.style.opacity = '1';
+                selectElement.disabled = false;
+                
+                // Show brief success feedback
+                selectElement.style.borderColor = '#28a745';
+                
+                // Reload page to show updated results
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            } else {
+                // Error - revert to original value
+                selectElement.value = originalValue;
+                selectElement.style.opacity = '1';
+                selectElement.disabled = false;
+                
+                // Restore original classes
+                selectElement.classList.remove('hidden-status', 'active-status');
+                if (originalValue === 'hidden') {
+                    selectElement.classList.add('hidden-status');
+                } else {
+                    selectElement.classList.add('active-status');
+                }
+                
+                selectElement.style.borderColor = '#dc3545';
+                setTimeout(() => {
+                    selectElement.style.borderColor = '';
+                }, 1000);
+                console.error('Status update failed:', data.message);
+            }
+        })
+        .catch(error => {
+            // Network error - revert to original value
+            selectElement.value = originalValue;
+            selectElement.style.opacity = '1';
+            selectElement.disabled = false;
+            
+            // Restore original classes
+            selectElement.classList.remove('hidden-status', 'active-status');
+            if (originalValue === 'hidden') {
+                selectElement.classList.add('hidden-status');
+            } else {
+                selectElement.classList.add('active-status');
+            }
+            
+            selectElement.style.borderColor = '#dc3545';
+            setTimeout(() => {
+                selectElement.style.borderColor = '';
+            }, 1000);
+            console.error('Status update error:', error);
+        });
+    }
 
     // Handle modal show event
     const productAlertModal = document.getElementById('productAlertModal');
@@ -1132,15 +2772,20 @@
     }
     
     /* Dark theme styles for Stock Arrival Modal */
-    .dark-theme .product-row {
-        background-color: #374151;
-        border-color: #4b5563;
-        color: #f3f4f6;
+    .dark-theme .btn-primary:hover {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
     }
-    
-    .dark-theme #stockRequestModal .modal-content {
-        background-color: #1f2937;
-        border-color: #374151;
+
+    /* Status Badge Styles */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: capitalize;
     }
     
     .dark-theme #stockRequestModal .modal-header {
@@ -1215,6 +2860,178 @@
 </style>
 
 <style>
+
+    #sendAlertBtn::before {
+        content: '✈️';
+        position: absolute;
+        font-size: 20px;
+        top: 50%;
+        left: -30px;
+        transform: translateY(-50%) rotate(-45deg);
+        opacity: 0;
+        transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 1;
+    }
+
+    #sendAlertBtn:hover::before {
+        left: calc(100% + 30px);
+        opacity: 1;
+        transform: translateY(-50%) rotate(45deg);
+    }
+
+    #sendAlertBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    #sendAlertBtn i {
+        position: relative;
+        z-index: 2;
+        transition: transform 0.3s ease;
+    }
+
+    #sendAlertBtn:hover i {
+        transform: translateX(-5px);
+    }
+
+    /* Dark theme styles for Add Product Modal */
+    .dark-theme #addProductModal .modal-content {
+        background: var(--dark-bg-2);
+        border-color: var(--gray-700);
+        color: var(--gray-200);
+    }
+
+    .dark-theme #addProductModal .modal-header {
+        background: var(--primary) !important;
+        color: var(--white) !important;
+        border-color: var(--gray-700);
+    }
+
+    .dark-theme #addProductModal .modal-body {
+        color: var(--gray-300);
+    }
+
+    .dark-theme #addProductModal .form-label {
+        color: var(--gray-200);
+    }
+
+    .dark-theme #addProductModal .form-control {
+        background: var(--dark-bg-1);
+        border-color: var(--gray-600);
+        color: var(--gray-200);
+    }
+
+    .dark-theme #addProductModal .form-control::placeholder {
+        color: var(--gray-500);
+    }
+
+    .dark-theme #addProductModal .form-control:focus {
+        background: var(--dark-bg-1);
+        border-color: var(--primary);
+        color: var(--gray-200);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .dark-theme #addProductModal .modal-footer {
+        border-color: var(--gray-700);
+    }
+
+    .dark-theme #addProductModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    
+    /* Move modal footer upper line up */
+    #addProductModal .modal-footer {
+        border-top: 1px solid #dee2e6;
+        padding-top: 0.5rem;
+        margin-top: 0;
+    }
+    
+    .dark-theme #addProductModal .modal-footer {
+        border-top-color: var(--gray-700);
+        padding-top: 0.5rem;
+        margin-top: 0;
+    }
+
+    .dark-theme #addProductModal .btn-close:hover {
+        opacity: 1;
+    }
+
+    .dark-theme #addProductModal .text-danger {
+        color: #ef4444 !important;
+    }
+    
+    /* Success Popup Styles */
+    .alert-success-popup {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 320px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .alert-success-popup .success-icon {
+        font-size: 24px;
+        animation: checkBounce 0.5s ease-out;
+    }
+    
+    .alert-success-popup .success-message {
+        flex: 1;
+        line-height: 1.4;
+    }
+    
+    .alert-success-popup strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+    
+    .alert-success-popup br + span {
+        font-size: 12px;
+        opacity: 0.9;
+    }
+    
+    /* Dark theme success popup */
+    .dark-theme .alert-success-popup {
+        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Animations */
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes checkBounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-10px);
+        }
+        60% {
+            transform: translateY(-5px);
+        }
+    }
     /* Stock Arrival Modal Styles */
     #stockRequestModal .modal-content {
         border: none;
@@ -1499,3 +3316,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 {% endif %} <!-- End Staff Only -->
 {% endblock %}
+
+</body>
+</html>
