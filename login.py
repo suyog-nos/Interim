@@ -118,3 +118,5 @@ def logout():
     # Redirect to login page
     return redirect(url_for('login.login'))
 
+
+# Force update
