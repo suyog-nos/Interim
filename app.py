@@ -1,4 +1,9 @@
 from flask import Flask, session, request
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 from config import conn
 from products import products_bp
 from routes import main_bp
@@ -39,5 +44,3 @@ app.register_blueprint(login_bp)  # Handles /login
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
-
-# Force update
