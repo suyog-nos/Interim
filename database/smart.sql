@@ -1,6 +1,5 @@
 -- ========================
 -- SMART STATIONERY MANAGEMENT SYSTEM
--- Complete Database Schema
 -- ========================
 
 -- ========================
@@ -20,6 +19,10 @@ CREATE TABLE users (
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     phone VARCHAR(15),
+    citizen_id VARCHAR(20) UNIQUE,
+    province VARCHAR(50),
+    district VARCHAR(50),
+    address TEXT,
     hashed_password VARCHAR(255) NOT NULL,
     role ENUM('Customer','Staff','Admin') NOT NULL DEFAULT 'Customer',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -219,22 +222,6 @@ CREATE TABLE new_arrival_alerts (
     INDEX idx_supplier (supplier_id)
 );
 
--- Sample new arrival alerts data
-INSERT INTO new_arrival_alerts (staff_id, product_id, quantity_received, supplier_id, purchase_price, status, staff_notes, created_at) VALUES 
--- Pending arrivals
-(2, 1, 100, 1, 45.00, 'Pending', 'New batch of Pentonic Blue 0.7mm - expected delivery next week', '2025-12-11 08:00:00'),
-(2, 8, 25, 3, 170.00, 'Pending', 'Unomax Blue gel pens - premium quality batch', '2025-12-11 09:30:00'),
-(2, 15, 10, 5, 900.00, 'Pending', 'Football stock for sports season - urgent requirement', '2025-12-11 10:15:00'),
-
--- Approved arrivals (recently received)
-(2, 2, 40, 1, 45.00, 'Approved', 'Pentonic Blue 1.0mm received and added to inventory', '2025-12-10 14:00:00'),
-(2, 11, 30, 4, 45.00, 'Approved', 'Permanent Marker - Blue batch received in good condition', '2025-12-10 16:30:00'),
-(2, 17, 5, 5, 4800.00, 'Approved', 'Badminton rackets - premium quality, customer pre-orders fulfilled', '2025-12-09 11:00:00'),
-
--- Rejected arrivals
-(2, 7, 80, 2, 45.00, 'Rejected', 'Goldex gel pens - quality issues found during inspection', '2025-12-08 13:45:00'),
-(2, 19, 200, 6, 0.80, 'Rejected', 'Paper clips - wrong specifications received', '2025-12-08 15:20:00');
-
 -- ========================
 -- STOCK REQUESTS TABLE
 -- ========================
@@ -257,24 +244,6 @@ CREATE TABLE stock_requests (
     INDEX idx_supplier (supplier_id),
     INDEX idx_status (status)
 );
-
--- Sample stock requests data
-INSERT INTO stock_requests (staff_id, product_id, supplier_id, requested_quantity, reason, status, created_at) VALUES 
--- Pending requests
-(2, 1, 1, 50, 'Low stock on Pentonic Blue 0.7mm - need to replenish for upcoming school season', 'Pending', '2025-12-10 10:30:00'),
-(2, 8, 3, 30, 'Unomax Blue gel pens running low - high demand from office customers', 'Pending', '2025-12-10 14:15:00'),
-(2, 15, 5, 5, 'Football stock depleted - sports equipment in high demand', 'Pending', '2025-12-11 09:00:00'),
-
--- Approved requests
-(2, 2, 1, 40, 'Replenish Pentonic Blue 1.0mm - consistent seller', 'Approved', '2025-12-08 11:20:00'),
-(2, 11, 4, 25, 'Permanent Marker - Blue restock needed', 'Approved', '2025-12-08 16:45:00'),
-(2, 17, 5, 3, 'Badminton rackets requested by regular customer', 'Approved', '2025-12-09 08:30:00'),
-
--- Rejected requests
-(2, 7, 2, 100, 'Excessive quantity - current inventory sufficient', 'Rejected', '2025-12-07 13:00:00'),
-(2, 19, 6, 500, 'Paper clips overstock - warehouse full', 'Rejected', '2025-12-07 15:30:00');
-
-
 
 -- CART ITEMS TABLE
 CREATE TABLE cart_items (
@@ -375,90 +344,3 @@ CREATE TABLE tasks (
     INDEX idx_assigned_to (assigned_to),
     INDEX idx_created (created_at)
 );
-
--- ========================
--- 8. DATABASE TRIGGERS
--- ========================
-
-DELIMITER $$
-
--- Handle new arrival approvals
-CREATE TRIGGER after_new_arrival_status_change
-AFTER UPDATE ON new_arrival_alerts
-FOR EACH ROW
-BEGIN
-    IF NEW.status = 'Approved' AND OLD.status = 'Pending' THEN
-        -- Update product stock
-        UPDATE products
-        SET stock_quantity = stock_quantity + NEW.quantity_received
-        WHERE product_id = NEW.product_id;
-        
-        -- Log to stock history
-        INSERT INTO stock_history (product_id, supplier_id, quantity_received, purchase_price)
-        VALUES (NEW.product_id, NEW.supplier_id, NEW.quantity_received, NEW.purchase_price);
-    END IF;
-END$$
-
--- Auto-update stock when stock request approved
-CREATE TRIGGER after_stock_request_approved
-AFTER UPDATE ON stock_requests
-FOR EACH ROW
-BEGIN
-    IF NEW.status = 'Approved' AND OLD.status = 'Pending' THEN
-        UPDATE products
-        SET stock_quantity = stock_quantity + NEW.requested_quantity
-        WHERE product_id = NEW.product_id;
-        
-        -- Log to stock history using product's supplier
-        INSERT INTO stock_history (product_id, supplier_id, quantity_received, purchase_price)
-        SELECT NEW.product_id, p.supplier_id, NEW.requested_quantity, p.price * 0.7
-        FROM products p
-        WHERE p.product_id = NEW.product_id
-        LIMIT 1;
-    END IF;
-END$$
-
--- Auto-update stock during product exchanges
-CREATE TRIGGER after_product_exchange
-AFTER INSERT ON product_exchanges
-FOR EACH ROW
-BEGIN
-    -- Reduce stock for returned product
-    UPDATE products
-    SET stock_quantity = stock_quantity - NEW.quantity
-    WHERE product_id = NEW.original_product_id;
-    
-    -- Increase stock for exchanged product
-    UPDATE products
-    SET stock_quantity = stock_quantity + NEW.quantity
-    WHERE product_id = NEW.exchanged_product_id;
-END$$
-
-DELIMITER ;
-
--- ========================
--- 9. SAMPLE DATA
--- ========================
-
--- Sample stock history
-INSERT INTO stock_history (product_id, supplier_id, quantity_received, purchase_price) VALUES 
-(1, 1, 100, 35.00),
-(2, 1, 80, 35.00),
-(14, 1, 30, 380.00),
-(15, 4, 15, 200.00),
-(18, 6, 80, 70.00);
-
--- Sample product exchanges
-INSERT INTO product_exchanges (original_product_id, exchanged_product_id, quantity, reason, handled_by, notes) VALUES 
-(1, 1, 2, 'damaged', 2, 'Damaged pen tips - exchanged for new ones'),
-(8, 9, 1, 'wrong_item', 2, 'Customer preferred black over blue'),
-(14, 14, 1, 'defective', 3, 'Missing pens in pack - replaced');
-
--- Sample tasks
-INSERT INTO tasks (title, description, assigned_to, due_date, priority, category, status) VALUES 
-('Restock Pen Section', 'Check and restock all pen displays', 2, CURDATE() + INTERVAL 2 DAY, 'medium', 'Inventory', 'pending'),
-('Inventory Count', 'Complete monthly inventory count', 2, CURDATE() + INTERVAL 5 DAY, 'high', 'Inventory', 'pending'),
-('Clean Store Area', 'Clean and organize front display', 2, CURDATE() + INTERVAL 1 DAY, 'low', 'Maintenance', 'completed');
-
--- Display completion message
-SELECT 'Smart Stationery Database Setup Completed Successfully!' as status;
