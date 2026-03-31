@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}Top Products Report - SmartStationery{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-container {
+        padding: 1.5rem 0;
+    }
+
+    .stats-card {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        border-left: 4px solid transparent;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-card.units {
+        border-left-color: #3b82f6;
+    }
+
+    .stats-card.bestseller {
+        border-left-color: #10b981;
+    }
+
+    .stats-card.orders {
+        border-left-color: #f59e0b;
+    }
+
+    .stats-card.categories {
+        border-left-color: #8b5cf6;
+    }
+
+    .stats-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stats-card.units .stats-icon {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+    }
+
+    .stats-card.bestseller .stats-icon {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .stats-card.orders .stats-icon {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
+    .stats-card.categories .stats-icon {
+        background: rgba(139, 92, 246, 0.1);
+        color: #8b5cf6;
+    }
+
+    .stats-value {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .stats-label {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .chart-container {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        height: 400px;
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-title {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .filter-bar {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .data-card {
+        background: var(--white);
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    /* Dark Theme Setup */
+    .dark-theme .stats-card,
+    .dark-theme .chart-container,
+    .dark-theme .filter-bar,
+    .dark-theme .data-card {
+        background: var(--dark-bg-2);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark-theme .stats-value,
+    .dark-theme .chart-title {
+        color: var(--dark-text-1);
+    }
+
+    .dark-theme .stats-label {
+        color: var(--dark-text-3);
+    }
+
+    .dark-theme .form-control,
+    .dark-theme .form-select {
+        background-color: var(--dark-bg-1);
+        color: var(--dark-text-1);
+        border-color: var(--dark-border);
+    }
+
+    .dark-theme table {
+        color: var(--dark-text-2) !important;
+    }
+
+    .dark-theme thead th {
+        background: var(--dark-bg-3) !important;
+        color: var(--dark-text-1) !important;
+        border-bottom: 1px solid var(--dark-border) !important;
+    }
+
+    .dark-theme tbody td {
+        border-color: var(--dark-border) !important;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-outline-secondary mb-2"><i
+                        class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                <h1 class="h3 mb-0 fw-bold">Top Products Report</h1>
+                <p class="text-muted mb-0">Analytics based on completed sales</p>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <form method="GET" action="{{ url_for('main.top_products_report') }}" class="row g-3 align-items-end"
+                id="filterForm">
+                <div class="col-md-3">
+                    <label class="form-label">Timeframe</label>
+                    <select class="form-select" name="timeframe" id="timeframeSelect" onchange="toggleCustomDates()">
+                        {% for tf in ['Today', 'Last 7 Days', 'Last 30 Days', 'This Month', 'Last 6 Months', 'Custom
+                        Range'] %}
+                        <option value="{{ tf }}" {% if current_timeframe==tf %}selected{% endif %}>{{ tf }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 custom-date-wrapper" {% if current_timeframe !='Custom Range'
+                    %}style="display:none;" {% endif %}>
+                    <label class="form-label">From</label>
+                    <input type="date" class="form-control" name="custom_from" value="{{ custom_from }}">
+                </div>
+                <div class="col-md-2 custom-date-wrapper" {% if current_timeframe !='Custom Range'
+                    %}style="display:none;" {% endif %}>
+                    <label class="form-label">To</label>
+                    <input type="date" class="form-control" name="custom_to" value="{{ custom_to }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="category_id">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.category_id }}" {% if current_category|string==cat.category_id|string
+                            %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card units">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stats-label">Total Units Sold</div>
+                            <div class="stats-value">{{ summary.total_units or 0 }}</div>
+                        </div>
+                        <div class="stats-icon"><i class="fas fa-box"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card bestseller">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stats-label">Best Selling Product</div>
+                            <div class="stats-value" style="font-size: 1.25rem;">{{ summary.best_selling_product }}
+                            </div>
+                        </div>
+                        <div class="stats-icon"><i class="fas fa-trophy"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card orders">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stats-label">Orders Count</div>
+                            <div class="stats-value">{{ summary.total_orders or 0 }}</div>
+                        </div>
+                        <div class="stats-icon"><i class="fas fa-shopping-cart"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card categories">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stats-label">Categories Involved</div>
+                            <div class="stats-value">{{ summary.total_categories or 0 }}</div>
+                        </div>
+                        <div class="stats-icon"><i class="fas fa-tags"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h5 class="chart-title">Sales Trend (Units Sold)</h5>
+                    </div>
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h5 class="chart-title">Product Share</h5>
+                    </div>
+                    <canvas id="donutChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="data-card">
+            <div class="p-4 border-bottom">
+                <h5 class="m-0 fw-bold chart-title">Detailed Product Performance</h5>
+            </div>
+            <div class="table-responsive p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>SKU</th>
+                            <th>Units Sold</th>
+                            <th>Orders</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if top_products %}
+                        {% for product in top_products %}
+                        <tr>
+                            <td>#{{ loop.index }}</td>
+                            <td class="fw-bold">{{ product.product_name }}</td>
+                            <td>{{ product.category_name or 'Uncategorized' }}</td>
+                            <td>{{ product.sku }}</td>
+                            <td class="fw-bold text-primary">{{ product.total_quantity_sold }}</td>
+                            <td>{{ product.total_orders }}</td>
+                            <td>
+                                {% if product.stock_quantity > 20 %}
+                                <span class="text-success">{{ product.stock_quantity }}</span>
+                                {% elif product.stock_quantity > 0 %}
+                                <span class="text-warning">{{ product.stock_quantity }}</span>
+                                {% else %}
+                                <span class="text-danger border-bottom border-danger">Out of Stock</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if product.status == 'active' %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Hidden</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">No completed orders found for this
+                                criteria</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="chartLabels" type="application/json">{{ chart_labels | tojson }}</script>
+<script id="chartData" type="application/json">{{ chart_data | tojson }}</script>
+<script id="trendLabels" type="application/json">{{ trend_labels | tojson }}</script>
+<script id="trendData" type="application/json">{{ trend_data | tojson }}</script>
+
+<script>
+    function toggleCustomDates() {
+        const val = document.getElementById('timeframeSelect').value;
+        const wrappers = document.querySelectorAll('.custom-date-wrapper');
+        wrappers.forEach(w => {
+            w.style.display = (val === 'Custom Range') ? 'block' : 'none';
+        });
+    }
+
+    // Chart Data Config
+    const labels = JSON.parse(document.getElementById('chartLabels').textContent);
+    const data = JSON.parse(document.getElementById('chartData').textContent);
+    const trendLabels = JSON.parse(document.getElementById('trendLabels').textContent);
+    const trendData = JSON.parse(document.getElementById('trendData').textContent);
+
+    // Theme setup based on dashboard.html concept
+    function getThemeColors(isDark) {
+        return {
+            textColor: isDark ? '#cbd5e1' : '#64748b',
+            gridColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+            tooltipBg: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+            tooltipText: isDark ? '#f8fafc' : '#0f172a'
+        };
+    }
+
+    let trendChartObj = null;
+    let donutChartObj = null;
+
+    function initCharts() {
+        const isDark = document.documentElement.classList.contains('dark-theme');
+        const c = getThemeColors(isDark);
+        Chart.defaults.color = c.textColor;
+
+        // Line Chart (Trend)
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        trendChartObj = new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Units Sold',
+                    data: trendData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: c.gridColor }, beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Donut Chart
+        const ctxDonut = document.getElementById('donutChart').getContext('2d');
+        donutChartObj = new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    initCharts();
+
+    // Watch for theme changes
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const isDark = document.documentElement.classList.contains('dark-theme');
+                const c = getThemeColors(isDark);
+                if (trendChartObj) {
+                    trendChartObj.options.scales.y.grid.color = c.gridColor;
+                    trendChartObj.update('none');
+                }
+                Chart.defaults.color = c.textColor; // Global update
+                if (donutChartObj) {
+                    donutChartObj.update('none');
+                }
+            }
+        });
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+</script>
+{% endblock %}
