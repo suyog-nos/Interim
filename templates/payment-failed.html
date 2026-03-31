@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="card p-5 shadow-sm border-danger">
+        <div class="mb-4">
+            <i class="fas fa-times-circle fa-5x text-danger"></i>
+        </div>
+        <h1 class="display-4 text-danger mb-3">Payment Failed</h1>
+        <p class="lead">We're sorry, but your payment could not be processed at this time.</p>
+        <p class="mb-4">Please check your card details and try again, or use a different payment method.</p>
+
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('main.cart') }}" class="btn btn-primary btn-lg">Return to Cart</a>
+            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-lg ml-2">Back to Home</a>
+        </div>
+
+        <div class="mt-4 text-muted">
+            <p>If you keep experiencing issues, please contact our support team.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

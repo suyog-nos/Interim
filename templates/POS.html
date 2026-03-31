@@ -3,94 +3,289 @@
 {% block title %}POS - SmartStationery{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
+<style>
+    /* Moved from extra_css to ensure rendering */
+    .pos-container {
+        height: calc(100vh - 140px);
+        /* Adjust based on navbar/footer height */
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+    }
+
+    .product-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid #e2e8f0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-color: #cbd5e1;
+    }
+
+    .product-image-container {
+        height: 120px;
+        background-color: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 10px;
+    }
+
+    .product-image-container img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+    .quantity-input {
+        width: 35px;
+        text-align: center;
+        border: none;
+        background: transparent;
+        font-weight: 500;
+        padding: 0;
+    }
+
+    .quantity-btn {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        line-height: 1;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Dark Theme Support */
+    .dark-theme .pos-container {
+        background-color: #0f172a;
+    }
+
+    .dark-theme .card {
+        background-color: #1e293b;
+        border-color: #334155;
+    }
+
+    .dark-theme .card-header,
+    .dark-theme .card-footer {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f1f5f9;
+    }
+
+    .dark-theme .bg-light {
+        background-color: #334155 !important;
+        color: #f1f5f9;
+    }
+
+    .dark-theme .bg-white {
+        background-color: #1e293b !important;
+        color: #f1f5f9;
+    }
+
+    .dark-theme .text-muted {
+        color: #94a3b8 !important;
+    }
+
+    .dark-theme .form-control,
+    .dark-theme .form-select,
+    .dark-theme .input-group-text {
+        background-color: #0f172a;
+        border-color: #334155;
+        color: #f1f5f9;
+    }
+
+    .dark-theme .product-card {
+        background-color: #1e293b;
+        border-color: #334155;
+    }
+
+    .dark-theme .product-card:hover {
+        border-color: #475569;
+        background-color: #273548;
+    }
+
+    .dark-theme .product-image-container {
+        background-color: #0f172a;
+        border-color: #334155;
+    }
+
+    .dark-theme .table {
+        color: #e2e8f0;
+    }
+
+    .dark-theme .table-hover tbody tr:hover {
+        background-color: #334155;
+    }
+
+    .dark-theme .modal-content {
+        background-color: #1e293b;
+        color: #f1f5f9;
+        border: 1px solid #334155;
+    }
+
+    .dark-theme .btn-close {
+        filter: invert(1);
+    }
+
+    .pos-layout {
+        height: 100%;
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .products-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .cart-panel {
+        width: 400px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    @media (max-width: 992px) {
+        .pos-container {
+            height: auto;
+            overflow: visible;
+        }
+
+        .pos-layout {
+            flex-direction: column;
+        }
+
+        .cart-panel {
+            width: 100%;
+            height: 500px;
+        }
+    }
+</style>
+
+<div class="container-fluid py-4 pos-container">
+    <div class="pos-layout">
         <!-- Products Section -->
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Products</h5>
-                </div>
-                <div class="card-body">
-                    <!-- Search Bar -->
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" id="productSearch" class="form-control" placeholder="Search products...">
+        <div class="products-panel">
+            <div class="card shadow-sm mb-4 h-100 border-0 d-flex flex-column">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-th me-2"></i>Products</h5>
+                        <div class="text-muted small">
+                            <span id="productCount">0</span> items
                         </div>
                     </div>
-                    
-                    <!-- Product Grid -->
-                    <div class="row" id="productGrid">
-                        <!-- Sample Product - This would be dynamically generated -->
-                        <div class="col-6 col-md-4 col-lg-3 mb-3">
-                            <div class="card product-card h-100">
-                                <div class="card-body text-center">
-                                    <div class="product-image mb-2" style="height: 80px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-box-open fa-3x text-muted"></i>
-                                    </div>
-                                    <h6 class="card-title mb-1">Notebook</h6>
-                                    <p class="text-muted small mb-2">100 pages, A4</p>
-                                    <p class="fw-bold mb-2">$2.99</p>
-                                    <button class="btn btn-sm btn-outline-primary w-100 add-to-cart" data-id="1" data-name="Notebook" data-price="2.99">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </div>
+
+                    <!-- Search & Filter -->
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i
+                                        class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="productSearch" class="form-control border-start-0 bg-light"
+                                    placeholder="Search products...">
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <select id="categoryFilter" class="form-select bg-light">
+                                <option value="all">All Categories</option>
+                                <!-- Categories populated via JS -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body bg-light p-3 overflow-auto custom-scrollbar flex-grow-1">
+                    <!-- Product Grid -->
+                    <div class="row g-3" id="productGrid">
+                        <!-- Products will be loaded here -->
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Cart Section -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Current Order</h5>
+        <div class="cart-panel">
+            <div class="card shadow-sm h-100 border-0 d-flex flex-column">
+                <div class="card-header bg-primary text-white py-3 border-bottom-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-shopping-cart me-2"></i>Current Order</h5>
+                        <span class="badge bg-white text-primary rounded-pill" id="cartItemCount">0</span>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="cartTable">
-                            <thead class="table-light">
+
+                <div class="card-body p-0 d-flex flex-column flex-grow-1 overflow-hidden bg-white">
+                    <div class="table-responsive flex-grow-1 overflow-auto custom-scrollbar">
+                        <table class="table table-hover align-middle mb-0" id="cartTable">
+                            <thead class="bg-light sticky-top shadow-sm">
                                 <tr>
-                                    <th>Item</th>
-                                    <th class="text-end">Qty</th>
-                                    <th class="text-end">Price</th>
-                                    <th class="text-end">Total</th>
-                                    <th></th>
+                                    <th class="ps-3 py-2 border-0">Item</th>
+                                    <th class="text-center py-2 border-0" width="90">Qty</th>
+                                    <th class="text-end py-2 border-0 pe-3" width="80">Price</th>
+                                    <th width="30" class="border-0"></th>
                                 </tr>
                             </thead>
                             <tbody id="cartItems">
                                 <!-- Cart items will be added here -->
                             </tbody>
                         </table>
+
+                        <!-- Empty State -->
+                        <div id="emptyCartMessage"
+                            class="text-center py-5 text-muted h-100 d-flex flex-column justify-content-center align-items-center">
+                            <i class="fas fa-shopping-basket fa-3x mb-3 opacity-25"></i>
+                            <p class="mb-0">Cart is empty</p>
+                            <small>Select items from the left to add</small>
+                        </div>
                     </div>
-                    
-                    <!-- Order Summary -->
-                    <div class="p-3 border-top">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal:</span>
-                            <span id="subtotal">Rs.0.00</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-3">
-                            <span>Tax (10%):</span>
-                            <span id="tax">Rs.0.00</span>
-                        </div>
-                        <div class="d-flex justify-content-between fw-bold fs-5">
-                            <span>Total:</span>
-                            <span id="total">Rs.0.00</span>
-                        </div>
-                        
-                        <!-- Action Buttons -->
-                        <div class="d-grid gap-2 mt-4">
-                            <button class="btn btn-danger" id="clearCart">
-                                <i class="fas fa-trash-alt me-2"></i>Clear
-                            </button>
-                            <button class="btn btn-primary" id="checkoutBtn">
-                                <i class="fas fa-credit-card me-2"></i>Process Payment
-                            </button>
-                        </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="card-footer bg-white border-top p-3 shadow-lg" style="z-index: 10;">
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-muted">Subtotal:</span>
+                        <span class="fw-bold" id="subtotal">Rs. 0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 small">
+                        <span class="text-muted">Tax (0%):</span>
+                        <span class="fw-bold" id="tax">Rs. 0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4 p-2 bg-light rounded border">
+                        <span class="h5 mb-0 fw-bold">Total:</span>
+                        <span class="h4 mb-0 text-primary fw-bold" id="total">Rs. 0.00</span>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button class="btn btn-outline-danger flex-grow-1" id="clearCart" title="Clear Cart">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <button class="btn btn-success flex-grow-1 fw-bold" id="checkoutBtn" disabled>
+                            Checkout
+                        </button>
                     </div>
                 </div>
             </div>
@@ -99,545 +294,681 @@
 </div>
 
 <!-- Payment Modal -->
-<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Process Payment</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-cash-register me-2"></i>Process Payment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Payment Method</label>
-                    <select class="form-select">
-                        <option>Cash</option>
-                        <option>Credit Card</option>
-                        <option>Debit Card</option>
-                        <option>Mobile Payment</option>
-                    </select>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <p class="text-muted mb-1 text-uppercase small fw-bold">Total Amount Due</p>
+                    <h2 class="display-6 fw-bold text-primary mb-0" id="modalTotalAmount">Rs. 0.00</h2>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Amount Tendered</label>
-                    <div class="input-group">
-                        <span class="input-group-text">Rs.</span>
-                        <input type="number" class="form-control" id="amountTendered" step="0.01">
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-uppercase text-muted">Customer Type</label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="customerType" id="walkinCustomer" value="walkin" checked>
+                            <label class="btn btn-outline-primary w-100 py-2" for="walkinCustomer">
+                                Walk-in Customer
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="customerType" id="registeredCustomer" value="registered">
+                            <label class="btn btn-outline-primary w-100 py-2" for="registeredCustomer">
+                                Registered User
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <div class="d-flex justify-content-between mb-3">
-                    <span>Change Due:</span>
-                    <span id="changeDue">Rs.0.00</span>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-uppercase text-muted">Customer Information</label>
+                    
+                    <!-- Walk-in Customer Fields -->
+                    <div id="walkinFields">
+                        <input type="text" class="form-control" id="walkinName" placeholder="Customer Name *" required>
+                        <div class="form-text">Customer name is required for walk-in sales</div>
+                    </div>
+                    
+                    <!-- Registered User Fields -->
+                    <div id="registeredFields" style="display: none;">
+                        <input type="text" class="form-control mb-2" id="customerSearchInput" placeholder="Enter phone number or email...">
+                        <div class="form-text mb-2">Enter phone number or email to find customer</div>
+                        
+                        <!-- Customer Name (auto-filled) -->
+                        <div id="customerFoundBox" style="display: none;">
+                            <div class="d-flex align-items-center p-3 bg-light rounded border border-success">
+                                <i class="fas fa-check-circle text-success me-3 fs-5"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold" id="foundCustomerName">—</div>
+                                    <div class="small text-muted" id="foundCustomerContact">—</div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="clearCustomerBtn" title="Clear">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Not found message -->
+                        <div id="customerNotFound" style="display: none;">
+                            <div class="d-flex align-items-center p-3 bg-light rounded border border-warning">
+                                <i class="fas fa-exclamation-triangle text-warning me-3 fs-5"></i>
+                                <div class="small text-muted">No customer found. Try a different phone number or email.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Searching indicator -->
+                        <div id="customerSearching" style="display: none;">
+                            <div class="d-flex align-items-center p-3 bg-light rounded border">
+                                <span class="spinner-border spinner-border-sm text-primary me-3"></span>
+                                <div class="small text-muted">Searching...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-uppercase text-muted">Payment Method</label>
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <input type="radio" class="btn-check" name="paymentMethod" id="payCash" value="Cash"
+                                checked>
+                            <label class="btn btn-outline-primary w-100 py-3" for="payCash">
+                                <i class="fas fa-money-bill-wave fs-4 mb-2"></i><br>Cash
+                            </label>
+                        </div>
+                        <div class="col-4">
+                            <input type="radio" class="btn-check" name="paymentMethod" id="payCard" value="Card">
+                            <label class="btn btn-outline-primary w-100 py-3" for="payCard">
+                                <i class="fas fa-credit-card fs-4 mb-2"></i><br>Card
+                            </label>
+                        </div>
+                        <div class="col-4">
+                            <input type="radio" class="btn-check" name="paymentMethod" id="payOnline" value="Online">
+                            <label class="btn btn-outline-primary w-100 py-3" for="payOnline">
+                                <i class="fas fa-qrcode fs-4 mb-2"></i><br>Online
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3 collapse show" id="cashSection">
+                    <label class="form-label fw-bold small text-uppercase text-muted">Cash Received</label>
+                    <div class="input-group input-group-lg has-validation">
+                        <span class="input-group-text bg-light border-end-0">Rs.</span>
+                        <input type="number" class="form-control border-start-0 ps-1 fw-bold fs-5" id="amountTendered"
+                            step="1" min="0" placeholder="0.00">
+                    </div>
+                    <div class="d-flex justify-content-between mt-3 p-3 bg-light rounded text-center border">
+                        <span class="text-muted fw-bold">Change Due:</span>
+                        <span class="fw-bold fs-5" id="changeDue">Rs. 0.00</span>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="completeSale">Complete Sale</button>
+            <div class="modal-footer bg-light border-top-0 pt-0 pb-4 px-4">
+                <button type="button" class="btn btn-light border px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success px-4 fw-bold flex-grow-1" id="completeSale" disabled>
+                    Complete Transaction
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Receipt Modal -->
-<div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Sale Complete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center">
-                <div class="mb-4">
-                    <i class="fas fa-check-circle text-success fa-5x mb-3"></i>
-                    <h4>Thank You!</h4>
-                    <p class="text-muted">Your order has been processed successfully.</p>
+<div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body text-center p-4">
+                <div class="mb-3">
+                    <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center"
+                        style="width: 72px; height: 72px;">
+                        <i class="fas fa-check text-success fa-3x"></i>
+                    </div>
                 </div>
-                <div class="text-start mb-3">
-                    <p class="mb-1"><strong>Order #:</strong> <span id="receiptOrderId">12345</span></p>
-                    <p class="mb-1"><strong>Date:</strong> <span id="receiptDate"></span></p>
-                    <p class="mb-1"><strong>Items:</strong> <span id="receiptItemCount">0</span></p>
-                    <p class="mb-1"><strong>Total:</strong> <span id="receiptTotal">Rs.0.00</span></p>
+                <h4 class="mb-2 fw-bold text-success">Success!</h4>
+                <p class="text-muted small mb-4">Transaction completed successfully</p>
+
+                <div
+                    class="receipt-preview bg-light p-3 rounded mb-4 text-start font-monospace small border border-dashed">
+                    <div class="text-center fw-bold mb-2">SMART STATIONERY</div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Sale ID:</span>
+                        <span class="fw-bold text-dark" id="receiptOrderId">#000</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Date:</span>
+                        <span class="fw-bold text-dark" id="receiptDate">--/--/--</span>
+                    </div>
+                    <div class="border-top border-dashed my-2"></div>
+                    <div class="d-flex justify-content-between fw-bold fs-6">
+                        <span>TOTAL PAID:</span>
+                        <span id="receiptTotal">Rs. 0.00</span>
+                    </div>
                 </div>
+
                 <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary" id="printReceipt">
-                        <i class="fas fa-print me-2"></i>Print Receipt
+                    <button class="btn btn-primary" data-bs-dismiss="modal">
+                        New Sale
                     </button>
-                    <button class="btn btn-primary" data-bs-dismiss="modal">New Sale</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .product-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-        cursor: pointer;
-    }
-    .product-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    }
-    .product-image {
-        border-radius: 0.25rem;
-        overflow: hidden;
-    }
-    .quantity-btn {
-        width: 30px;
-        height: 30px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .quantity-input {
-        width: 40px;
-        text-align: center;
-        display: inline-block;
-    }
-    #cartTable tbody tr:last-child td {
-        border-bottom: none;
-    }
-    
-    /* Warning Popup Styles */
-    .alert-warning-popup {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: white;
-        padding: 16px 20px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 320px;
-        z-index: 9999;
-        animation: slideInRight 0.3s ease-out;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .alert-warning-popup .warning-icon {
-        font-size: 24px;
-        animation: warningBounce 0.5s ease-out;
-    }
-    
-    .alert-warning-popup .warning-message {
-        flex: 1;
-        line-height: 1.4;
-    }
-    
-    .alert-warning-popup strong {
-        display: block;
-        font-size: 14px;
-        margin-bottom: 2px;
-    }
-    
-    /* Error Popup Styles */
-    .alert-error-popup {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        color: white;
-        padding: 16px 20px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 320px;
-        z-index: 9999;
-        animation: slideInRight 0.3s ease-out;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .alert-error-popup .error-icon {
-        font-size: 24px;
-        animation: errorBounce 0.5s ease-out;
-    }
-    
-    .alert-error-popup .error-message {
-        flex: 1;
-        line-height: 1.4;
-    }
-    
-    .alert-error-popup strong {
-        display: block;
-        font-size: 14px;
-        margin-bottom: 2px;
-    }
-    
-    @keyframes warningBounce {
-        0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
-        }
-        40% {
-            transform: translateY(-10px);
-        }
-        60% {
-            transform: translateY(-5px);
-        }
-    }
-    
-    @keyframes errorBounce {
-        0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
-        }
-        40% {
-            transform: translateY(-10px);
-        }
-        60% {
-            transform: translateY(-5px);
-        }
-    }
-</style>
+{% endblock %}
 
 {% block extra_js %}
+<!-- Inject Products Data -->
+<script id="productsData" type="application/json">{{ products | tojson }}</script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize cart
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- State ---
         let cart = [];
+        let products = [];
+
+        try {
+            products = JSON.parse(document.getElementById('productsData').textContent);
+        } catch (e) {
+            console.error("Failed to parse products:", e);
+        }
+
+        // --- Elements ---
+        const productGrid = document.getElementById('productGrid');
+        const productSearch = document.getElementById('productSearch');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const productCount = document.getElementById('productCount');
         const cartItems = document.getElementById('cartItems');
+        const emptyCartMessage = document.getElementById('emptyCartMessage');
+        const cartItemCount = document.getElementById('cartItemCount');
         const subtotalEl = document.getElementById('subtotal');
         const taxEl = document.getElementById('tax');
         const totalEl = document.getElementById('total');
         const checkoutBtn = document.getElementById('checkoutBtn');
         const clearCartBtn = document.getElementById('clearCart');
+
+        // Modal Elements
         const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
         const receiptModal = new bootstrap.Modal(document.getElementById('receiptModal'));
+        const modalTotalAmount = document.getElementById('modalTotalAmount');
         const amountTendered = document.getElementById('amountTendered');
         const changeDue = document.getElementById('changeDue');
         const completeSaleBtn = document.getElementById('completeSale');
-        const productSearch = document.getElementById('productSearch');
-        
-        // Use real products from backend
-        const products = JSON.parse('{{ products | tojson | safe }}');
-        
-        // Render products
-        function renderProducts(productsToRender = products) {
-            const productGrid = document.getElementById('productGrid');
+        const cashSection = document.getElementById('cashSection');
+
+        // --- Initialization ---
+        initCategories();
+        renderProducts(products);
+        updateCart(); // Set initial state
+
+        // --- Functions ---
+
+        function initCategories() {
+            const categories = [...new Set(products.map(p => p.category))].sort();
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        function renderProducts(productsToRender) {
             productGrid.innerHTML = '';
-            
+            productCount.textContent = productsToRender.length;
+
+            if (productsToRender.length === 0) {
+                productGrid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-search fa-2x text-muted mb-3 opacity-50"></i>
+                        <p class="text-muted">No products found</p>
+                    </div>
+                `;
+                return;
+            }
+
             productsToRender.forEach(product => {
-                const productCard = `
-                    <div class="col-6 col-md-4 col-lg-3 mb-3">
-                        <div class="card product-card h-100">
-                            <div class="card-body text-center">
-                                <div class="product-image mb-2" style="height: 80px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-box-open fa-3x text-muted"></i>
+                const isOutOfStock = product.stock <= 0;
+                const card = document.createElement('div');
+                card.className = 'col-sm-6 col-md-4 col-xl-4 col-xxl-3';
+                card.innerHTML = `
+                    <div class="card product-card ${isOutOfStock ? 'opacity-75 bg-light' : ''}" 
+                         onclick="${isOutOfStock ? '' : `addToCart(${product.id})`}">
+                        <div class="product-image-container position-relative">
+                            ${product.image_url ?
+                        `<img src="/${product.image_url}" alt="${product.name}">` :
+                        `<i class="fas fa-box-open fa-3x text-muted opacity-50"></i>`
+                    }
+                            ${isOutOfStock ?
+                        `<div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-50">
+                                    <span class="badge bg-danger shadow-sm">Out of Stock</span>
+                                </div>` : ''
+                    }
+                        </div>
+                        <div class="card-body p-3 text-center d-flex flex-column">
+                            <h6 class="card-title text-truncate mb-1 fw-bold" title="${product.name}">${product.name}</h6>
+                            <div class="text-muted small mb-2 text-truncate">${product.category}</div>
+                            
+                            <div class="mt-auto pt-2 border-top">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold text-primary">Rs. ${product.price.toFixed(2)}</span>
+                                    <small class="${product.stock < 10 ? 'text-danger fw-bold' : 'text-muted'}">
+                                        <i class="fas fa-layer-group me-1"></i>${product.stock}
+                                    </small>
                                 </div>
-                                <h6 class="card-title mb-1">${product.name}</h6>
-                                <p class="text-muted small mb-2">${product.category}</p>
-                                <p class="fw-bold mb-2">Rs. ${product.price.toFixed(2)}</p>
-                                <button class="btn btn-sm btn-outline-primary w-100 add-to-cart" 
-                                        data-id="${product.id}" 
-                                        data-name="${product.name}" 
-                                        data-price="${product.price}">
-                                    <i class="fas fa-plus"></i> Add
-                                </button>
                             </div>
                         </div>
                     </div>
                 `;
-                productGrid.insertAdjacentHTML('beforeend', productCard);
-            });
-            
-            // Add event listeners to the Add to Cart buttons
-            document.querySelectorAll('.add-to-cart').forEach(button => {
-                button.addEventListener('click', addToCart);
+                productGrid.appendChild(card);
             });
         }
-        
-        // Add to cart function
-        function addToCart(e) {
-            const button = e.target.closest('.add-to-cart');
-            if (!button) return;
-            
-            const id = parseInt(button.dataset.id);
-            const name = button.dataset.name;
-            const price = parseFloat(button.dataset.price);
-            
-            // Check if item already in cart
-            const existingItem = cart.find(item => item.id === id);
-            
+
+        // Expose to window for onclick handlers
+        window.addToCart = function (productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product || product.stock <= 0) return;
+
+            const existingItem = cart.find(item => item.id === productId);
+
             if (existingItem) {
-                existingItem.quantity += 1;
+                if (existingItem.quantity < product.stock) {
+                    existingItem.quantity++;
+                    // Optional: trigger simple animation
+                } else {
+                    showToast('Maximum stock reached for this item', 'warning');
+                    return;
+                }
             } else {
                 cart.push({
-                    id,
-                    name,
-                    price,
-                    quantity: 1
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    maxStock: product.stock
                 });
             }
-            
+
             updateCart();
-            
-            // Visual feedback
-            const card = button.closest('.product-card');
-            card.classList.add('border-success');
-            setTimeout(() => {
-                card.classList.remove('border-success');
-            }, 500);
-        }
-        
-        // Update cart display
-        function updateCart() {
-            // Clear current cart display
-            cartItems.innerHTML = '';
-            
-            // Add each item to the cart display
-            cart.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.name}</td>
-                    <td class="text-end">
-                        <div class="d-flex align-items-center justify-content-end">
-                            <button class="btn btn-sm btn-outline-secondary quantity-btn decrease-quantity" data-index="${index}">-</button>
-                            <input type="number" class="form-control form-control-sm quantity-input mx-1" value="${item.quantity}" min="1" readonly>
-                            <button class="btn btn-sm btn-outline-secondary quantity-btn increase-quantity" data-index="${index}">+</button>
-                        </div>
-                    </td>
-                    <td class="text-end">Rs.${item.price.toFixed(2)}</td>
-                    <td class="text-end">Rs.${(item.price * item.quantity).toFixed(2)}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-danger remove-item" data-index="${index}">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </td>
-                `;
-                cartItems.appendChild(row);
-            });
-            
-            // Calculate totals
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const tax = subtotal * 0.1; // 10% tax
-            const total = subtotal + tax;
-            
-            // Update totals display
-            subtotalEl.textContent = `Rs.${subtotal.toFixed(2)}`;
-            taxEl.textContent = `Rs.${tax.toFixed(2)}`;
-            totalEl.textContent = `Rs.${total.toFixed(2)}`;
-            
-            // Enable/disable checkout button
-            checkoutBtn.disabled = cart.length === 0;
-            
-            // Add event listeners to quantity buttons and remove buttons
-            document.querySelectorAll('.decrease-quantity').forEach(button => {
-                button.addEventListener('click', decreaseQuantity);
-            });
-            
-            document.querySelectorAll('.increase-quantity').forEach(button => {
-                button.addEventListener('click', increaseQuantity);
-            });
-            
-            document.querySelectorAll('.remove-item').forEach(button => {
-                button.addEventListener('click', removeItem);
-            });
-        }
-        
-        // Quantity adjustment functions
-        function decreaseQuantity(e) {
-            const index = parseInt(e.target.closest('button').dataset.index);
-            if (cart[index].quantity > 1) {
-                cart[index].quantity -= 1;
+        };
+
+        window.updateQuantity = function (index, change) {
+            const item = cart[index];
+            const newQty = item.quantity + change;
+
+            if (newQty > 0 && newQty <= item.maxStock) {
+                item.quantity = newQty;
                 updateCart();
+            } else if (newQty > item.maxStock) {
+                showToast('Insufficient stock available', 'warning');
             }
-        }
-        
-        function increaseQuantity(e) {
-            const index = parseInt(e.target.closest('button').dataset.index);
-            cart[index].quantity += 1;
-            updateCart();
-        }
-        
-        // Remove item from cart
-        function removeItem(e) {
-            const index = parseInt(e.target.closest('button').dataset.index);
+        };
+
+        window.removeItem = function (index) {
             cart.splice(index, 1);
             updateCart();
+        };
+
+        function updateCart() {
+            cartItemCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = '';
+                emptyCartMessage.style.display = 'flex';
+                // Wait, emptyCartMessage is flex by default in CSS, so display flex works
+                emptyCartMessage.classList.remove('d-none');
+                checkoutBtn.disabled = true;
+                clearCartBtn.disabled = true;
+                subtotalEl.textContent = 'Rs. 0.00';
+                taxEl.textContent = 'Rs. 0.00';
+                totalEl.textContent = 'Rs. 0.00';
+                return;
+            }
+
+            emptyCartMessage.classList.add('d-none');
+            checkoutBtn.disabled = false;
+            clearCartBtn.disabled = false;
+
+            cartItems.innerHTML = cart.map((item, index) => `
+                <tr class="align-middle">
+                    <td class="ps-3 py-2">
+                        <div class="fw-bold text-truncate" style="max-width: 140px;" title="${item.name}">${item.name}</div>
+                        <div class="small text-muted">@ ${item.price.toFixed(2)}</div>
+                    </td>
+                    <td class="text-center py-2">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <button class="btn btn-outline-secondary btn-sm quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
+                            <span class="mx-2 fw-bold text-dark quantity-input">${item.quantity}</span>
+                            <button class="btn btn-outline-secondary btn-sm quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                        </div>
+                    </td>
+                    <td class="text-end fw-bold py-2 pe-3">
+                        ${(item.price * item.quantity).toFixed(0)}
+                    </td>
+                    <td class="text-end pe-2 py-2">
+                        <button class="btn btn-link text-danger p-0" onclick="removeItem(${index})" title="Remove">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Calc Totals
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const total = subtotal; // No tax for now
+
+            subtotalEl.textContent = `Rs. ${subtotal.toFixed(2)}`;
+            totalEl.textContent = `Rs. ${total.toFixed(2)}`;
+            modalTotalAmount.textContent = `Rs. ${total.toFixed(2)}`;
         }
-        
-        // Clear cart
-        function clearCart() {
-            cart = [];
-            updateCart();
+
+        // --- Event Listeners ---
+
+        clearCartBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the cart?')) {
+                cart = [];
+                updateCart();
+            }
+        });
+
+        productSearch.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const category = categoryFilter.value;
+            filterProducts(term, category);
+        });
+
+        categoryFilter.addEventListener('change', (e) => {
+            const term = productSearch.value.toLowerCase();
+            const category = e.target.value;
+            filterProducts(term, category);
+        });
+
+        function filterProducts(term, category) {
+            const filtered = products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(term) ||
+                    String(p.id).includes(term);
+                const matchesCategory = category === 'all' || p.category === category;
+                return matchesSearch && matchesCategory;
+            });
+            renderProducts(filtered);
         }
-        
-        // Process payment
-        function processPayment() {
-            const total = parseFloat(totalEl.textContent.replace('Rs.', ''));
-            amountTendered.value = '';
-            changeDue.textContent = 'Rs.0.00';
+
+        checkoutBtn.addEventListener('click', () => {
             paymentModal.show();
-            
-            // Focus on amount tendered field
-            setTimeout(() => {
-                amountTendered.focus();
-            }, 500);
-        }
-        
-        // Calculate change
-        function calculateChange() {
-            const total = parseFloat(totalEl.textContent.replace('Rs.', ''));
-            const tendered = parseFloat(amountTendered.value) || 0;
-            const change = tendered - total;
-            
-            if (change >= 0) {
-                changeDue.textContent = `Rs.${change.toFixed(2)}`;
+            // Reset modal state
+            document.getElementById('payCash').checked = true;
+            cashSection.classList.add('show');
+            cashSection.classList.remove('d-none'); // Ensure visible
+
+            amountTendered.value = '';
+            changeDue.textContent = 'Rs. 0.00';
+            changeDue.className = 'fw-bold fs-5'; // Reset classes
+            completeSaleBtn.disabled = true;
+
+            // Auto focus
+            setTimeout(() => amountTendered.focus(), 500);
+        });
+
+        // Payment Method Toggles
+        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'Cash') {
+                    cashSection.classList.remove('d-none');
+                    completeSaleBtn.disabled = true;
+                    // Trigger input event to re-validate if amount was already entered
+                    if (amountTendered.value) amountTendered.dispatchEvent(new Event('input'));
+                } else {
+                    cashSection.classList.add('d-none');
+                    completeSaleBtn.disabled = false; // Enable for Card/Online
+                }
+            });
+        });
+
+        amountTendered.addEventListener('input', (e) => {
+            const total = parseFloat(totalEl.textContent.replace('Rs. ', ''));
+            const tendered = parseFloat(e.target.value) || 0;
+
+            if (tendered >= total) {
+                changeDue.textContent = `Rs. ${(tendered - total).toFixed(2)}`;
+                changeDue.classList.remove('text-danger');
+                changeDue.classList.add('text-success');
                 completeSaleBtn.disabled = false;
             } else {
-                changeDue.textContent = `-Rs.${Math.abs(change).toFixed(2)}`;
+                changeDue.textContent = `Rs. ${(tendered - total).toFixed(2)}`;
+                changeDue.classList.add('text-danger');
+                changeDue.classList.remove('text-success');
                 completeSaleBtn.disabled = true;
             }
-        }
-        
-        // Complete sale
-        async function completeSale() {
-            const total = parseFloat(totalEl.textContent.replace('Rs.', ''));
-            const paymentMethod = document.querySelector('#paymentModal select').value;
+        });
+
+        // Customer Selection Functionality
+        const customerTypeRadios = document.querySelectorAll('input[name="customerType"]');
+        const walkinFields = document.getElementById('walkinFields');
+        const registeredFields = document.getElementById('registeredFields');
+        const walkinName = document.getElementById('walkinName');
+        const customerSearchInput = document.getElementById('customerSearchInput');
+        const customerFoundBox = document.getElementById('customerFoundBox');
+        const customerNotFound = document.getElementById('customerNotFound');
+        const customerSearching = document.getElementById('customerSearching');
+        const foundCustomerName = document.getElementById('foundCustomerName');
+        const foundCustomerContact = document.getElementById('foundCustomerContact');
+        const clearCustomerBtn = document.getElementById('clearCustomerBtn');
+        let selectedCustomerId = null;
+        let searchTimeout = null;
+
+        customerTypeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'walkin') {
+                    walkinFields.style.display = 'block';
+                    registeredFields.style.display = 'none';
+                    selectedCustomerId = null;
+                    walkinName.value = '';
+                } else {
+                    walkinFields.style.display = 'none';
+                    registeredFields.style.display = 'block';
+                    selectedCustomerId = null;
+                    customerSearchInput.value = '';
+                    customerFoundBox.style.display = 'none';
+                    customerNotFound.style.display = 'none';
+                    customerSearching.style.display = 'none';
+                    setTimeout(() => customerSearchInput.focus(), 100);
+                }
+            });
+        });
+
+        // Debounced search: auto-search as user types phone/email
+        customerSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
             
-            // Disable button to prevent double submission
+            // Hide all result boxes while typing
+            customerFoundBox.style.display = 'none';
+            customerNotFound.style.display = 'none';
+            customerSearching.style.display = 'none';
+            selectedCustomerId = null;
+
+            if (query.length < 2) return;
+
+            // Show searching indicator
+            customerSearching.style.display = 'block';
+
+            // Debounce: wait 500ms after user stops typing
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/search/customers?q=${encodeURIComponent(query)}`);
+                    const customers = await response.json();
+                    customerSearching.style.display = 'none';
+
+                    if (customers.length > 0) {
+                        // Auto-select first match
+                        const customer = customers[0];
+                        selectedCustomerId = customer.user_id;
+                        foundCustomerName.textContent = `${customer.first_name} ${customer.last_name}`;
+                        foundCustomerContact.textContent = customer.phone || customer.email;
+                        customerFoundBox.style.display = 'block';
+                        customerNotFound.style.display = 'none';
+                    } else {
+                        customerFoundBox.style.display = 'none';
+                        customerNotFound.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error searching customers:', error);
+                    customerSearching.style.display = 'none';
+                    customerNotFound.style.display = 'block';
+                }
+            }, 500);
+        });
+
+        // Clear selected customer
+        clearCustomerBtn.addEventListener('click', () => {
+            selectedCustomerId = null;
+            customerSearchInput.value = '';
+            customerFoundBox.style.display = 'none';
+            customerNotFound.style.display = 'none';
+            customerSearchInput.focus();
+        });
+
+        // Name validation - no numbers allowed for walk-in
+        walkinName.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[0-9]/g, '');
+        });
+
+        completeSaleBtn.addEventListener('click', async () => {
+            const total = parseFloat(totalEl.textContent.replace('Rs. ', ''));
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const customerType = document.querySelector('input[name="customerType"]:checked').value;
+
+            // Get customer data based on type
+            let customerId = null;
+            let customerName = null;
+            let customerPhone = null;
+
+            if (customerType === 'walkin') {
+                customerName = walkinName.value.trim();
+                
+                // Validate required name field
+                if (!customerName) {
+                    completeSaleBtn.disabled = false;
+                    completeSaleBtn.innerHTML = 'Complete Transaction';
+                    walkinName.focus();
+                    walkinName.classList.add('is-invalid');
+                    setTimeout(() => walkinName.classList.remove('is-invalid'), 3000);
+                    return;
+                }
+                
+                customerId = null; // Walk-in customers have no ID
+            } else {
+                // Registered user - must have selected a customer
+                if (!selectedCustomerId) {
+                    showToast('Please search and select a registered customer first', 'warning');
+                    completeSaleBtn.disabled = false;
+                    completeSaleBtn.innerHTML = 'Complete Transaction';
+                    customerSearchInput.focus();
+                    return;
+                }
+                customerId = selectedCustomerId;
+                customerName = foundCustomerName.textContent;
+            }
+
             completeSaleBtn.disabled = true;
-            completeSaleBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-            
+            completeSaleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
             try {
-                // Send order to backend
                 const response = await fetch('/pos/checkout', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         items: cart,
                         total: total,
-                        payment_method: paymentMethod
+                        payment_method: paymentMethod,
+                        customer_id: customerId,
+                        customer_name: customerName,
+                        customer_phone: customerPhone
                     })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    // Show success popup
-                    const successPopup = document.createElement('div');
-                    successPopup.className = 'alert-success-popup';
-                    successPopup.innerHTML = `
-                        <div class="success-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="success-message">
-                            <strong>Sale Complete!</strong><br>
-                            Order #${result.sale_id} processed successfully
-                        </div>
-                    `;
-                    document.body.appendChild(successPopup);
-                    
-                    // Auto-remove after 3 seconds
-                    setTimeout(() => {
-                        if (successPopup.parentNode) {
-                            successPopup.parentNode.removeChild(successPopup);
-                        }
-                    }, 3000);
-                    
-                    // Update receipt
-                    const order = {
-                        id: result.sale_id,
-                        date: new Date().toLocaleString(),
-                        items: [...cart],
-                        subtotal: parseFloat(subtotalEl.textContent.replace('Rs.', '')),
-                        tax: parseFloat(taxEl.textContent.replace('Rs.', '')),
-                        total: total,
-                        paymentMethod: paymentMethod,
-                        amountTendered: parseFloat(amountTendered.value),
-                        change: parseFloat(changeDue.textContent.replace('Rs.', ''))
-                    };
-                    
-                    document.getElementById('receiptOrderId').textContent = 'SALE' + order.id;
-                    document.getElementById('receiptDate').textContent = order.date;
-                    document.getElementById('receiptItemCount').textContent = order.items.reduce((sum, item) => sum + item.quantity, 0);
-                    document.getElementById('receiptTotal').textContent = `Rs.${order.total.toFixed(2)}`;
-                    
-                    // Close payment modal and show receipt
+                    // Update Receipt Data
+                    document.getElementById('receiptOrderId').textContent = '#' + result.sale_id;
+                    document.getElementById('receiptDate').textContent = new Date().toLocaleString();
+                    document.getElementById('receiptTotal').textContent = `Rs. ${total.toFixed(2)}`;
+
+                    // Update Local Stock
+                    cart.forEach(item => {
+                        const product = products.find(p => p.id === item.id);
+                        if (product) product.stock -= item.quantity;
+                    });
+
+                    // Refresh Grid to show new stock/out of stock status
+                    const term = productSearch.value.toLowerCase();
+                    const category = categoryFilter.value;
+                    filterProducts(term, category);
+
                     paymentModal.hide();
-                    
-                    // Clear cart
-                    clearCart();
-                    
-                    // Show receipt after a short delay
-                    setTimeout(() => {
-                        receiptModal.show();
-                    }, 300);
-                    
+                    receiptModal.show();
+
+                    // Reset Cart
+                    cart = [];
+                    updateCart();
                 } else {
-                    // Show error message
-                    const errorPopup = document.createElement('div');
-                    errorPopup.className = 'alert-error-popup';
-                    errorPopup.innerHTML = `
-                        <div class="error-icon">
-                            <i class="fas fa-times-circle"></i>
-                        </div>
-                        <div class="error-message">
-                            <strong>Sale Failed!</strong><br>
-                            ${result.message}
-                        </div>
-                    `;
-                    document.body.appendChild(errorPopup);
-                    
-                    setTimeout(() => {
-                        if (errorPopup.parentNode) {
-                            errorPopup.parentNode.removeChild(errorPopup);
-                        }
-                    }, 3000);
+                    showToast('Error: ' + result.message, 'danger');
                 }
-                
             } catch (error) {
-                console.error('Error processing sale:', error);
-                alert('Error processing sale. Please try again.');
+                console.error('Sale error', error);
+                showToast('An error occurred during checkout', 'danger');
             } finally {
-                // Re-enable button
                 completeSaleBtn.disabled = false;
-                completeSaleBtn.innerHTML = 'Complete Sale';
+                completeSaleBtn.innerHTML = 'Complete Transaction';
             }
-        }
-        
-        // Search products
-        function searchProducts(query) {
-            if (!query) {
-                renderProducts(products);
-                return;
-            }
-            
-            const searchTerm = query.toLowerCase();
-            const filteredProducts = products.filter(product => 
-                product.name.toLowerCase().includes(searchTerm) ||
-                product.category.toLowerCase().includes(searchTerm)
-            );
-            
-            renderProducts(filteredProducts);
-        }
-        
-        // Event listeners
-        checkoutBtn.addEventListener('click', processPayment);
-        clearCartBtn.addEventListener('click', clearCart);
-        completeSaleBtn.addEventListener('click', completeSale);
-        amountTendered.addEventListener('input', calculateChange);
-        
-        productSearch.addEventListener('input', (e) => {
-            searchProducts(e.target.value);
         });
-        
-        // Print receipt
-        document.getElementById('printReceipt').addEventListener('click', () => {
-            window.print();
-        });
-        
-        // Initialize the POS
-        renderProducts();
-        
-        // Set current date on receipt
-        document.getElementById('receiptDate').textContent = new Date().toLocaleString();
     });
+
+    // Toast Helper
+    function showToast(msg, type = 'success') {
+        const toastContainer = document.querySelector('.toast-container') || createToastContainer();
+
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${type === 'success' ? '<i class="fas fa-check-circle me-2"></i>' :
+                type === 'danger' ? '<i class="fas fa-exclamation-circle me-2"></i>' :
+                    '<i class="fas fa-info-circle me-2"></i>'}
+                        ${msg}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+        const toastEl = document.createElement('div');
+        toastEl.innerHTML = toastHtml;
+        const toastNode = toastEl.firstElementChild;
+        toastContainer.appendChild(toastNode);
+
+        const toast = new bootstrap.Toast(toastNode, { delay: 3000 });
+        toast.show();
+
+        toastNode.addEventListener('hidden.bs.toast', () => {
+            toastNode.remove();
+        });
+    }
+
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = 1070;
+        document.body.appendChild(container);
+        return container;
+    }
 </script>
-{% endblock %}
 {% endblock %}

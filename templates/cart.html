@@ -3,301 +3,325 @@
 {% block title %}Shopping Cart - SmartStationery{% endblock %}
 
 {% block extra_head %}
-<!-- Quantity validation alert -->
-<div id="quantityAlert" class="quantity-alert">
-    <i class="fas fa-exclamation-circle"></i>
-    <span>Quantity must be between 1 and 999</span>
+<!-- No Items Selected Modal -->
+<div class="modal fade" id="noItemsModal" tabindex="-1" aria-labelledby="noItemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noItemsModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    No Items Selected
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-shopping-cart fa-4x text-muted"></i>
+                </div>
+                <h6 class="mb-3">Please select at least one product to proceed with payment</h6>
+                <p class="text-muted mb-0">Use the checkboxes next to the products you want to purchase.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-2"></i>Got it
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
-/* Cart Dark Theme Styles */
-.dark-theme .table {
-    color: var(--dark-text-1);
-    background-color: var(--dark-bg-2);
-}
-
-.dark-theme .table-light {
-    background-color: var(--dark-bg-3) !important;
-    color: var(--dark-text-1) !important;
-}
-
-.dark-theme .table-hover tbody tr:hover {
-    background-color: var(--dark-bg-1) !important;
-    color: var(--dark-text-1);
-}
-
-.dark-theme .table-active {
-    background-color: var(--dark-bg-3) !important;
-    color: var(--dark-text-1) !important;
-}
-
-.dark-theme .table th {
-    background-color: var(--dark-bg-3) !important;
-    color: var(--dark-text-1) !important;
-    border-color: var(--dark-border) !important;
-}
-
-.dark-theme .table td {
-    background-color: var(--dark-bg-2) !important;
-    color: var(--dark-text-1) !important;
-    border-color: var(--dark-border) !important;
-}
-
-.dark-theme .table-responsive {
-    background-color: var(--dark-bg-2);
-}
-
-.dark-theme .input-group .form-control {
-    background-color: var(--dark-bg-3) !important;
-    border-color: var(--dark-border) !important;
-    color: var(--dark-text-1) !important;
-}
-
-.dark-theme .input-group .btn-outline-secondary {
-    background-color: var(--dark-bg-3) !important;
-    border-color: var(--dark-border) !important;
-    color: var(--dark-text-2) !important;
-}
-
-.dark-theme .input-group .btn-outline-secondary:hover {
-    background-color: var(--dark-bg-1) !important;
-    border-color: var(--primary) !important;
-    color: var(--primary-light) !important;
-}
-
-.dark-theme .btn-outline-danger {
-    color: #dc3545 !important;
-    border-color: #dc3545 !important;
-}
-
-.dark-theme .btn-outline-danger:hover {
-    background-color: #dc3545 !important;
-    border-color: #dc3545 !important;
-    color: white !important;
-}
-
-.dark-theme .text-muted {
-    color: var(--gray-400) !important;
-}
-
-.dark-theme h2 {
-    color: var(--dark-text-1) !important;
-}
-
-.dark-theme h4 {
-    color: var(--dark-text-1) !important;
-}
-
-.dark-theme h6 {
-    color: var(--dark-text-1) !important;
-}
-
-.dark-theme .container {
-    background-color: var(--dark-bg-2);
-}
-
-.dark-theme .btn-primary {
-    background-color: var(--primary) !important;
-    border-color: var(--primary) !important;
-}
-
-.dark-theme .btn-primary:hover {
-    background-color: var(--primary-light) !important;
-    border-color: var(--primary-light) !important;
-}
-
-.dark-theme .text-decoration-none {
-    color: var(--primary-light) !important;
-}
-
-.dark-theme .text-decoration-none:hover {
-    color: var(--primary) !important;
-}
-
-.dark-theme .spinner-border {
-    border-color: var(--primary-light) !important;
-    border-right-color: transparent !important;
-}
-
-/* Quantity input styling */
-.cart-quantity-input {
-    font-weight: 600;
-    text-align: center;
-    border-left: none;
-    border-right: none;
-    max-width: 60px;
-}
-
-.cart-quantity-input:focus {
-    box-shadow: none;
-    border-color: #dee2e6;
-}
-
-/* Remove number input arrows */
-.cart-quantity-input::-webkit-outer-spin-button,
-.cart-quantity-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.cart-quantity-input {
-    -moz-appearance: textfield;
-    appearance: textfield;
-}
-
-/* Product image styling */
-.cart-product-image {
-    max-width: 60px;
-    max-height: 60px;
-    object-fit: contain;
-    border-radius: 8px;
-}
-
-/* Loading spinner */
-.loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Dark theme loading spinner */
-.dark-theme .loading-spinner {
-    border: 3px solid rgba(255,255,255,.1);
-    border-top-color: var(--dark-text-1);
-}
-
-/* Remove Item Modal Dark Theme */
-.dark-theme .modal-content {
-    background-color: var(--dark-bg-2);
-    border-color: var(--dark-border);
-    color: var(--dark-text-1);
-}
-
-.dark-theme .modal-header {
-    background-color: var(--dark-bg-2);
-    border-bottom-color: var(--dark-border);
-}
-
-.dark-theme .modal-title {
-    color: var(--dark-text-1);
-}
-
-.dark-theme .modal-body {
-    background-color: var(--dark-bg-2);
-    color: var(--dark-text-1);
-}
-
-.dark-theme .modal-footer {
-    background-color: var(--dark-bg-2);
-    border-top-color: var(--dark-border);
-}
-
-.dark-theme .btn-close {
-    filter: invert(1) brightness(0.9);
-}
-
-.dark-theme .alert-warning {
-    background-color: rgba(255, 193, 7, 0.1);
-    border-color: rgba(255, 193, 7, 0.3);
-    color: var(--accent-light);
-}
-
-.dark-theme .text-muted {
-    color: var(--gray-400) !important;
-}
-
-.dark-theme .btn-secondary {
-    background-color: var(--dark-bg-3);
-    border-color: var(--dark-border);
-    color: var(--dark-text-2);
-}
-
-.dark-theme .btn-secondary:hover {
-    background-color: var(--dark-bg-1);
-    border-color: var(--primary);
-    color: var(--primary-light);
-}
-
-/* Quantity validation alert */
-.quantity-alert {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 24px;
-    background-color: #dc3545;
-    color: white;
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 1100;
-    display: none;
-    align-items: center;
-    gap: 10px;
-    animation: slideIn 0.3s ease-out;
-}
-
-.quantity-alert.show {
-    display: flex;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translate(-50%, -20px);
+    /* Cart Dark Theme Styles */
+    .dark-theme .table {
+        color: var(--dark-text-1);
+        background-color: var(--dark-bg-2);
     }
-    to {
-        opacity: 1;
-        transform: translate(-50%, 0);
+
+    .dark-theme .table-light {
+        background-color: var(--dark-bg-3) !important;
+        color: var(--dark-text-1) !important;
     }
-}
 
-.quantity-alert i {
-    font-size: 1.2em;
-}
+    .dark-theme .table-hover tbody tr:hover {
+        background-color: var(--dark-bg-1) !important;
+        color: var(--dark-text-1);
+    }
 
-/* Dark theme support */
-.dark-theme .quantity-alert {
-    background-color: #dc3545;
-    color: white;
-}
+    .dark-theme .table-active {
+        background-color: var(--dark-bg-3) !important;
+        color: var(--dark-text-1) !important;
+    }
 
-.dark-theme .btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
+    .dark-theme .table th {
+        background-color: var(--dark-bg-3) !important;
+        color: var(--dark-text-1) !important;
+        border-color: var(--dark-border) !important;
+    }
 
-.dark-theme .btn-danger:hover {
-    background-color: #c82333;
-    border-color: #c82333;
-}
+    .dark-theme .table td {
+        background-color: var(--dark-bg-2) !important;
+        color: var(--dark-text-1) !important;
+        border-color: var(--dark-border) !important;
+    }
 
-.dark-theme .btn-success {
-    background-color: var(--accent);
-    border-color: var(--accent);
-}
+    .dark-theme .table-responsive {
+        background-color: var(--dark-bg-2);
+    }
 
-.dark-theme .btn-success:hover {
-    background-color: var(--accent-light);
-    border-color: var(--accent-light);
-}
+    .dark-theme .input-group .form-control {
+        background-color: var(--dark-bg-3) !important;
+        border-color: var(--dark-border) !important;
+        color: var(--dark-text-1) !important;
+    }
 
-.dark-theme .btn-primary {
-    background-color: var(--primary);
-    border-color: var(--primary);
-}
+    .dark-theme .input-group .btn-outline-secondary {
+        background-color: var(--dark-bg-3) !important;
+        border-color: var(--dark-border) !important;
+        color: var(--dark-text-2) !important;
+    }
 
-.dark-theme .btn-primary:hover {
-    background-color: var(--primary-light);
-    border-color: var(--primary-light);
-}
+    .dark-theme .input-group .btn-outline-secondary:hover {
+        background-color: var(--dark-bg-1) !important;
+        border-color: var(--primary) !important;
+        color: var(--primary-light) !important;
+    }
+
+    .dark-theme .btn-outline-danger {
+        color: #dc3545 !important;
+        border-color: #dc3545 !important;
+    }
+
+    .dark-theme .btn-outline-danger:hover {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: white !important;
+    }
+
+    .dark-theme .text-muted {
+        color: var(--gray-400) !important;
+    }
+
+    .dark-theme h2 {
+        color: var(--dark-text-1) !important;
+    }
+
+    .dark-theme h4 {
+        color: var(--dark-text-1) !important;
+    }
+
+    .dark-theme h6 {
+        color: var(--dark-text-1) !important;
+    }
+
+    .dark-theme .container {
+        background-color: var(--dark-bg-2);
+    }
+
+    .dark-theme .btn-primary {
+        background-color: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+
+    .dark-theme .btn-primary:hover {
+        background-color: var(--primary-light) !important;
+        border-color: var(--primary-light) !important;
+    }
+
+    .dark-theme .text-decoration-none {
+        color: var(--primary-light) !important;
+    }
+
+    .dark-theme .text-decoration-none:hover {
+        color: var(--primary) !important;
+    }
+
+    .dark-theme .spinner-border {
+        border-color: var(--primary-light) !important;
+        border-right-color: transparent !important;
+    }
+
+    /* Quantity input styling */
+    .cart-quantity-input {
+        font-weight: 600;
+        text-align: center;
+        border-left: none;
+        border-right: none;
+        max-width: 60px;
+    }
+
+    .cart-quantity-input:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+    }
+
+    /* Remove number input arrows */
+    .cart-quantity-input::-webkit-outer-spin-button,
+    .cart-quantity-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .cart-quantity-input {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+
+    /* Product image styling */
+    .cart-product-image {
+        max-width: 60px;
+        max-height: 60px;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, .3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Dark theme loading spinner */
+    .dark-theme .loading-spinner {
+        border: 3px solid rgba(255, 255, 255, .1);
+        border-top-color: var(--dark-text-1);
+    }
+
+    /* Remove Item Modal Dark Theme */
+    .dark-theme .modal-content {
+        background-color: var(--dark-bg-2);
+        border-color: var(--dark-border);
+        color: var(--dark-text-1);
+    }
+
+    .dark-theme .modal-header {
+        background-color: var(--dark-bg-2);
+        border-bottom-color: var(--dark-border);
+    }
+
+    .dark-theme .modal-title {
+        color: var(--dark-text-1);
+    }
+
+    .dark-theme .modal-body {
+        background-color: var(--dark-bg-2);
+        color: var(--dark-text-1);
+    }
+
+    .dark-theme .modal-footer {
+        background-color: var(--dark-bg-2);
+        border-top-color: var(--dark-border);
+    }
+
+    .dark-theme .btn-close {
+        filter: invert(1) brightness(0.9);
+    }
+
+    .dark-theme .alert-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        border-color: rgba(255, 193, 7, 0.3);
+        color: var(--accent-light);
+    }
+
+    .dark-theme .text-muted {
+        color: var(--gray-400) !important;
+    }
+
+    .dark-theme .btn-secondary {
+        background-color: var(--dark-bg-3);
+        border-color: var(--dark-border);
+        color: var(--dark-text-2);
+    }
+
+    .dark-theme .btn-secondary:hover {
+        background-color: var(--dark-bg-1);
+        border-color: var(--primary);
+        color: var(--primary-light);
+    }
+
+    /* Quantity validation alert */
+    .quantity-alert {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 24px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1100;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .quantity-alert.show {
+        display: flex;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    }
+
+    .quantity-alert i {
+        font-size: 1.2em;
+    }
+
+    /* Dark theme support */
+    .dark-theme .quantity-alert {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .dark-theme .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .dark-theme .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #c82333;
+    }
+
+    .dark-theme .btn-success {
+        background-color: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .dark-theme .btn-success:hover {
+        background-color: var(--accent-light);
+        border-color: var(--accent-light);
+    }
+
+    .dark-theme .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .dark-theme .btn-primary:hover {
+        background-color: var(--primary-light);
+        border-color: var(--primary-light);
+    }
 </style>
 {% endblock %}
 
@@ -306,7 +330,7 @@
     <div class="row">
         <div class="col-12">
             <h2 class="mb-4"><i class="fas fa-shopping-cart me-2"></i>Your Shopping Cart</h2>
-            
+
             <!-- Loading State -->
             <div id="cartLoading" class="text-center py-5" style="display: none;">
                 <div class="spinner-border text-primary" role="status">
@@ -314,7 +338,7 @@
                 </div>
                 <p class="mt-3">Loading your cart...</p>
             </div>
-            
+
             <!-- Cart Items Table -->
             <div class="table-responsive" id="cartContent">
                 <table class="table table-hover">
@@ -323,7 +347,8 @@
                             <th>
                                 <div class="d-flex align-items-center">
                                     <input type="checkbox" id="selectAllCheckbox" class="form-check-input me-2">
-                                    <label for="selectAllCheckbox" class="form-check-label mb-0 small">Select All</label>
+                                    <label for="selectAllCheckbox" class="form-check-label mb-0 small">Select
+                                        All</label>
                                 </div>
                             </th>
                             <th>Product</th>
@@ -359,10 +384,10 @@
             <!-- Checkout Buttons -->
             <div class="d-flex justify-content-end mt-4" id="checkoutSection">
                 <div class="btn-group" role="group">
-                    <a href="{{ url_for('main.checkout') }}?type=online" class="btn btn-success btn-lg" id="payOnlineBtn" disabled>
+                    <button type="button" class="btn btn-success btn-lg" id="payOnlineBtn">
                         <i class="fas fa-credit-card me-2"></i>Pay Now
-                    </a>
-                    <button type="button" class="btn btn-primary btn-lg" id="payStoreBtn" disabled>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg" id="payStoreBtn">
                         <i class="fas fa-store me-2"></i>Pay at Store
                     </button>
                 </div>
@@ -412,59 +437,69 @@
 
 {% block extra_js %}
 <script>
-let cartData = null;
+    let cartData = null;
 
-function formatPrice(price) {
-    return `रु ${parseFloat(price).toFixed(2)}`;
-}
-
-function showQuantityAlert(message = 'Quantity must be between 1 and 999') {
-    const alert = document.getElementById('quantityAlert');
-    const alertText = alert.querySelector('span');
-    alertText.textContent = message;
-    alert.classList.add('show');
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-        alert.classList.remove('show');
-    }, 3000);
-}
-
-function updateCartUI(data) {
-    const cartItemsEl = document.getElementById('cartItems');
-    const subtotalEl = document.getElementById('cartSubtotal');
-    const payOnlineBtn = document.getElementById('payOnlineBtn');
-    const payStoreBtn = document.getElementById('payStoreBtn');
-    const emptyMessage = document.getElementById('emptyCartMessage');
-    const cartContent = document.getElementById('cartContent');
-    const checkoutSection = document.getElementById('checkoutSection');
-    
-    if (!data.success || !data.cart_items || data.cart_items.length === 0) {
-        // Show empty cart
-        emptyMessage.style.display = 'block';
-        cartContent.style.display = 'none';
-        checkoutSection.style.display = 'none';
-        return;
+    function formatPrice(price) {
+        return `रु ${parseFloat(price).toFixed(2)}`;
     }
-    
-    // Show cart with items
-    emptyMessage.style.display = 'none';
-    cartContent.style.display = 'block';
-    checkoutSection.style.display = 'flex';
-    
-    let itemsHTML = '';
-    data.cart_items.forEach(item => {
-        const isUnavailable = item.status !== 'active';
-        const unavailableBadge = isUnavailable ? '<span class="badge bg-warning text-dark">Unavailable</span>' : '';
-        const unavailableClass = isUnavailable ? 'table-warning' : '';
-        const disabledAttr = isUnavailable ? 'disabled' : '';
-        
-        itemsHTML += `
+
+    function showQuantityAlert(message = 'Quantity must be between 1 and 999') {
+        const alert = document.getElementById('quantityAlert');
+        const alertText = alert.querySelector('span');
+        alertText.textContent = message;
+        alert.classList.add('show');
+
+        // Hide after 3 seconds
+        setTimeout(() => {
+            alert.classList.remove('show');
+        }, 3000);
+    }
+
+    function updateCartUI(data) {
+        const cartItemsEl = document.getElementById('cartItems');
+        const subtotalEl = document.getElementById('cartSubtotal');
+        const payOnlineBtn = document.getElementById('payOnlineBtn');
+        const payStoreBtn = document.getElementById('payStoreBtn');
+        const emptyMessage = document.getElementById('emptyCartMessage');
+        const cartContent = document.getElementById('cartContent');
+        const checkoutSection = document.getElementById('checkoutSection');
+
+        if (!data.success || !data.cart_items || data.cart_items.length === 0) {
+            // Show empty cart
+            emptyMessage.style.display = 'block';
+            cartContent.style.display = 'none';
+            checkoutSection.style.display = 'none';
+            return;
+        }
+
+        // Show cart with items
+        emptyMessage.style.display = 'none';
+        cartContent.style.display = 'block';
+        checkoutSection.style.display = 'flex';
+
+        let itemsHTML = '';
+        data.cart_items.forEach(item => {
+            const isOutOfStock = item.stock_quantity <= 0;
+            const isUnavailable = item.status !== 'active' || isOutOfStock;
+            
+            let statusBadge = '';
+            if (item.status !== 'active') {
+                statusBadge = '<span class="badge bg-danger">Hidden</span>';
+            } else if (isOutOfStock) {
+                statusBadge = '<span class="badge bg-warning text-dark">Out of Stock</span>';
+            }
+            
+            const unavailableClass = isUnavailable ? 'table-warning' : '';
+            const disabledAttr = isUnavailable ? 'disabled' : '';
+            const checkedAttr = isUnavailable ? '' : 'checked';
+
+            itemsHTML += `
             <tr data-cart-item-id="${item.cart_item_id}" class="${unavailableClass}">
                 <td>
                     <div class="form-check">
                         <input class="form-check-input select-for-order" type="checkbox" 
                                data-cart-item-id="${item.cart_item_id}" 
+                               ${checkedAttr}
                                ${disabledAttr}>
                     </div>
                 </td>
@@ -474,7 +509,7 @@ function updateCartUI(data) {
                         <div>
                             <h6 class="mb-1">${item.name}</h6>
                             <small class="text-muted">${item.category_name || 'Product'}</small>
-                            ${unavailableBadge}
+                            ${statusBadge}
                         </div>
                     </div>
                 </td>
@@ -498,302 +533,326 @@ function updateCartUI(data) {
                     </button>
                 </td>
             </tr>`;
-    });
-    
-    cartItemsEl.innerHTML = itemsHTML;
-    updateSelectAllCheckbox();
-    updateSelectedSubtotal();
-    payOnlineBtn.disabled = false;
-    payStoreBtn.disabled = false;
-    
-    // Add event listeners to new elements
-    attachItemEventListeners();
-}
+        });
 
-function updateSelectAllCheckbox() {
-    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-    const availableCheckboxes = document.querySelectorAll('.select-for-order:not(:disabled)');
-    const checkedCheckboxes = document.querySelectorAll('.select-for-order:checked:not(:disabled)');
-    
-    if (selectAllCheckbox) {
-        if (availableCheckboxes.length === 0) {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.disabled = true;
-        } else {
-            selectAllCheckbox.disabled = false;
-            selectAllCheckbox.checked = availableCheckboxes.length === checkedCheckboxes.length;
+        cartItemsEl.innerHTML = itemsHTML;
+        updateSelectAllCheckbox();
+        updateSelectedSubtotal();
+        payOnlineBtn.disabled = false;
+        payStoreBtn.disabled = false;
+
+        // Add event listeners to new elements
+        attachItemEventListeners();
+    }
+
+    function updateSelectAllCheckbox() {
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const availableCheckboxes = document.querySelectorAll('.select-for-order:not(:disabled)');
+        const checkedCheckboxes = document.querySelectorAll('.select-for-order:checked:not(:disabled)');
+
+        if (selectAllCheckbox) {
+            if (availableCheckboxes.length === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.disabled = true;
+            } else {
+                selectAllCheckbox.disabled = false;
+                selectAllCheckbox.checked = availableCheckboxes.length === checkedCheckboxes.length;
+            }
         }
     }
-}
 
-function updateSelectedSubtotal() {
-    const subtotalEl = document.getElementById('cartSubtotal');
-    let selectedTotal = 0;
-    
-    document.querySelectorAll('.select-for-order:checked').forEach(checkbox => {
-        const row = checkbox.closest('tr');
-        const totalCell = row.querySelector('td:nth-child(5)');
-        const totalText = totalCell.textContent.replace('रु ', '').replace(',', '');
-        selectedTotal += parseFloat(totalText);
-    });
-    
-    subtotalEl.textContent = formatPrice(selectedTotal);
-}
+    function updateSelectedSubtotal() {
+        const subtotalEl = document.getElementById('cartSubtotal');
+        let selectedTotal = 0;
 
-function attachItemEventListeners() {
-    // Select all checkbox functionality
-    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const isChecked = this.checked;
-            document.querySelectorAll('.select-for-order:not(:disabled)').forEach(checkbox => {
-                checkbox.checked = isChecked;
+        document.querySelectorAll('.select-for-order:checked').forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            const totalCell = row.querySelector('td:nth-child(5)');
+            const totalText = totalCell.textContent.replace('रु ', '').replace(',', '');
+            selectedTotal += parseFloat(totalText);
+        });
+
+        subtotalEl.textContent = formatPrice(selectedTotal);
+    }
+
+    function attachItemEventListeners() {
+        // Select all checkbox functionality
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function () {
+                const isChecked = this.checked;
+                document.querySelectorAll('.select-for-order:not(:disabled)').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                updateSelectedSubtotal();
             });
-            updateSelectedSubtotal();
+        }
+
+        // Select for order checkboxes
+        document.querySelectorAll('.select-for-order').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                updateSelectAllCheckbox();
+                updateSelectedSubtotal();
+            });
+        });
+
+        // Quantity decrease buttons
+        document.querySelectorAll('.decrease-qty').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const cartItemId = this.closest('tr').dataset.cartItemId;
+                const input = this.closest('tr').querySelector('.cart-quantity-input');
+                const currentValue = parseInt(input.value);
+                if (currentValue > 1) {
+                    updateCartItemQuantity(cartItemId, currentValue - 1);
+                } else {
+                    showQuantityAlert('Quantity must be at least 1');
+                }
+            });
+        });
+
+        // Quantity increase buttons
+        document.querySelectorAll('.increase-qty').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const cartItemId = this.closest('tr').dataset.cartItemId;
+                const input = this.closest('tr').querySelector('.cart-quantity-input');
+                const currentValue = parseInt(input.value);
+                if (currentValue < 999) {
+                    updateCartItemQuantity(cartItemId, currentValue + 1);
+                } else {
+                    showQuantityAlert('Maximum quantity is 999');
+                }
+            });
+        });
+
+        // Quantity input changes
+        document.querySelectorAll('.cart-quantity-input').forEach(input => {
+            input.addEventListener('input', function () {
+                let value = parseInt(this.value);
+                if (isNaN(value) || value < 1) {
+                    this.value = 1;
+                    value = 1;
+                    showQuantityAlert('Quantity must be at least 1');
+                }
+                if (value > 999) {
+                    this.value = 999;
+                    showQuantityAlert('Maximum quantity is 999');
+                    return;
+                }
+
+                const cartItemId = this.dataset.cartItemId;
+                updateCartItemQuantity(cartItemId, value);
+            });
+
+            // Prevent backspace from making input empty
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Backspace') {
+                    const currentValue = this.value;
+                    if (currentValue.length <= 1) {
+                        e.preventDefault();
+                        this.value = '1';
+                    }
+                }
+            });
+        });
+
+        // Remove item buttons
+        document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.addEventListener('click', function () {
+                // Modal is now handled by the global event listener
+                // This is kept for compatibility but the modal handles the actual confirmation
+            });
         });
     }
-    
-    // Select for order checkboxes
-    document.querySelectorAll('.select-for-order').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateSelectAllCheckbox();
-            updateSelectedSubtotal();
-        });
-    });
-    
-    // Quantity decrease buttons
-    document.querySelectorAll('.decrease-qty').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const cartItemId = this.closest('tr').dataset.cartItemId;
-            const input = this.closest('tr').querySelector('.cart-quantity-input');
-            const currentValue = parseInt(input.value);
-            if (currentValue > 1) {
-                updateCartItemQuantity(cartItemId, currentValue - 1);
-            } else {
-                showQuantityAlert('Quantity must be at least 1');
+
+    function updateCartItemQuantity(cartItemId, newQuantity) {
+        const row = document.querySelector(`tr[data-cart-item-id="${cartItemId}"]`);
+        const input = row.querySelector('.cart-quantity-input');
+        const totalCell = row.querySelector('td:nth-child(4)');
+
+        // Show loading state
+        input.disabled = true;
+        row.style.opacity = '0.6';
+
+        fetch('/products/api/cart/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                cart_item_id: parseInt(cartItemId),
+                quantity: newQuantity
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadCart(); // Reload cart to get updated totals
+                } else {
+                    alert(data.message || 'Failed to update quantity');
+                    input.disabled = false;
+                    row.style.opacity = '1';
+                }
+            })
+            .catch(error => {
+                console.error('Error updating quantity:', error);
+                alert('Error updating quantity. Please try again.');
+                input.disabled = false;
+                row.style.opacity = '1';
+            });
+    }
+
+    function removeCartItem(cartItemId) {
+        const row = document.querySelector(`tr[data-cart-item-id="${cartItemId}"]`);
+
+        // Show loading state
+        row.style.opacity = '0.6';
+
+        fetch('/products/api/cart/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                cart_item_id: parseInt(cartItemId)
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadCart(); // Reload cart
+                } else {
+                    alert(data.message || 'Failed to remove item');
+                    row.style.opacity = '1';
+                }
+            })
+            .catch(error => {
+                console.error('Error removing item:', error);
+                alert('Error removing item. Please try again.');
+                row.style.opacity = '1';
+            });
+    }
+
+    function loadCart() {
+        const loading = document.getElementById('cartLoading');
+        const content = document.getElementById('cartContent');
+        const emptyMessage = document.getElementById('emptyCartMessage');
+
+        loading.style.display = 'block';
+        content.style.display = 'none';
+        emptyMessage.style.display = 'none';
+
+        fetch('/products/api/cart')
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                cartData = data;
+                updateCartUI(data);
+            })
+            .catch(error => {
+                console.error('Error loading cart:', error);
+                loading.style.display = 'none';
+                alert('Error loading cart. Please refresh the page.');
+            });
+    }
+
+    // Initialize cart when page loads
+    document.addEventListener('DOMContentLoaded', function () {
+        loadCart();
+
+        // Initialize remove modal
+        const removeModal = new bootstrap.Modal(document.getElementById('removeItemModal'));
+        const confirmRemoveBtn = document.getElementById('confirmRemoveBtn');
+        let currentRemoveItemId = null;
+
+        // Remove item buttons
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.remove-item')) {
+                const btn = e.target.closest('.remove-item');
+                const cartItemId = btn.dataset.cartItemId;
+                const row = btn.closest('tr');
+                const itemName = row.querySelector('h6').textContent;
+
+                // Set item name in modal
+                document.getElementById('removeItemName').textContent = itemName;
+
+                // Store current item ID
+                currentRemoveItemId = cartItemId;
+
+                // Show modal
+                removeModal.show();
             }
         });
-    });
-    
-    // Quantity increase buttons
-    document.querySelectorAll('.increase-qty').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const cartItemId = this.closest('tr').dataset.cartItemId;
-            const input = this.closest('tr').querySelector('.cart-quantity-input');
-            const currentValue = parseInt(input.value);
-            if (currentValue < 999) {
-                updateCartItemQuantity(cartItemId, currentValue + 1);
-            } else {
-                showQuantityAlert('Maximum quantity is 999');
+
+        // Confirm remove button
+        confirmRemoveBtn.addEventListener('click', function () {
+            if (currentRemoveItemId) {
+                removeCartItem(currentRemoveItemId);
+                removeModal.hide();
+                currentRemoveItemId = null;
             }
         });
-    });
-    
-    // Quantity input changes
-    document.querySelectorAll('.cart-quantity-input').forEach(input => {
-        input.addEventListener('input', function() {
-            let value = parseInt(this.value);
-            if (isNaN(value) || value < 1) {
-                this.value = 1;
-                value = 1;
-                showQuantityAlert('Quantity must be at least 1');
-            }
-            if (value > 999) {
-                this.value = 999;
-                showQuantityAlert('Maximum quantity is 999');
+
+        // Pay Now (Online) button
+        document.getElementById('payOnlineBtn').addEventListener('click', function (e) {
+            const selectedItems = validateSelectedItems();
+            if (!selectedItems) {
                 return;
             }
-            
-            const cartItemId = this.dataset.cartItemId;
-            updateCartItemQuantity(cartItemId, value);
+
+            // Get selected IDs
+            const selectedIds = selectedItems.map(item => item.cart_item_id).join(',');
+
+            // Redirect to checkout with selected items
+            window.location.href = "{{ url_for('main.checkout') }}?items=" + selectedIds;
         });
-        
-        // Prevent backspace from making input empty
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Backspace') {
-                const currentValue = this.value;
-                if (currentValue.length <= 1) {
-                    e.preventDefault();
-                    this.value = '1';
-                }
+
+        // Pay at Store button
+        document.getElementById('payStoreBtn').addEventListener('click', function () {
+            const selectedItems = validateSelectedItems();
+            if (!selectedItems) return;
+
+            // Show payment modal
+            showPaymentModal(selectedItems);
+        });
+    });
+
+    function showNoItemsModal() {
+        const modal = new bootstrap.Modal(document.getElementById('noItemsModal'));
+        modal.show();
+    }
+
+    function validateSelectedItems() {
+        if (!cartData || !cartData.cart_items || cartData.cart_items.length === 0) {
+            showNoItemsModal();
+            return false;
+        }
+
+        // Get selected items
+        const selectedItems = [];
+        document.querySelectorAll('.select-for-order:checked').forEach(checkbox => {
+            const cartItemId = checkbox.dataset.cartItemId;
+            const item = cartData.cart_items.find(item => item.cart_item_id == cartItemId);
+            if (item) {
+                selectedItems.push(item);
             }
         });
-    });
-    
-    // Remove item buttons
-    document.querySelectorAll('.remove-item').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Modal is now handled by the global event listener
-            // This is kept for compatibility but the modal handles the actual confirmation
-        });
-    });
-}
 
-function updateCartItemQuantity(cartItemId, newQuantity) {
-    const row = document.querySelector(`tr[data-cart-item-id="${cartItemId}"]`);
-    const input = row.querySelector('.cart-quantity-input');
-    const totalCell = row.querySelector('td:nth-child(4)');
-    
-    // Show loading state
-    input.disabled = true;
-    row.style.opacity = '0.6';
-    
-    fetch('/products/api/cart/update', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            cart_item_id: parseInt(cartItemId),
-            quantity: newQuantity
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            loadCart(); // Reload cart to get updated totals
-        } else {
-            alert(data.message || 'Failed to update quantity');
-            input.disabled = false;
-            row.style.opacity = '1';
+        if (selectedItems.length === 0) {
+            showNoItemsModal();
+            return false;
         }
-    })
-    .catch(error => {
-        console.error('Error updating quantity:', error);
-        alert('Error updating quantity. Please try again.');
-        input.disabled = false;
-        row.style.opacity = '1';
-    });
-}
 
-function removeCartItem(cartItemId) {
-    const row = document.querySelector(`tr[data-cart-item-id="${cartItemId}"]`);
-    
-    // Show loading state
-    row.style.opacity = '0.6';
-    
-    fetch('/products/api/cart/remove', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            cart_item_id: parseInt(cartItemId)
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            loadCart(); // Reload cart
-        } else {
-            alert(data.message || 'Failed to remove item');
-            row.style.opacity = '1';
-        }
-    })
-    .catch(error => {
-        console.error('Error removing item:', error);
-        alert('Error removing item. Please try again.');
-        row.style.opacity = '1';
-    });
-}
-
-function loadCart() {
-    const loading = document.getElementById('cartLoading');
-    const content = document.getElementById('cartContent');
-    const emptyMessage = document.getElementById('emptyCartMessage');
-    
-    loading.style.display = 'block';
-    content.style.display = 'none';
-    emptyMessage.style.display = 'none';
-    
-    fetch('/products/api/cart')
-        .then(response => response.json())
-        .then(data => {
-            loading.style.display = 'none';
-            cartData = data;
-            updateCartUI(data);
-        })
-        .catch(error => {
-            console.error('Error loading cart:', error);
-            loading.style.display = 'none';
-            alert('Error loading cart. Please refresh the page.');
-        });
-}
-
-// Initialize cart when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    loadCart();
-    
-    // Initialize remove modal
-    const removeModal = new bootstrap.Modal(document.getElementById('removeItemModal'));
-    const confirmRemoveBtn = document.getElementById('confirmRemoveBtn');
-    let currentRemoveItemId = null;
-    
-    // Remove item buttons
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-item')) {
-            const btn = e.target.closest('.remove-item');
-            const cartItemId = btn.dataset.cartItemId;
-            const row = btn.closest('tr');
-            const itemName = row.querySelector('h6').textContent;
-            
-            // Set item name in modal
-            document.getElementById('removeItemName').textContent = itemName;
-            
-            // Store current item ID
-            currentRemoveItemId = cartItemId;
-            
-            // Show modal
-            removeModal.show();
-        }
-    });
-    
-    // Confirm remove button
-    confirmRemoveBtn.addEventListener('click', function() {
-        if (currentRemoveItemId) {
-            removeCartItem(currentRemoveItemId);
-            removeModal.hide();
-            currentRemoveItemId = null;
-        }
-    });
-    
-    // Pay at Store button
-    document.getElementById('payStoreBtn').addEventListener('click', function() {
-        if (this.disabled) return;
-        
-        // Show payment modal without saving to database
-        showPaymentModal();
-    });
-});
-
-function showPaymentModal() {
-    if (!cartData || !cartData.cart_items || cartData.cart_items.length === 0) {
-        alert('Your cart is empty');
-        return;
+        return selectedItems;
     }
-    
-    // Get selected items
-    const selectedItems = [];
-    document.querySelectorAll('.select-for-order:checked').forEach(checkbox => {
-        const cartItemId = checkbox.dataset.cartItemId;
-        const item = cartData.cart_items.find(item => item.cart_item_id == cartItemId);
-        if (item) {
-            selectedItems.push(item);
-        }
-    });
-    
-    if (selectedItems.length === 0) {
-        alert('Please select at least one item for order');
-        return;
-    }
-    
-    // Calculate selected total
-    const selectedTotal = selectedItems.reduce((sum, item) => sum + item.subtotal, 0);
-    
-    // Create payment modal content
-    const modalHtml = `
+
+    function showPaymentModal(selectedItems) {
+        // Calculate selected total
+        const selectedTotal = selectedItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+        // Create payment modal content
+        const modalHtml = `
         <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
@@ -813,15 +872,6 @@ function showPaymentModal() {
                         
                         <div class="table-responsive mb-3">
                             <table class="table table-sm">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Qty</th>
-                                        <th>Price</th>
-                                        <th>Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                                     ${selectedItems.map(item => `
                                         <tr>
                                             <td>${item.name}</td>
@@ -855,60 +905,60 @@ function showPaymentModal() {
             </div>
         </div>
     `;
-    
-    // Remove existing modal if present
-    const existingModal = document.getElementById('paymentModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
-    
-    // Add modal to page
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
-    modal.show();
-    
-    // Remove modal from DOM after hidden
-    document.getElementById('paymentModal').addEventListener('hidden.bs.modal', function() {
-        this.remove();
-    });
-}
 
-function confirmStoreOrder(selectedCartItemIds) {
-    if (!cartData || !cartData.cart_items) return;
-    
-    // Filter cart data to only include selected items
-    const selectedItems = cartData.cart_items.filter(item => 
-        selectedCartItemIds.includes(item.cart_item_id)
-    );
-    
-    if (selectedItems.length === 0) {
-        alert('No items selected for order');
-        return;
+        // Remove existing modal if present
+        const existingModal = document.getElementById('paymentModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Add modal to page
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+        modal.show();
+
+        // Remove modal from DOM after hidden
+        document.getElementById('paymentModal').addEventListener('hidden.bs.modal', function () {
+            this.remove();
+        });
     }
-    
-    // Call API to create order for selected items only
-    fetch('/products/api/cart/pay-store', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            selected_items: selectedCartItemIds
+
+    function confirmStoreOrder(selectedCartItemIds) {
+        if (!cartData || !cartData.cart_items) return;
+
+        // Filter cart data to only include selected items
+        const selectedItems = cartData.cart_items.filter(item =>
+            selectedCartItemIds.includes(item.cart_item_id)
+        );
+
+        if (selectedItems.length === 0) {
+            alert('No items selected for order');
+            return;
+        }
+
+        // Call API to create order for selected items only
+        fetch('/products/api/cart/pay-store', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                selected_items: selectedCartItemIds
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Close the payment modal
-        const paymentModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
-        paymentModal.hide();
-        
-        // Show order confirmation modal
-        const selectedTotal = selectedItems.reduce((sum, item) => sum + item.subtotal, 0);
-        
-        const modalHtml = `
+            .then(response => response.json())
+            .then(data => {
+                // Close the payment modal
+                const paymentModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+                paymentModal.hide();
+
+                // Show order confirmation modal
+                const selectedTotal = selectedItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+                const modalHtml = `
             <div class="modal fade" id="orderConfirmationModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -955,40 +1005,40 @@ function confirmStoreOrder(selectedCartItemIds) {
                 </div>
             </div>
         `;
-        
-        // Remove existing modal if present
-        const existingModal = document.getElementById('orderConfirmationModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        // Add modal to page
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('orderConfirmationModal'));
-        modal.show();
-        
-        // Remove modal from DOM after hidden
-        document.getElementById('orderConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
-        });
-    })
-    .catch(error => {
-        console.error('Error placing order:', error);
-        alert('Error placing order. Please try again.');
-    });
-}
 
-function clearCartAfterOrder() {
-    // Clear cart data to show empty cart
-    cartData = { success: false, cart_items: [] };
-    updateCartUI(cartData);
-}
+                // Remove existing modal if present
+                const existingModal = document.getElementById('orderConfirmationModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
 
-function showOrderSuccessModal(orderData) {
-    // Create success modal content
-    const modalHtml = `
+                // Add modal to page
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('orderConfirmationModal'));
+                modal.show();
+
+                // Remove modal from DOM after hidden
+                document.getElementById('orderConfirmationModal').addEventListener('hidden.bs.modal', function () {
+                    this.remove();
+                });
+            })
+            .catch(error => {
+                console.error('Error placing order:', error);
+                alert('Error placing order. Please try again.');
+            });
+    }
+
+    function clearCartAfterOrder() {
+        // Clear cart data to show empty cart
+        cartData = { success: false, cart_items: [] };
+        updateCartUI(cartData);
+    }
+
+    function showOrderSuccessModal(orderData) {
+        // Create success modal content
+        const modalHtml = `
         <div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -1030,24 +1080,24 @@ function showOrderSuccessModal(orderData) {
             </div>
         </div>
     `;
-    
-    // Remove existing modal if present
-    const existingModal = document.getElementById('orderSuccessModal');
-    if (existingModal) {
-        existingModal.remove();
+
+        // Remove existing modal if present
+        const existingModal = document.getElementById('orderSuccessModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Add modal to page
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
+        modal.show();
+
+        // Remove modal from DOM after hidden
+        document.getElementById('orderSuccessModal').addEventListener('hidden.bs.modal', function () {
+            this.remove();
+        });
     }
-    
-    // Add modal to page
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
-    modal.show();
-    
-    // Remove modal from DOM after hidden
-    document.getElementById('orderSuccessModal').addEventListener('hidden.bs.modal', function() {
-        this.remove();
-    });
-}
 </script>
 {% endblock %}
