@@ -73,11 +73,11 @@ INSERT INTO users (first_name, last_name, email, hashed_password, role) VALUES
 ('Vikram', 'Patel', 'staff5@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Staff'),
 
 -- Additional customer users
-('John', 'Doe', 'customer1@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer'),
-('Jane', 'Smith', 'customer2@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer'),
-('Mike', 'Johnson', 'customer3@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer'),
-('Sarah', 'Williams', 'customer4@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer'),
-('David', 'Brown', 'customer5@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer');
+('Suyog', 'Subedi', 'customer1@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer'),
+('Ankit', 'Chapagain', 'customer2@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer'),
+('Simran ', 'Bhattrai', 'customer3@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer'),
+('Subham', 'Subedi', 'customer4@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer'),
+('David', 'Gadal', 'customer5@gmail.com', 'pbkdf2:sha256:1000000$URzxNiwiJCuhH2j8$d893d71ac9c69b5b49bc61a24d294abda0798ce0c55610723988f39758b4cb6d', 'Customer');
 
 -- Product categories
 INSERT INTO categories (name, description) VALUES 
