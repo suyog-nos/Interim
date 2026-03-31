@@ -2,774 +2,898 @@
 
 {% block title %}Orders - SmartStationery{% endblock %}
 
-{% block styles %}
+{% block extra_css %}
 {{ super() }}
 <style>
-    /* Professional nav-pills styling - no horizontal lines */
-    .nav-pills {
-        background: none;
-        border: none;
-        padding: 0;
-        gap: 12px;
-        display: flex;
-    }
-    
-    .nav-pills .nav-link {
-        border: none;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        color: #495057;
-        border-radius: 12px;
-        padding: 12px 24px;
-        font-weight: 500;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-    
-    .nav-pills .nav-link:hover {
-        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-        color: #343a40;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    .nav-pills .nav-link.active {
-        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
-        color: white;
-        border: none;
-        box-shadow: 0 4px 16px rgba(13, 110, 253, 0.3);
-        transform: translateY(-1px);
-    }
-    
-    .nav-pills .nav-link.active:hover {
-        background: linear-gradient(135deg, #0b5ed7 0%, #004085 100%);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
-    }
-    
-    .nav-pills .nav-link::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-    }
-    
-    .nav-pills .nav-link:hover::before {
-        left: 100%;
-    }
-    
-    /* Status-based button styles */
-    .btn-status {
-        transition: all 0.2s ease-in-out;
-        min-width: 140px;
-        text-align: left;
-        position: relative;
-        padding-right: 30px;
+    /* --- DESIGN VARIABLES --- */
+    :root {
+        --bg-body: #f8fafc;
+        --bg-card: #ffffff;
+        --border-color: #e2e8f0;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --accent-color: #2563eb;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+        --status-paid: #10b981;
+        --status-unpaid: #ef4444;
+        --status-processing: #f59e0b;
+        --status-ready: #3b82f6;
     }
 
-    .btn-status::after {
-        content: '▼';
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 0.7em;
-        opacity: 0.7;
+    /* --- DARK THEME OVERRIDES --- */
+    .dark-theme,
+    .dark-theme body {
+        --bg-body: #0f172a;
+        --bg-card: #1e293b;
+        --border-color: #475569;
+        /* Lighter for visibility */
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+
+        /* Force background to eliminate white padding */
+        background-color: var(--bg-body) !important;
+        color: var(--text-primary) !important;
     }
 
-    /* Status-specific styles */
-    .btn-status-processing {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: white;
-    }
-    
-    .btn-status-ready {
-        background-color: #fd7e14;
-        border-color: #fd7e14;
-        color: white;
-    }
-    
-    .btn-status-completed {
-        background-color: #198754;
-        border-color: #198754;
-        color: white;
-    }
-    
-    .btn-status-cancelled {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: white;
+    /* Additional Dark Mode Fixes */
+    .dark-theme .modal-content {
+        background-color: var(--bg-card);
+        border-color: var(--border-color);
+        color: var(--text-primary);
     }
 
-    /* Hover effects */
-    .btn-status:hover {
-        filter: brightness(90%);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    .dark-theme .modal-header,
+    .dark-theme .modal-footer {
+        border-color: var(--border-color);
     }
 
-    /* Dropdown menu styles - Professional */
-    .dropdown-menu {
-        min-width: 100%;
-        border: none;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        margin-top: 8px;
-        border-radius: 8px;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
-        background-color: rgba(255, 255, 255, 0.95);
+    .dark-theme .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
     }
 
     .dark-theme .dropdown-menu {
-        background-color: rgba(33, 37, 41, 0.95);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .dropdown-item {
-        padding: 10px 16px;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        font-size: 0.875rem;
-        font-weight: 500;
-        border: none;
-        background: none;
-        color: var(--gray-700);
+        background-color: var(--bg-card);
+        border-color: var(--border-color);
     }
 
     .dark-theme .dropdown-item {
-        color: var(--gray-200);
-    }
-
-    .dropdown-item:hover {
-        background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);
-        color: #0d6efd;
-        transform: translateX(4px);
-        padding-left: 20px;
+        color: var(--text-primary);
     }
 
     .dark-theme .dropdown-item:hover {
-        background: linear-gradient(135deg, rgba(13, 110, 253, 0.2) 0%, rgba(13, 110, 253, 0.1) 100%);
-        color: #5aa3ff;
+        background-color: rgba(255, 255, 255, 0.05);
     }
 
-    /* Professional dropdown toggle */
-    .btn-outline-secondary.dropdown-toggle {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid rgba(108, 117, 125, 0.3);
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
+    /* --- LAYOUT UTILITIES --- */
+    body {
+        background-color: var(--bg-body);
     }
 
-    .btn-outline-secondary.dropdown-toggle:hover {
-        background: rgba(108, 117, 125, 0.1);
-        border-color: rgba(108, 117, 125, 0.5);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
     }
 
-    .dark-theme .btn-outline-secondary.dropdown-toggle {
-        background: rgba(33, 37, 41, 0.9);
-        border-color: rgba(108, 117, 125, 0.5);
-        color: var(--gray-200);
+    /* --- COMPONENT STYLES --- */
+
+    /* 1. Header */
+    .page-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
     }
 
-    .dark-theme .btn-outline-secondary.dropdown-toggle:hover {
-        background: rgba(108, 117, 125, 0.2);
-        border-color: rgba(108, 117, 125, 0.7);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    .header-stat-glass {
+        background-color: rgba(255, 255, 255, 0.2);
     }
 
-    /* Payment status card styles */
-    .payment-paid {
-        background-color: rgba(25, 135, 84, 0.05) !important;
-        border-left: 4px solid #198754 !important;
-    }
-    
-    .payment-unpaid {
-        background-color: rgba(220, 53, 69, 0.05) !important;
-        border-left: 4px solid #dc3545 !important;
+    /* 2. Search Bar */
+    .search-wrapper {
+        margin-bottom: 2rem;
     }
 
-    .dark-theme .payment-paid {
-        background-color: rgba(25, 135, 84, 0.15) !important;
-        border-left-color: #198754 !important;
+    .search-input-group {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 50px;
+        /* Pill shape */
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+        max-width: 800px;
+        margin: 0 auto;
     }
-    
-    .dark-theme .payment-unpaid {
-        background-color: rgba(220, 53, 69, 0.15) !important;
-        border-left-color: #dc3545 !important;
+
+    .search-input-group input {
+        border: none;
+        background: transparent;
+        color: var(--text-primary);
+        padding: 0.75rem 1.5rem;
+        flex-grow: 1;
+        font-size: 1rem;
     }
-    
-    /* Dark theme card body and header */
-    .dark-theme .card-body {
-        background-color: var(--dark-bg-2) !important;
-        color: var(--gray-200) !important;
+
+    .search-input-group input:focus {
+        outline: none;
     }
-    
-    .dark-theme .card-header {
-        background-color: var(--dark-bg-2) !important;
-        color: var(--gray-200) !important;
-        border-bottom-color: var(--gray-700) !important;
+
+    .dark-theme .search-input-group input::placeholder {
+        color: var(--text-secondary);
     }
-    
-    .dark-theme .card {
-        background-color: var(--dark-bg-2) !important;
-        border-color: var(--gray-700) !important;
+
+    /* 3. Tabs */
+    .nav-pills-custom {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
     }
-    
-    .dark-theme .table {
-        color: var(--gray-200) !important;
+
+    .nav-pill-link {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.2s ease;
     }
-    
-    .dark-theme .table-light {
-        background-color: var(--dark-bg-1) !important;
-        color: var(--gray-300) !important;
+
+    .nav-pill-link.active {
+        background-color: var(--accent-color);
+        color: white;
+        border-color: var(--accent-color);
+        box-shadow: var(--shadow-md);
     }
-    
-    .dark-theme .table th,
-    .dark-theme .table td {
-        border-color: var(--gray-700) !important;
+
+    .dark-theme .nav-pill-link:not(.active):hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+    }
+
+    /* 4. Order Cards */
+    .order-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        border-left: 6px solid var(--border-color);
+        /* Default border status */
+    }
+
+    /* Status Colors */
+    .order-card.paid {
+        border-left-color: var(--status-paid);
+    }
+
+    .order-card.unpaid {
+        border-left-color: var(--status-unpaid);
+    }
+
+    .order-card.status-processing {
+        border-left-color: var(--status-processing);
+    }
+
+    .order-card.status-processing .card-header-section {
+        background-color: rgba(245, 158, 11, 0.03);
+    }
+
+    .dark-theme .order-card.status-processing .card-header-section {
+        background-color: rgba(245, 158, 11, 0.1);
+    }
+
+    .order-card.status-ready_for_pickup {
+        border-left-color: var(--status-ready);
+    }
+
+    .order-card.status-ready_for_pickup .card-header-section {
+        background-color: rgba(59, 130, 246, 0.03);
+    }
+
+    .dark-theme .order-card.status-ready_for_pickup .card-header-section {
+        background-color: rgba(59, 130, 246, 0.1);
+    }
+
+    .order-card.status-completed {
+        border-left-color: var(--status-paid);
+    }
+
+    .order-card.status-completed .card-header-section {
+        background-color: rgba(16, 185, 129, 0.03);
+    }
+
+    .dark-theme .order-card.status-completed .card-header-section {
+        background-color: rgba(16, 185, 129, 0.1);
+    }
+
+    .order-card.status-cancelled {
+        border-left-color: var(--status-unpaid);
+    }
+
+    .order-card.status-cancelled .card-header-section {
+        background-color: rgba(239, 68, 68, 0.03);
+    }
+
+    .dark-theme .order-card.status-cancelled .card-header-section {
+        background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    .card-header-section {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .stats-row {
+        background-color: rgba(0, 0, 0, 0.02);
+        /* Slight tint */
+        padding: 1rem 1.5rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .dark-theme .stats-row {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .stat-box small {
+        display: block;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-box span {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+    }
+
+    /* 5. Tables */
+    .table-responsive {
+        padding: 0;
+    }
+
+    .custom-table {
+        width: 100%;
+        margin-bottom: 0;
+        color: var(--text-primary);
+    }
+
+    .custom-table th {
+        background-color: transparent;
+        color: var(--text-secondary);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .custom-table td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .custom-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Quantity Field Utility */
+    .quantity-field {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background-color: var(--bg-body);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-weight: 700;
+        min-width: 45px;
+        text-align: center;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .dark-theme .quantity-field {
+        background-color: rgba(0, 0, 0, 0.2);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Semantic Surface Tinters */
+    .theme-bg-subtle {
+        background-color: var(--bg-body) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .dark-theme .theme-bg-subtle {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Force Table Theme Consistency */
+    .dark-theme .custom-table,
+    .dark-theme .custom-table tr,
+    .dark-theme .custom-table td,
+    .dark-theme .custom-table th {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    .dark-theme .table-responsive {
+        background-color: var(--bg-card);
+        border-radius: 0 0 16px 16px;
+    }
+
+    /* Badges */
+    .badge-pill {
+        padding: 0.5em 1.25em;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .bg-soft-warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    /* Bootstrap Utility Overrides for Dark Theme */
+    .dark-theme .text-secondary {
+        color: var(--text-secondary) !important;
+    }
+
+    .dark-theme .text-muted {
+        color: var(--text-secondary) !important;
+    }
+
+    .dark-theme .text-dark {
+        color: var(--text-primary) !important;
+    }
+
+    .dark-theme .bg-light {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .dark-theme .border {
+        border-color: var(--border-color) !important;
+    }
+
+    .dark-theme .table th {
+        color: #cbd5e1 !important;
+    }
+
+    .dark-theme .btn-link {
+        color: #60a5fa !important;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Payment Confirmation Modal -->
-<div class="modal fade" id="paymentConfirmModal" tabindex="-1" aria-labelledby="paymentConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+<div class="modal fade" id="paymentConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg rounded-4">
             <div class="modal-header">
-                <h5 class="modal-title" id="paymentConfirmModalLabel">Confirm Payment Status</h5>
+                <h5 class="modal-title fw-bold">Confirm Payment</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p>Are you sure you want to mark order <strong>#<span id="confirmOrderNumber"></span></strong> as <strong>Paid</strong>?</p>
-                <input type="hidden" id="confirmOrderId">
-                <input type="hidden" id="confirmPaymentType">
+            <div class="modal-body py-4">
+                <p class="mb-0 fs-5">Mark Order <strong id="modalOrderId" class="text-success"></strong> as Paid?</p>
+                <div class="mt-3 text-muted small"><i class="fas fa-info-circle me-1"></i> This will allow order
+                    fulfillment to proceed.</div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="confirmPaidBtn">Mark as Paid</button>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary rounded-pill"
+                    data-bs-dismiss="modal">Cancel</button>
+                <form id="paymentConfirmForm" method="POST" action="/orders/update-payment-status">
+                    <input type="hidden" name="order_id" id="hiddenOrderId">
+                    <input type="hidden" name="payment_type" id="hiddenPaymentType">
+                    <input type="hidden" name="payment_status" value="Paid">
+                    <button type="submit" class="btn btn-success rounded-pill fw-bold px-4">Confirm Paid</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-/* Modal theming */
-.modal-content {
-    background-color: var(--white);
-    color: var(--gray-800);
-}
-
-.dark-theme .modal-content {
-    background-color: var(--dark-bg-2);
-    color: var(--gray-200);
-    border: 1px solid var(--gray-700);
-}
-
-.modal-header, .modal-footer {
-    border-color: var(--gray-200);
-}
-
-.dark-theme .modal-header,
-.dark-theme .modal-footer {
-    border-color: var(--gray-700);
-}
-
-.dark-theme .btn-close {
-    filter: invert(1) grayscale(100%) brightness(200%);
-}
-
-.dark-theme .modal-body strong {
-    color: #198754;
-}
-</style>
-
-<script>
-function showPaymentConfirmModal(orderId, paymentType) {
-    document.getElementById('confirmOrderId').value = orderId;
-    document.getElementById('confirmPaymentType').value = paymentType;
-    document.getElementById('confirmOrderNumber').textContent = orderId;
-    
-    const modal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));
-    modal.show();
-}
-
-function confirmPaymentChange() {
-    const orderId = document.getElementById('confirmOrderId').value;
-    const paymentType = document.getElementById('confirmPaymentType').value;
-    
-    // Close modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('paymentConfirmModal'));
-    if (modal) {
-        modal.hide();
-    }
-    
-    // Submit form
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/orders/update-payment-status';
-    
-    const orderIdInput = document.createElement('input');
-    orderIdInput.type = 'hidden';
-    orderIdInput.name = 'order_id';
-    orderIdInput.value = orderId;
-    
-    const paymentTypeInput = document.createElement('input');
-    paymentTypeInput.type = 'hidden';
-    paymentTypeInput.name = 'payment_type';
-    paymentTypeInput.value = paymentType;
-    
-    const paymentStatusInput = document.createElement('input');
-    paymentStatusInput.type = 'hidden';
-    paymentStatusInput.name = 'payment_status';
-    paymentStatusInput.value = 'Paid';
-    
-    form.appendChild(orderIdInput);
-    form.appendChild(paymentTypeInput);
-    form.appendChild(paymentStatusInput);
-    
-    document.body.appendChild(form);
-    form.submit();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('confirmPaidBtn').addEventListener('click', confirmPaymentChange);
-    
-    // Show More/Less Items functionality for individual orders
-    document.querySelectorAll('.show-more-items').forEach(button => {
-        button.addEventListener('click', function() {
-            const orderId = this.getAttribute('data-order-id');
-            const additionalItems = document.querySelectorAll(`.additional-items-${orderId}`);
-            const showLessBtn = document.querySelector(`.show-less-items[data-order-id="${orderId}"]`);
-            
-            // Show additional items
-            additionalItems.forEach(item => {
-                item.style.display = '';
-            });
-            
-            // Hide show more button, show show less button
-            this.style.display = 'none';
-            if (showLessBtn) {
-                showLessBtn.style.display = '';
-            }
-        });
-    });
-    
-    document.querySelectorAll('.show-less-items').forEach(button => {
-        button.addEventListener('click', function() {
-            const orderId = this.getAttribute('data-order-id');
-            const additionalItems = document.querySelectorAll(`.additional-items-${orderId}`);
-            const showMoreBtn = document.querySelector(`.show-more-items[data-order-id="${orderId}"]`);
-            
-            // Hide additional items
-            additionalItems.forEach(item => {
-                item.style.display = 'none';
-            });
-            
-            // Show show more button, hide show less button
-            this.style.display = 'none';
-            if (showMoreBtn) {
-                showMoreBtn.style.display = '';
-            }
-        });
-    });
-});
-</script>
-<div class="container py-2">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
-        <div>
-            <h2 class="mb-0">Orders Management</h2>
-            <p class="text-muted mb-0">Monitor and manage customer orders efficiently.</p>
+<div class="page-container py-4">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div>
+                <h1 class="fw-bold mb-1">Orders Management</h1>
+                <div class="opacity-75">Track and manage your customer orders</div>
+            </div>
+            <div class="header-stat-glass px-4 py-2 rounded-3 text-center">
+                <div class="text-uppercase small fw-bold opacity-75">Total Orders</div>
+                <div class="h2 fw-bold mb-0">{{ orders|length }}</div>
+            </div>
         </div>
     </div>
 
-    <!-- Tab Navigation -->
-    <div class="mb-4">
-        <nav>
-            <div class="nav nav-pills" id="ordersTab" role="tablist">
-                <button class="nav-link active" id="active-orders-tab" data-bs-toggle="pill" data-bs-target="#active-orders" type="button" role="tab" aria-controls="active-orders" aria-selected="true">
-                    <i class="fas fa-clock me-2"></i>Active Orders
-                </button>
-                <button class="nav-link" id="order-history-tab" data-bs-toggle="pill" data-bs-target="#order-history" type="button" role="tab" aria-controls="order-history" aria-selected="false">
-                    <i class="fas fa-history me-2"></i>Order History
-                </button>
-            </div>
-        </nav>
+    <!-- Search -->
+    <div class="search-wrapper">
+        <div class="search-input-group">
+            <span class="ps-3 text-secondary"><i class="fas fa-search"></i></span>
+            <input type="text" id="orderSearchInput" placeholder="Search orders by ID, Customer, or Status...">
+            <button class="btn btn-primary rounded-pill px-4" id="searchButton">Search</button>
+            <button class="btn btn-outline-secondary rounded-pill px-3 ms-2" id="clearSearchButton"
+                style="display:none;"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="searchMessage" class="text-center mt-2 fw-bold" style="display:none;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-pills-custom" role="tablist">
+        <button class="nav-pill-link {% if active_tab == 'active' %}active{% endif %}" id="active-tab" data-bs-toggle="pill" data-bs-target="#active-orders"
+            type="button" role="tab">
+            <i class="fas fa-clock me-2"></i>Active
+        </button>
+        <button class="nav-pill-link {% if active_tab == 'history' %}active{% endif %}" id="history-tab" data-bs-toggle="pill" data-bs-target="#history-orders"
+            type="button" role="tab">
+            <i class="fas fa-history me-2"></i>History
+        </button>
     </div>
 
     <!-- Tab Content -->
-    <div class="tab-content" id="ordersTabContent">
-        <!-- Active Orders Tab -->
-        <div class="tab-pane fade show active" id="active-orders" role="tabpanel" aria-labelledby="active-orders-tab">
-            {% set active_orders = orders | selectattr('order_status', 'in', ['pending', 'processing', 'ready_for_pickup']) | list %}
+    <div class="tab-content">
+        <!-- Active Orders -->
+        <div class="tab-pane fade {% if active_tab == 'active' %}show active{% endif %}" id="active-orders" role="tabpanel">
             {% if active_orders %}
-                <div id="active-orders-container">
-                    {% for order in active_orders %}
-                <div class="card shadow-sm border-0 mb-4 {% if order.payment_status == 'Paid' %}payment-paid{% elif order.payment_status == 'Unpaid' %}payment-unpaid{% endif %}" data-order-id="{{ order.order_id }}">
-                <div class="card-header bg-white border-0 pb-0">
-                    <div class="row g-3 align-items-start align-items-md-center">
-                        <div class="col-md-3">
-                            <small class="text-muted text-uppercase">Order ID</small>
-                            <h5 class="mb-0">#{{ order.order_id }}</h5>
+            {% for order in active_orders %}
+            <div class="order-card {% if order.payment_status == 'Paid' %}paid{% else %}unpaid{% endif %} status-{{ order.order_status }}"
+                data-order-id="{{ order.order_id }}">
+                <!-- Card Header -->
+                <div class="card-header-section">
+                    <div>
+                        <span class="text-secondary text-uppercase fw-bold small d-block">Order ID</span>
+                        <span class="fw-bold h5 text-primary">#{{ order.order_id }}</span>
+                    </div>
+                    <div class="flex-grow-1 ms-md-4">
+                        <span class="text-secondary text-uppercase fw-bold small d-block">Customer</span>
+                        <span class="fw-bold">{{ order.customer_name or 'Walk-in Customer' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                        <!-- Type Badge -->
+                        <span class="badge-pill bg-soft-primary"><i class="fas fa-shopping-cart me-1"></i>{{
+                            order.order_type or 'Online' }}</span>
+
+                        <!-- Payment Status -->
+                        {% if session.get('role') == 'Admin' %}
+                        <div class="dropdown">
+                            <button
+                                class="btn btn-sm badge-pill {% if order.payment_status == 'Paid' %}btn-success{% else %}btn-danger{% endif %} dropdown-toggle"
+                                type="button" data-bs-toggle="dropdown">
+                                {{ order.payment_status }}
+                            </button>
+                            <ul class="dropdown-menu shadow-sm border-0">
+                                {% if order.payment_status == 'Unpaid' %}
+                                <li><button class="dropdown-item"
+                                        onclick="showPaymentConfirmModal('{{ order.order_id }}', '{{ order.payment_type }}')"><i
+                                            class="fas fa-check text-success me-2"></i>Mark Paid</button></li>
+                                {% else %}
+                                <li>
+                                    <form action="/orders/update-payment-status" method="POST">
+                                        <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                                        <input type="hidden" name="payment_type" value="{{ order.payment_type }}">
+                                        <input type="hidden" name="payment_status" value="Unpaid">
+                                        <button class="dropdown-item text-danger"><i class="fas fa-times me-2"></i>Mark
+                                            Unpaid</button>
+                                    </form>
+                                </li>
+                                {% endif %}
+                            </ul>
                         </div>
-                        <div class="col-md-3">
-                            <small class="text-muted text-uppercase">Customer</small>
-                            <h6 class="mb-0">{{ order.customer_name or 'Walk-in Customer' }}</h6>
-                        </div>
-                        <div class="col-md-3">
-                            <small class="text-muted text-uppercase">Created</small>
-                            <div>{{ order.created_at }}</div>
-                        </div>
-                        <div class="col-md-3 text-md-end">
-                            <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                                <span class="badge bg-info text-dark">{{ order.order_type or 'Online' }}</span>
-                                
-                                <!-- Payment Status Dropdown - Admin Only -->
+                        {% else %}
+                        <span
+                            class="badge-pill {% if order.payment_status == 'Paid' %}bg-soft-success{% else %}bg-soft-danger{% endif %}">{{
+                            order.payment_status }}</span>
+                        {% endif %}
+
+                        <!-- Order Status -->
+                        {% if session.get('role') == 'Admin' or (session.get('role') == 'Staff') %}
+                        <div class="dropdown">
+                            <button
+                                class="btn btn-sm badge-pill dropdown-toggle fw-bold {% if order.order_status == 'ready_for_pickup' %}btn-primary{% elif order.order_status == 'processing' %}btn-warning text-dark{% elif order.order_status == 'completed' %}btn-success{% elif order.order_status == 'cancelled' %}btn-danger{% else %}btn-outline-secondary{% endif %}"
+                                data-bs-toggle="dropdown">
+                                {{ order.order_status | replace('_', ' ') | capitalize }}
+                            </button>
+                            <ul class="dropdown-menu shadow-sm border-0 dropdown-menu-end">
+                                <li>
+                                    <form action="/orders/update-status" method="POST"><input type="hidden"
+                                            name="order_id" value="{{ order.order_id }}"><input type="hidden"
+                                            name="new_status" value="processing"><button
+                                            class="dropdown-item">Processing</button></form>
+                                </li>
+                                <li>
+                                    <form action="/orders/update-status" method="POST"><input type="hidden"
+                                            name="order_id" value="{{ order.order_id }}"><input type="hidden"
+                                            name="new_status" value="ready_for_pickup"><button
+                                            class="dropdown-item">Ready for Pickup</button></form>
+                                </li>
                                 {% if session.get('role') == 'Admin' %}
-                                <div class="dropdown">
-                                    <button class="btn btn-sm dropdown-toggle {% if order.payment_status == 'Paid' %}btn-success{% else %}btn-danger{% endif %}" type="button" id="paymentDropdown{{ order.order_id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                        {{ order.payment_status }}
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="paymentDropdown{{ order.order_id }}">
-                                        <li>
-                                            {% if order.payment_status == 'Unpaid' %}
-                                                <button type="button" class="dropdown-item text-start w-100" onclick="showPaymentConfirmModal('{{ order.order_id }}', '{{ order.payment_type }}')">
-                                                    Paid
-                                                </button>
-                                            {% else %}
-                                                <form method="POST" action="/orders/update-payment-status" style="margin: 0;">
-                                                    <input type="hidden" name="order_id" value="{{ order.order_id }}">
-                                                    <input type="hidden" name="payment_type" value="{{ order.payment_type }}">
-                                                    <input type="hidden" name="payment_status" value="Paid">
-                                                    <button type="submit" class="dropdown-item text-start w-100">Paid</button>
-                                                </form>
-                                            {% endif %}
-                                        </li>
-                                        <li>
-                                            <form method="POST" action="/orders/update-payment-status" style="margin: 0;">
-                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
-                                                <input type="hidden" name="payment_type" value="{{ order.payment_type }}">
-                                                <input type="hidden" name="payment_status" value="Unpaid">
-                                                <button type="submit" class="dropdown-item text-start w-100">Unpaid</button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
-                                {% else %}
-                                <span class="badge {% if order.payment_status == 'Paid' %}bg-success{% else %}bg-danger{% endif %}">
-                                    {{ order.payment_status }}
-                                </span>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <form action="/orders/update-status" method="POST"><input type="hidden"
+                                            name="order_id" value="{{ order.order_id }}"><input type="hidden"
+                                            name="new_status" value="completed"><button
+                                            class="dropdown-item text-success">Complete Order</button></form>
+                                </li>
+                                <li>
+                                    <form action="/orders/update-status" method="POST"><input type="hidden"
+                                            name="order_id" value="{{ order.order_id }}"><input type="hidden"
+                                            name="new_status" value="cancelled"><button
+                                            class="dropdown-item text-danger">Cancel Order</button></form>
+                                </li>
                                 {% endif %}
-                                
-                                <!-- Order Status Dropdown -->
-                                {% if session.get('role') == 'Admin' or (session.get('role') == 'Staff' and order.order_status not in ['completed', 'cancelled']) %}
-                                <div class="dropdown">
-                                    <button class="btn btn-sm dropdown-toggle {% if order.order_status == 'cancelled' %}btn-danger{% elif order.order_status == 'completed' %}btn-success{% elif order.order_status == 'processing' %}btn-warning{% elif order.order_status == 'ready_for_pickup' %}btn-primary{% else %}btn-outline-secondary{% endif %}" type="button" id="statusDropdown{{ order.order_id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                        {% if order.order_status == 'processing' %}Processing{% elif order.order_status == 'ready_for_pickup' %}Ready for Pickup{% elif order.order_status == 'completed' %}Completed{% elif order.order_status == 'cancelled' %}Cancelled{% else %}{{ order.order_status | capitalize }}{% endif %}
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="statusDropdown{{ order.order_id }}">
-                                        <li>
-                                            <form method="POST" action="/orders/update-status" style="margin: 0;">
-                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
-                                                <input type="hidden" name="new_status" value="processing">
-                                                <button type="submit" class="dropdown-item text-start w-100">Processing</button>
-                                            </form>
-                                        </li>
-                                        <li>
-                                            <form method="POST" action="/orders/update-status" style="margin: 0;">
-                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
-                                                <input type="hidden" name="new_status" value="ready_for_pickup">
-                                                <button type="submit" class="dropdown-item text-start w-100">Ready for Pickup</button>
-                                            </form>
-                                        </li>
-                                        <li>
-                                            {% if session.get('role') == 'Admin' %}
-                                            <form method="POST" action="/orders/update-status" style="margin: 0;">
-                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
-                                                <input type="hidden" name="new_status" value="completed">
-                                                <button type="submit" class="dropdown-item text-start w-100">Completed</button>
-                                            </form>
-                                            {% endif %}
-                                        </li>
-                                        <li>
-                                            {% if session.get('role') == 'Admin' %}
-                                            <form method="POST" action="/orders/update-status" style="margin: 0;">
-                                                <input type="hidden" name="order_id" value="{{ order.order_id }}">
-                                                <input type="hidden" name="new_status" value="cancelled">
-                                                <button type="submit" class="dropdown-item text-start w-100">Cancelled</button>
-                                            </form>
-                                            {% endif %}
-                                        </li>
-                                    </ul>
-                                </div>
-                                {% else %}
-                                <!-- Show status as badge when dropdown is hidden -->
-                                <span class="badge {% if order.order_status == 'cancelled' %}bg-danger{% elif order.order_status == 'completed' %}bg-success{% elif order.order_status == 'processing' %}bg-warning{% elif order.order_status == 'ready_for_pickup' %}bg-primary{% else %}bg-secondary{% endif %}">
-                                    {% if order.order_status == 'processing' %}Processing{% elif order.order_status == 'ready_for_pickup' %}Ready for Pickup{% elif order.order_status == 'completed' %}Completed{% elif order.order_status == 'cancelled' %}Cancelled{% else %}{{ order.order_status | capitalize }}{% endif %}
-                                </span>
-                                {% endif %}
-                            </div>
+                            </ul>
                         </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                            <small class="text-muted text-uppercase">Total Amount</small>
-                            <h4 class="mb-0">Rs. {{ '%.2f' | format(order.total_amount) }}</h4>
-                        </div>
-                        <div class="col-md-4">
-                            <small class="text-muted text-uppercase">Transaction Code</small>
-                            <div class="fw-semibold">{{ order.transaction_code or '—' }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <small class="text-muted text-uppercase">Order Status</small>
-                            <div class="fw-semibold text-primary">{{ order.order_status | upper or 'N/A' }}</div>
-                        </div>
-                    </div>
-
-                    {# Action buttons have been removed as per request #}
-
-                    <div class="table-responsive mt-3">
-                        <table class="table table-sm align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Product</th>
-                                    <th class="text-center" style="width: 120px;">Qty</th>
-                                    <th class="text-center" style="width: 120px;">Unit</th>
-                                    <th class="text-end" style="width: 150px;">Unit Price</th>
-                                    <th class="text-end" style="width: 150px;">Line Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if order.line_items %}
-                                    {% for item in order.line_items[:3] %}
-                                        <tr class="order-item-{{ order.order_id }}">
-                                            <td>{{ item.product_name }}</td>
-                                            <td class="text-center">{{ item.quantity }}</td>
-                                            <td class="text-center">{{ item.unit }}</td>
-                                            <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
-                                            <td class="text-end">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                    
-                                    <!-- Additional items (hidden initially) -->
-                                    {% for item in order.line_items[3:] %}
-                                        <tr class="additional-items-{{ order.order_id }}" style="display: none;">
-                                            <td>{{ item.product_name }}</td>
-                                            <td class="text-center">{{ item.quantity }}</td>
-                                            <td class="text-center">{{ item.unit }}</td>
-                                            <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
-                                            <td class="text-end">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="5" class="text-center text-muted">No products recorded for this order.</td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                        
-                        <!-- Show More/Less buttons for individual order -->
-                        {% if order.line_items and order.line_items|length > 3 %}
-                        <div class="text-center mt-3">
-                            <button class="btn btn-sm btn-outline-primary show-more-items" data-order-id="{{ order.order_id }}" data-total="{{ order.line_items|length }}">
-                                <i class="fas fa-chevron-down me-1"></i>
-                                Show {{ order.line_items|length - 3 }} More Items
-                            </button>
-                            <button class="btn btn-sm btn-outline-secondary show-less-items" data-order-id="{{ order.order_id }}" style="display: none;">
-                                <i class="fas fa-chevron-up me-1"></i>
-                                Show Less
-                            </button>
-                        </div>
+                        {% else %}
+                        <span class="badge-pill bg-soft-warning">{{ order.order_status | capitalize }}</span>
                         {% endif %}
                     </div>
                 </div>
-            </div>
-        {% endfor %}
-                </div>
-            {% else %}
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body text-center py-5">
-                        <div class="mb-3">
-                            <i class="fas fa-clock fa-3x text-muted"></i>
-                        </div>
-                        <h4>No Active Orders</h4>
-                        <p class="text-muted">Active orders will appear here when customers place new orders or when orders are in progress.</p>
+
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <small>Total Amount</small>
+                        <span class="text-success">Rs. {{ '%.2f' | format(order.total_amount) }}</span>
+                    </div>
+                    <div class="stat-box">
+                        <small>Date</small>
+                        <span>{{ order.created_at }}</span>
+                    </div>
+                    <div class="stat-box">
+                        <small>Transaction ID</small>
+                        <span>{{ order.transaction_code or '—' }}</span>
                     </div>
                 </div>
+
+                <!-- Items Table -->
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Price</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if order.line_items %}
+                            {% for item in order.line_items[:3] %}
+                            <tr>
+                                <td class="fw-bold">{{ item.product_name }}</td>
+                                <td class="text-center"><span class="quantity-field">{{ item.quantity }}</span></td>
+                                <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
+                                <td class="text-end fw-bold">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
+                            </tr>
+                            {% endfor %}
+
+                            {% if order.line_items|length > 3 %}
+                            {% for item in order.line_items[3:] %}
+                            <tr class="hidden-rows-{{ order.order_id }}" style="display:none;">
+                                <td class="fw-bold">{{ item.product_name }}</td>
+                                <td class="text-center"><span class="quantity-field">{{ item.quantity }}</span></td>
+                                <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
+                                <td class="text-end fw-bold">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No items found.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    {% if order.line_items|length > 3 %}
+                    <div class="text-center py-3 theme-bg-subtle border-top">
+                        <button class="btn btn-sm btn-link text-decoration-none fw-bold toggle-items-btn"
+                            data-target="{{ order.order_id }}">
+                            <span class="show-text">Show All {{ order.line_items|length }} Items <i
+                                    class="fas fa-chevron-down ms-1"></i></span>
+                            <span class="hide-text" style="display:none;">Show Less <i
+                                    class="fas fa-chevron-up ms-1"></i></span>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+                <div class="d-inline-block p-4 rounded-circle theme-bg-subtle mb-3">
+                    <i class="fas fa-clipboard-check fa-3x text-secondary opacity-50"></i>
+                </div>
+                <h3 class="fw-bold text-secondary">No Active Orders</h3>
+                <p class="text-muted">New orders will appear here automatically.</p>
+            </div>
             {% endif %}
+
+            {% if total_active_pages > 1 %}
+            <div class="pagination-container d-flex justify-content-between align-items-center mt-5 p-3 border-top">
+                <div class="pagination-info text-muted small">
+                    Showing {{ (active_page - 1) * per_page + 1 }} to {{ [active_page * per_page, total_active]|min }} of {{ total_active }} active orders
+                </div>
+                <nav aria-label="Order navigation">
+                    <ul class="pagination pagination-md mb-0">
+                        <li class="page-item {% if active_page <= 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.orders', active_page=active_page-1, history_page=history_page, tab='active') }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+        
+                        {% for p in range(1, total_active_pages + 1) %}
+                        {% if p <= 3 or p > total_active_pages - 3 or (p >= active_page - 1 and p <= active_page + 1) %}
+                        <li class="page-item {% if p == active_page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.orders', active_page=p, history_page=history_page, tab='active') }}">{{ p }}</a>
+                        </li>
+                        {% elif p == 4 or p == total_active_pages - 3 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        {% endfor %}
+        
+                        <li class="page-item {% if active_page >= total_active_pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.orders', active_page=active_page+1, history_page=history_page, tab='active') }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+            
         </div>
 
-        <!-- Order History Tab -->
-        <div class="tab-pane fade" id="order-history" role="tabpanel" aria-labelledby="order-history-tab">
-            {% set history_orders = orders | selectattr('order_status', 'in', ['completed', 'cancelled']) | list %}
+        <!-- History Orders -->
+        <div class="tab-pane fade {% if active_tab == 'history' %}show active{% endif %}" id="history-orders" role="tabpanel">
             {% if history_orders %}
-                <div id="order-history-container">
-                    {% for order in history_orders %}
-                    <div class="card shadow-sm border-0 mb-4 {% if order.payment_status == 'Paid' %}payment-paid{% elif order.payment_status == 'Unpaid' %}payment-unpaid{% endif %}" data-order-id="{{ order.order_id }}">
-                    <div class="card-header bg-white border-0 pb-0">
-                        <div class="row g-3 align-items-start align-items-md-center">
-                            <div class="col-md-3">
-                                <small class="text-muted text-uppercase">Order ID</small>
-                                <h5 class="mb-0">#{{ order.order_id }}</h5>
-                            </div>
-                            <div class="col-md-3">
-                                <small class="text-muted text-uppercase">Customer</small>
-                                <h6 class="mb-0">{{ order.customer_name or 'Walk-in Customer' }}</h6>
-                            </div>
-                            <div class="col-md-3">
-                                <small class="text-muted text-uppercase">Created</small>
-                                <div>{{ order.created_at }}</div>
-                            </div>
-                            <div class="col-md-3 text-md-end">
-                                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                                    <span class="badge bg-info text-dark">{{ order.order_type or 'Online' }}</span>
-                                    
-                                    <!-- Payment Status Badge (Read-only for history) -->
-                                    <span class="badge {% if order.payment_status == 'Paid' %}bg-success{% else %}bg-danger{% endif %}">
-                                        {{ order.payment_status }}
-                                    </span>
-                                    
-                                    <!-- Order Status Badge (Read-only for history) -->
-                                    <span class="badge {% if order.order_status == 'cancelled' %}bg-danger{% elif order.order_status == 'completed' %}bg-success{% elif order.order_status == 'processing' %}bg-warning{% elif order.order_status == 'ready_for_pickup' %}bg-primary{% else %}bg-secondary{% endif %}">
-                                        {% if order.order_status == 'processing' %}Processing{% elif order.order_status == 'ready_for_pickup' %}Ready for Pickup{% elif order.order_status == 'completed' %}Completed{% elif order.order_status == 'cancelled' %}Cancelled{% else %}{{ order.order_status | capitalize }}{% endif %}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+            {% for order in history_orders %}
+            <div class="order-card {% if order.payment_status == 'Paid' %}paid{% else %}unpaid{% endif %} status-{{ order.order_status }}"
+                data-order-id="{{ order.order_id }}">
+                <!-- Card Header -->
+                <div class="card-header-section">
+                    <div>
+                        <span class="text-secondary text-uppercase fw-bold small d-block">Order ID</span>
+                        <span class="fw-bold h5 text-primary">#{{ order.order_id }}</span>
                     </div>
-                    <div class="card-body">
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-4">
-                                <small class="text-muted text-uppercase">Total Amount</small>
-                                <h4 class="mb-0">Rs. {{ '%.2f' | format(order.total_amount) }}</h4>
-                            </div>
-                            <div class="col-md-4">
-                                <small class="text-muted text-uppercase">Transaction Code</small>
-                                <div class="fw-semibold">{{ order.transaction_code or '—' }}</div>
-                            </div>
-                            <div class="col-md-4">
-                                <small class="text-muted text-uppercase">Order Status</small>
-                                <div class="fw-semibold text-primary">{{ order.order_status | upper or 'N/A' }}</div>
-                            </div>
-                        </div>
+                    <div class="flex-grow-1 ms-md-4">
+                        <span class="text-secondary text-uppercase fw-bold small d-block">Customer</span>
+                        <span class="fw-bold">{{ order.customer_name or 'Walk-in Customer' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge-pill bg-soft-primary">{{ order.order_type or 'Online' }}</span>
+                        <span
+                            class="badge-pill {% if order.payment_status == 'Paid' %}bg-soft-success{% else %}bg-soft-danger{% endif %}">{{
+                            order.payment_status }}</span>
+                        <span
+                            class="badge-pill {% if order.order_status == 'completed' %}bg-soft-success{% else %}bg-soft-danger{% endif %}">{{
+                            order.order_status | capitalize }}</span>
+                    </div>
+                </div>
 
-                        <div class="table-responsive mt-3">
-                            <table class="table table-sm align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Product</th>
-                                        <th class="text-center" style="width: 120px;">Qty</th>
-                                        <th class="text-center" style="width: 120px;">Unit</th>
-                                        <th class="text-end" style="width: 150px;">Unit Price</th>
-                                        <th class="text-end" style="width: 150px;">Line Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% if order.line_items %}
-                                        {% for item in order.line_items[:3] %}
-                                            <tr class="order-item-{{ order.order_id }}">
-                                                <td>{{ item.product_name }}</td>
-                                                <td class="text-center">{{ item.quantity }}</td>
-                                                <td class="text-center">{{ item.unit }}</td>
-                                                <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
-                                                <td class="text-end">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                        
-                                        <!-- Additional items (hidden initially) -->
-                                        {% for item in order.line_items[3:] %}
-                                            <tr class="additional-items-{{ order.order_id }}" style="display: none;">
-                                                <td>{{ item.product_name }}</td>
-                                                <td class="text-center">{{ item.quantity }}</td>
-                                                <td class="text-center">{{ item.unit }}</td>
-                                                <td class="text-end">Rs. {{ '%.2f' | format(item.price) }}</td>
-                                                <td class="text-end">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="5" class="text-center text-muted">No products recorded for this order.</td>
-                                        </tr>
-                                    {% endif %}
-                                </tbody>
-                            </table>
-                            
-                            <!-- Show More/Less buttons for individual order -->
-                            {% if order.line_items and order.line_items|length > 3 %}
-                            <div class="text-center mt-3">
-                                <button class="btn btn-sm btn-outline-primary show-more-items" data-order-id="{{ order.order_id }}" data-total="{{ order.line_items|length }}">
-                                    <i class="fas fa-chevron-down me-1"></i>
-                                    Show {{ order.line_items|length - 3 }} More Items
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary show-less-items" data-order-id="{{ order.order_id }}" style="display: none;">
-                                    <i class="fas fa-chevron-up me-1"></i>
-                                    Show Less
-                                </button>
-                            </div>
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <small>Total Amount</small>
+                        <span class="text-success">Rs. {{ '%.2f' | format(order.total_amount) }}</span>
+                    </div>
+                    <div class="stat-box">
+                        <small>Date</small>
+                        <span>{{ order.created_at }}</span>
+                    </div>
+                    <div class="stat-box">
+                        <small>Transaction ID</small>
+                        <span>{{ order.transaction_code or '—' }}</span>
+                    </div>
+                </div>
+
+                <!-- Simplified Items Table for History -->
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <tbody>
+                            {% if order.line_items %}
+                            {% for item in order.line_items[:2] %}
+                            <tr>
+                                <td>{{ item.product_name }} <span class="text-muted small">x{{ item.quantity }}</span>
+                                </td>
+                                <td class="text-end fw-bold">Rs. {{ '%.2f' | format(item.quantity * item.price) }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% if order.line_items|length > 2 %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted small fst-italic">+ {{
+                                    order.line_items|length - 2 }} more items...</td>
+                            </tr>
                             {% endif %}
-                        </div>
-                    </div>
+                            {% endif %}
+                        </tbody>
+                    </table>
                 </div>
-                {% endfor %}
-                </div>
+            </div>
+            {% endfor %}
             {% else %}
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body text-center py-5">
-                        <div class="mb-3">
-                            <i class="fas fa-history fa-3x text-muted"></i>
-                        </div>
-                        <h4>No Order History</h4>
-                        <p class="text-muted">Completed and cancelled orders will appear here in the order history.</p>
-                    </div>
+            <div class="text-center py-5">
+                <div class="d-inline-block p-4 rounded-circle theme-bg-subtle mb-3">
+                    <i class="fas fa-history fa-3x text-secondary opacity-50"></i>
                 </div>
+                <h3 class="fw-bold text-secondary">No History</h3>
+                <p class="text-muted">Completed orders history will show up here.</p>
+            </div>
             {% endif %}
+            
+            {% if total_history_pages > 1 %}
+            <div class="pagination-container d-flex justify-content-between align-items-center mt-5 p-3 border-top">
+                <div class="pagination-info text-muted small">
+                    Showing {{ (history_page - 1) * per_page + 1 }} to {{ [history_page * per_page, total_history]|min }} of {{ total_history }} history orders
+                </div>
+                <nav aria-label="Order navigation">
+                    <ul class="pagination pagination-md mb-0">
+                        <li class="page-item {% if history_page <= 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.orders', active_page=active_page, history_page=history_page-1, tab='history') }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+        
+                        {% for p in range(1, total_history_pages + 1) %}
+                        {% if p <= 3 or p > total_history_pages - 3 or (p >= history_page - 1 and p <= history_page + 1) %}
+                        <li class="page-item {% if p == history_page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.orders', active_page=active_page, history_page=p, tab='history') }}">{{ p }}</a>
+                        </li>
+                        {% elif p == 4 or p == total_history_pages - 3 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        {% endfor %}
+        
+                        <li class="page-item {% if history_page >= total_history_pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.orders', active_page=active_page, history_page=history_page+1, tab='history') }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+            
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <!-- JavaScript for persistent tabs -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get the saved active tab from localStorage
-        const savedTab = localStorage.getItem('activeOrdersTab');
-        
+{% block extra_js %}
+<script>
+    // 1. Modal Logic
+    function showPaymentConfirmModal(orderId, paymentType) {
+        document.getElementById('modalOrderId').textContent = '#' + orderId;
+        document.getElementById('hiddenOrderId').value = orderId;
+        document.getElementById('hiddenPaymentType').value = paymentType;
+        const modal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));
+        modal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // 2. Tab Persistence
+        const activeTabKey = 'ordersActiveTab';
+        const savedTab = localStorage.getItem(activeTabKey);
+
         if (savedTab) {
-            // Remove active class from all tabs and panes
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-pane').forEach(pane => {
-                pane.classList.remove('show', 'active');
-            });
-            
-            // Activate the saved tab
-            const savedTabButton = document.querySelector(`[data-bs-target="${savedTab}"]`);
-            const savedTabPane = document.querySelector(savedTab);
-            
-            if (savedTabButton && savedTabPane) {
-                savedTabButton.classList.add('active');
-                savedTabPane.classList.add('show', 'active');
+            const tabButton = document.querySelector(`[data-bs-target="${savedTab}"]`);
+            if (tabButton) {
+                const tab = new bootstrap.Tab(tabButton);
+                tab.show();
             }
         }
-        
-        // Save tab changes to localStorage
-        const tabButtons = document.querySelectorAll('[data-bs-toggle="pill"]');
-        tabButtons.forEach(button => {
-            button.addEventListener('shown.bs.tab', function (e) {
-                const target = e.target.getAttribute('data-bs-target');
-                localStorage.setItem('activeOrdersTab', target);
+
+        document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(btn => {
+            btn.addEventListener('shown.bs.tab', (e) => {
+                localStorage.setItem(activeTabKey, e.target.getAttribute('data-bs-target'));
             });
         });
+
+        // 3. Toggle Items Logic
+        document.body.addEventListener('click', (e) => {
+            if (e.target.closest('.toggle-items-btn')) {
+                const btn = e.target.closest('.toggle-items-btn');
+                const orderId = btn.dataset.target;
+                const hiddenRows = document.querySelectorAll(`.hidden-rows-${orderId}`);
+                const showText = btn.querySelector('.show-text');
+                const hideText = btn.querySelector('.hide-text');
+
+                // Toggle visibility
+                let isHidden = hiddenRows[0].style.display === 'none';
+
+                hiddenRows.forEach(row => {
+                    row.style.display = isHidden ? 'table-row' : 'none';
+                });
+
+                if (isHidden) {
+                    showText.style.display = 'none';
+                    hideText.style.display = 'inline';
+                } else {
+                    showText.style.display = 'inline';
+                    hideText.style.display = 'none';
+                }
+            }
+        });
+
+        // 4. Search Logic
+        const searchInput = document.getElementById('orderSearchInput');
+        const clearBtn = document.getElementById('clearSearchButton');
+        const searchMsg = document.getElementById('searchMessage');
+
+        function performSearch() {
+            const term = searchInput.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.order-card');
+            let matchCount = 0;
+
+            if (term === '') {
+                cards.forEach(card => card.style.display = '');
+                clearBtn.style.display = 'none';
+                searchMsg.style.display = 'none';
+                return;
+            }
+
+            clearBtn.style.display = 'inline-block';
+
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(term)) {
+                    card.style.display = '';
+                    matchCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            searchMsg.style.display = 'block';
+            if (matchCount > 0) {
+                searchMsg.className = 'text-center mt-2 fw-bold text-success';
+                searchMsg.textContent = `Found ${matchCount} matching orders`;
+            } else {
+                searchMsg.className = 'text-center mt-2 fw-bold text-danger';
+                searchMsg.textContent = 'No orders matching your search.';
+            }
+        }
+
+        searchInput.addEventListener('keyup', performSearch);
+        document.getElementById('searchButton').addEventListener('click', performSearch);
+
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            performSearch();
+        });
     });
-    </script>
+</script>
 {% endblock %}

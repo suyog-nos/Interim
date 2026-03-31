@@ -740,6 +740,234 @@
             padding: 2rem 1rem;
         }
     }
+        
+    /* --- Flash Sale Section --- */
+    .flash-sale {
+        padding: 5rem 2rem;
+        background: #f8fafc;
+        position: relative;
+    }
+
+    .dark-theme .flash-sale {
+        background: #0f172a;
+    }
+
+    .flash-sale-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .flash-sale-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #dc2626;
+        margin-bottom: 1rem;
+    }
+
+    .dark-theme .flash-sale-badge {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+    }
+
+    .flash-sale-title {
+        font-size: clamp(1.875rem, 4vw, 2.5rem);
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 1rem;
+    }
+
+    .dark-theme .flash-sale-title {
+        color: #f8fafc;
+    }
+
+    .flash-sale-desc {
+        font-size: 1.125rem;
+        color: #64748b;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .dark-theme .flash-sale-desc {
+        color: #94a3b8;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .product-image {
+        height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        position: relative;
+        overflow: hidden;
+        padding: 1rem;
+    }
+
+    .product-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: #f59e0b; /* warning/orange theme matching out-of-stock tag in bs framework */
+        color: #000;
+        padding: 0.3rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 10;
+    }
+
+    .product-details {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .product-category {
+        color: var(--accent);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .product-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+    .product-description {
+        font-size: 0.9rem;
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+        flex-grow: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--gray-100);
+        padding-top: 1rem;
+    }
+
+    .product-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .add-to-cart {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        border: none;
+        background-color: var(--primary);
+        color: white;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        min-width: 140px;
+        white-space: nowrap;
+        text-decoration: none;
+    }
+
+    .add-to-cart:hover {
+        background-color: var(--primary-dark);
+        color: white;
+    }
+    
+    /* Dark mode overrides for product cards */
+    .dark-theme .product-card {
+        background: var(--dark-bg-2);
+        color: var(--dark-text-1);
+        border: 1px solid var(--dark-border);
+    }
+
+    .dark-theme .product-card:hover {
+        background: var(--dark-bg-1);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark-theme .product-image {
+        background-color: var(--dark-bg-3);
+    }
+
+    .dark-theme .product-title,
+    .dark-theme .product-price {
+        color: var(--dark-text-1);
+    }
+
+    .dark-theme .product-description {
+        color: var(--dark-text-2);
+    }
+
+    .dark-theme .product-footer {
+        border-top-color: var(--dark-border);
+    }
+
+    .dark-theme .product-category {
+        color: var(--primary-light);
+    }
+
+    .products-footer {
+        text-align: center;
+        margin-top: 1rem;
+    }
 </style>
 {% endblock %}
 
@@ -778,6 +1006,59 @@
         </div>
     </div>
 </section>
+
+<!-- Flash Sale Section -->
+{% if flash_sale_products %}
+<section class="flash-sale">
+    <div class="container">
+        <div class="flash-sale-header">
+            <div class="flash-sale-badge">
+                <i class="fas fa-bolt"></i> SPECIAL OFFER
+            </div>
+            <h2 class="flash-sale-title">Low Stock Specials</h2>
+            <p class="flash-sale-desc">These premium stationery items are running out fast. Grab them before they're gone!</p>
+        </div>
+
+        <div class="products-grid">
+            {% for product in flash_sale_products %}
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="{% if product.image_url.startswith('http') %}{{ product.image_url }}{% else %}/{{ product.image_url.strip('/') }}{% endif %}" alt="{{ product.name }}">
+                    <div class="product-badge bg-warning text-dark">Only {{ product.stock_quantity }} Left</div>
+                </div>
+                <div class="product-details">
+                    {% if product.category_name %}
+                    <span class="product-category">{{ product.category_name }}</span>
+                    {% endif %}
+                    <h3 class="product-title">{{ product.name }}</h3>
+                    <div class="product-description">
+                        {% if product.brand %}Brand: {{ product.brand }}{% endif %}
+                    </div>
+                    <div class="product-footer">
+                        <span class="product-price"> रु {{ "%.2f"|format(product.price) if product.price else '0.00' }}</span>
+                        <a href="/products" class="add-to-cart">
+                            <i class="fas fa-shopping-cart"></i>
+                            Add to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="products-footer">
+            <a href="/products" class="btn btn-primary">
+                View All Products
+                <span class="btn-arrow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14m-7-7l7 7-7 7"/>
+                    </svg>
+                </span>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
 
 <!-- Features Section -->
 <section class="features">

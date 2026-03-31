@@ -1,11 +1,1489 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  
-</body>
-</html>
+{% extends "base.html" %}
+
+<!-- Apply theme immediately to prevent flash -->
+<script>
+    (function () {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+
+        // Add no-transition class to prevent flash
+        document.documentElement.classList.add('no-transition');
+
+        if (isDark) {
+            document.documentElement.classList.add('dark-theme');
+            document.body.classList.add('dark-theme');
+        }
+
+        // Remove no-transition class after theme is applied
+        setTimeout(() => {
+            document.documentElement.classList.remove('no-transition');
+        }, 100);
+    })();
+</script>
+
+{% block title %}Sales - SmartStationery{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Professional Dashboard Styles */
+    .dashboard-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 1rem 0;
+        transition: background 0.3s ease;
+    }
+
+    /* Smooth theme transitions */
+    body,
+    .table,
+    .modal-content,
+    .form-control,
+    .btn {
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Prevent flash during theme switch */
+    .no-transition * {
+        transition: none !important;
+    }
+
+    /* Search and Filters */
+    .controls-section {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .search-input {
+        border: 2px solid var(--gray-200);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        outline: none;
+    }
+
+    /* Stats Cards */
+    .stats-card {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid var(--primary);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+
+    /* Table Styles */
+    .table-container {
+        background: var(--white);
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .table {
+        margin: 0;
+        font-size: 0.875rem;
+    }
+
+    .table th {
+        background: var(--gray-50);
+        font-weight: 600;
+        color: var(--gray-700);
+        border-bottom: 2px solid var(--gray-200);
+        padding: 1rem 0.75rem;
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .table tbody tr:hover {
+        background-color: var(--gray-50);
+    }
+
+    /* Status Badges */
+    .badge-completed {
+        background-color: #10b981;
+        color: white;
+    }
+
+    .badge-pending {
+        background-color: #f59e0b;
+        color: white;
+    }
+
+    .badge-cancelled {
+        background-color: #ef4444;
+        color: white;
+    }
+
+    /* Action Buttons */
+    .action-btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 0.375rem;
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-view {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .btn-view:hover {
+        background-color: #2563eb;
+        transform: translateY(-1px);
+    }
+
+    /* Floating Action Button */
+    .fab {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        border: none;
+        color: white;
+        font-size: 1.25rem;
+        box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .fab:hover {
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 15px 35px rgba(30, 58, 138, 0.4);
+    }
+
+    /* Modal Enhancements */
+    .modal-header {
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .dark-theme .modal-header {
+        background: var(--dark-bg-2);
+        border-bottom-color: var(--dark-border);
+        color: var(--dark-text-1);
+    }
+
+    .modal-content {
+        border-radius: 0.5rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .dark-theme .modal-content {
+        background: var(--dark-bg-2);
+        border-color: var(--dark-border);
+        color: var(--dark-text-1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .dark-theme .modal-body {
+        color: var(--dark-text-2);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .form-control {
+        border: 2px solid var(--gray-200);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        outline: none;
+    }
+
+    /* Dark Theme */
+    .dark-theme .dashboard-container {
+        background: linear-gradient(135deg, var(--dark-bg-1) 0%, var(--dark-bg-2) 100%);
+    }
+
+    .dark-theme .controls-section {
+        background: var(--dark-bg-2);
+        border-color: var(--dark-border);
+    }
+
+    .dark-theme .table-container {
+        background: var(--dark-bg-2);
+        border-color: var(--dark-border);
+    }
+
+    .dark-theme .table {
+        color: var(--dark-text-2);
+        background: var(--dark-bg-2);
+    }
+
+    .dark-theme .table th {
+        background: var(--dark-bg-3);
+        color: var(--dark-text-1);
+        border-color: var(--dark-border);
+    }
+
+    .dark-theme .table td {
+        border-color: var(--dark-border);
+        background: var(--dark-bg-2);
+        color: var(--dark-text-2);
+    }
+
+    .dark-theme .table a {
+        color: var(--primary-light);
+    }
+
+    .dark-theme .table a:hover {
+        color: var(--dark-text-1);
+    }
+
+    .dark-theme .table i {
+        color: var(--dark-text-2);
+    }
+
+    .dark-theme .table .badge {
+        background-color: var(--dark-bg-3);
+        color: var(--dark-text-1);
+        border: 1px solid var(--dark-border);
+    }
+
+    .dark-theme .table .text-muted {
+        color: var(--dark-text-3) !important;
+    }
+
+    .dark-theme .table .btn {
+        background-color: var(--dark-bg-3);
+        border-color: var(--dark-border);
+        color: var(--dark-text-2);
+    }
+
+    .dark-theme .table .btn:hover {
+        background-color: var(--primary-light);
+        color: var(--white);
+    }
+
+    .dark-theme .stats-card {
+        background: var(--dark-bg-2);
+        border-color: var(--primary);
+    }
+
+    .dark-theme .stats-value {
+        color: var(--primary-light);
+    }
+
+    .dark-theme .stats-label {
+        color: var(--dark-text-3);
+    }
+
+    .dark-theme .text-muted {
+        color: var(--dark-text-3) !important;
+    }
+
+    .dark-theme .empty-state-title {
+        color: var(--dark-text-1) !important;
+    }
+
+    .dark-theme .empty-state-description {
+        color: var(--dark-text-3) !important;
+    }
+
+    .dark-theme .empty-state-icon i {
+        color: var(--dark-text-3) !important;
+    }
+
+    .dark-theme h1,
+    .dark-theme h3 {
+        color: var(--dark-text-1) !important;
+    }
+
+    .dark-theme p {
+        color: var(--dark-text-2) !important;
+    }
+
+    .dark-theme .input-group-text {
+        background: var(--dark-bg-2);
+        border-color: var(--dark-border);
+        color: var(--dark-text-2);
+    }
+
+    .dark-theme .search-input,
+    .dark-theme .form-control {
+        background: var(--dark-bg-1);
+        border-color: var(--dark-border);
+        color: var(--dark-text-2);
+    }
+
+    .dark-theme .search-input::placeholder,
+    .dark-theme .form-control::placeholder {
+        color: var(--dark-text-3);
+        opacity: 0.7;
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        max-width: 400px;
+        background: var(--white);
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        border: 1px solid var(--gray-200);
+    }
+
+    .toast-notification.show {
+        transform: translateX(0);
+    }
+
+    .dark-theme .toast-notification {
+        background: var(--dark-bg-2);
+        border-color: var(--dark-border);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .toast-content {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .toast-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .toast-success .toast-icon {
+        color: #16a34a;
+    }
+
+    .toast-error .toast-icon {
+        color: #dc2626;
+    }
+
+    .toast-info .toast-icon {
+        color: #3b82f6;
+    }
+
+    .toast-message {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-800);
+        line-height: 1.4;
+    }
+
+    .dark-theme .toast-message {
+        color: var(--dark-text-1);
+    }
+
+    .toast-success {
+        border-left: 4px solid #16a34a;
+    }
+
+    .toast-error {
+        border-left: 4px solid #dc2626;
+    }
+
+    .toast-info {
+        border-left: 4px solid #3b82f6;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .table-container {
+            border-radius: 0.5rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .stats-card {
+            margin-bottom: 1rem;
+        }
+
+        .fab {
+            width: 50px;
+            height: 50px;
+            bottom: 1rem;
+            right: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="row mb-4 align-items-center">
+            <div class="col">
+                <h1 class="h3 mb-0">Sales Management</h1>
+                <p class="text-muted mb-0">Manage and track all sales transactions</p>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-success" id="exportSalesBtn" onclick="openSalesExportModal()">
+                    <i class="fas fa-file-pdf me-2"></i>Export Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="totalSales">Rs. 0</div>
+                    <div class="stats-label">Total Sales</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="todaySales">Rs. 0</div>
+                    <div class="stats-label">Today's Sales</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="totalOrders">0</div>
+                    <div class="stats-label">Total Orders</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="avgOrderValue">Rs. 0</div>
+                    <div class="stats-label">Avg Order Value</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="controls-section">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control search-input" id="searchInput"
+                            placeholder="Search sales by order ID, customer, or product...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <!-- Actions removed -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="table-container">
+                    <div id="loadingState" class="text-center py-4" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 mb-0">Loading sales data...</p>
+                    </div>
+
+                    <div id="emptyState" class="text-center py-5" style="display: none;">
+                        <div class="empty-state-icon mb-3">
+                            <i class="fas fa-shopping-cart fa-3x text-muted"></i>
+                        </div>
+                        <h5 class="empty-state-title">No Sales Found</h5>
+                        <p class="empty-state-description text-muted">Start by adding your first sale transaction.</p>
+                    </div>
+
+                    <div class="table-responsive" id="salesTableContainer">
+                        <table class="table table-hover" id="salesTable">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Products</th>
+                                    <th>Total Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody">
+                                <!-- Sales data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination bar -->
+                    <div id="paginationContainer"
+                        class="d-flex justify-content-between align-items-center p-3 border-top"
+                        style="display: none !important;">
+                        <div id="paginationInfo" class="text-muted small">
+                            Showing 0 to 0 of 0 sales
+                        </div>
+                        <nav aria-label="Sales pagination">
+                            <ul class="pagination pagination-sm mb-0" id="salesPagination">
+                                <!-- Pagination links will be generated here -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- Add Sale Modal -->
+<div class="modal fade" id="addSaleModal" tabindex="-1" aria-labelledby="addSaleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSaleModalLabel">Add New Sale</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSaleForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="customerName" class="form-label">Customer Name *</label>
+                            <input type="text" class="form-control" id="customerName" name="customer_name" required
+                                maxlength="100">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="customerEmail" class="form-label">Customer Email</label>
+                            <input type="email" class="form-control" id="customerEmail" name="customer_email"
+                                maxlength="100">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="customerPhone" class="form-label">Customer Phone *</label>
+                            <input type="tel" class="form-control" id="customerPhone" name="customer_phone" required
+                                maxlength="15">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="saleDate" class="form-label">Sale Date *</label>
+                            <input type="date" class="form-control" id="saleDate" name="sale_date" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="products" class="form-label">Products *</label>
+                        <div id="productsContainer">
+                            <div class="product-row mb-2">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <select class="form-control product-select" name="product_id[]" required>
+                                            <option value="">Select Product</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="number" class="form-control" name="quantity[]"
+                                            placeholder="Quantity" min="1" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="number" class="form-control" name="price[]" placeholder="Price"
+                                            step="0.01" min="0" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="addProductBtn">
+                            <i class="fas fa-plus me-1"></i>Add Product
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="totalAmount" class="form-label">Total Amount *</label>
+                            <input type="number" class="form-control" id="totalAmount" name="total_amount" step="0.01"
+                                min="0" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="paymentMethod" class="form-label">Payment Method *</label>
+                            <select class="form-control" id="paymentMethod" name="payment_method" required>
+                                <option value="">Select Payment Method</option>
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="upi">UPI</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="addSaleBtn">
+                    <i class="fas fa-save me-2"></i>Add Sale
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Sale Modal -->
+<div class="modal fade" id="viewSaleModal" tabindex="-1" aria-labelledby="viewSaleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewSaleModalLabel">Sale Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="viewSaleModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="printInvoiceBtn" onclick="printInvoice()">
+                    <i class="fas fa-print me-2"></i>Print Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Export Sales Report Modal -->
+<div class="modal fade" id="exportSalesModal" tabindex="-1" aria-labelledby="exportSalesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white;">
+                <h5 class="modal-title" id="exportSalesModalLabel">
+                    <i class="fas fa-chart-line me-2"></i>Export Sales Report
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted mb-4">Select a date range — only <strong>completed</strong> orders will be included
+                    in the report.</p>
+
+                <label class="form-label fw-bold small text-uppercase text-muted mb-3">Report Period</label>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="salesPeriod" id="periodWeek" value="week" checked>
+                        <label class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-1"
+                            for="periodWeek">
+                            <i class="fas fa-calendar-week fa-lg"></i>
+                            <span class="fw-bold">1 Week</span>
+                            <small class="text-muted" style="font-size:0.7rem;">Last 7 days</small>
+                        </label>
+                    </div>
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="salesPeriod" id="periodMonth" value="month">
+                        <label class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-1"
+                            for="periodMonth">
+                            <i class="fas fa-calendar-alt fa-lg"></i>
+                            <span class="fw-bold">1 Month</span>
+                            <small class="text-muted" style="font-size:0.7rem;">Last 30 days</small>
+                        </label>
+                    </div>
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="salesPeriod" id="period3Month" value="3month">
+                        <label class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-1"
+                            for="period3Month">
+                            <i class="fas fa-calendar fa-lg"></i>
+                            <span class="fw-bold">3 Months</span>
+                            <small class="text-muted" style="font-size:0.7rem;">Last 90 days</small>
+                        </label>
+                    </div>
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="salesPeriod" id="periodAll" value="all">
+                        <label class="btn btn-outline-secondary w-100 py-3 d-flex flex-column align-items-center gap-1"
+                            for="periodAll">
+                            <i class="fas fa-infinity fa-lg"></i>
+                            <span class="fw-bold">All Time</span>
+                            <small class="text-muted" style="font-size:0.7rem;">Complete history</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-link text-muted text-decoration-none"
+                    data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success px-5" id="generateSalesPDFBtn"
+                    onclick="generateSalesPDF()">
+                    <i class="fas fa-download me-2"></i>Generate PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openSalesExportModal() {
+        const modal = new bootstrap.Modal(document.getElementById('exportSalesModal'));
+        modal.show();
+    }
+
+    async function generateSalesPDF() {
+        const btn = document.getElementById('generateSalesPDFBtn');
+        const period = document.querySelector('input[name="salesPeriod"]:checked').value;
+        const originalContent = btn.innerHTML;
+
+        const periodLabels = {
+            'week': 'Last 7 Days',
+            'month': 'Last 30 Days',
+            '3month': 'Last 90 Days',
+            'all': 'All Time'
+        };
+
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+
+            const response = await fetch(`/api/export/sales?period=${period}`);
+            const data = await response.json();
+
+            if (!data.success) throw new Error(data.error || 'Failed to fetch sales data');
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+
+            // === HEADER BANNER ===
+            doc.setFillColor(30, 58, 138);
+            doc.rect(0, 0, 297, 42, 'F');
+
+            // Brand name
+            doc.setFontSize(26); doc.setTextColor(255);
+            doc.text('SmartStationery', 15, 22);
+
+            // Report title
+            doc.setFontSize(13); doc.setTextColor(180, 210, 255);
+            doc.text('Sales Report  —  ' + periodLabels[period], 15, 33);
+
+            // Generated at (right-aligned)
+            doc.setFontSize(9); doc.setTextColor(200);
+            doc.text('Generated: ' + data.generated_at, 282, 22, { align: 'right' });
+            doc.text('Completed orders only', 282, 30, { align: 'right' });
+
+            // === SUMMARY STATS ===
+            const s = data.summary;
+            const totalRev = parseFloat(s.total_revenue || 0);
+            const avgVal = parseFloat(s.avg_order_value || 0);
+
+            const summaryItems = [
+                { label: 'Total Orders', value: String(s.total_orders || 0) },
+                { label: 'Total Revenue', value: `Rs. ${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+                { label: 'Avg Order Value', value: `Rs. ${avgVal.toFixed(2)}` }
+            ];
+
+            doc.setFontSize(12); doc.setTextColor(30, 58, 138);
+            doc.text('Summary', 15, 56);
+
+            let sx = 15;
+            summaryItems.forEach(item => {
+                doc.setDrawColor(210); doc.setFillColor(248, 250, 252);
+                doc.roundedRect(sx, 60, 85, 22, 3, 3, 'FD');
+                doc.setFontSize(8); doc.setTextColor(120);
+                doc.text(item.label, sx + 5, 68);
+                doc.setFontSize(12); doc.setTextColor(30, 58, 138);
+                doc.text(item.value, sx + 5, 77);
+                sx += 90;
+            });
+
+            // === TABLE ===
+            const tableBody = data.sales.map(s => [
+                '#' + s.order_id,
+                s.customer_name || 'Walk-in',
+                s.order_type || '-',
+                s.payment_type || '-',
+                `Rs. ${parseFloat(s.total_amount || 0).toFixed(2)}`,
+                s.order_status,
+                s.payment_status || '-',
+                s.created_at ? new Date(s.created_at).toLocaleDateString() : '-'
+            ]);
+
+            doc.autoTable({
+                startY: 90,
+                head: [['Order ID', 'Customer', 'Type', 'Payment', 'Amount', 'Status', 'Paid', 'Date']],
+                body: tableBody,
+                headStyles: { fillColor: [30, 58, 138], textColor: 255, fontSize: 9 },
+                alternateRowStyles: { fillColor: [249, 250, 251] },
+                styles: { fontSize: 8.5, cellPadding: 3 },
+                columnStyles: { 4: { halign: 'right' } },
+                didParseCell: function (data) {
+                    if (data.column.index === 5) {
+                        const v = (data.cell.raw || '').toLowerCase();
+                        if (v === 'completed') data.cell.styles.textColor = [16, 185, 129];
+                        else if (v === 'cancelled') data.cell.styles.textColor = [239, 68, 68];
+                        else data.cell.styles.textColor = [245, 158, 11];
+                    }
+                }
+            });
+
+            const filename = `SmartStationery_Sales_${period}_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
+
+            bootstrap.Modal.getInstance(document.getElementById('exportSalesModal')).hide();
+            if (typeof showToast === 'function') showToast('Sales report downloaded!', 'success');
+
+        } catch (error) {
+            console.error('Sales PDF Error:', error);
+            if (typeof showToast === 'function') showToast('Export failed: ' + error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    }
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function () {
+        loadSalesData();
+        loadProducts();
+        updateStats();
+
+        // Set today's date as default
+        document.getElementById('saleDate').valueAsDate = new Date();
+    });
+
+    // Search functionality with debounce
+    let searchTimeout = null;
+    document.getElementById('searchInput').addEventListener('input', function () {
+        const searchTerm = this.value;
+        if (searchTimeout) clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadSalesData(1, searchTerm);
+        }, 500);
+    });
+
+    let currentPage = 1;
+    let totalPages = 1;
+
+    // Load sales data (using orders table) with pagination
+    function loadSalesData(page = 1, searchQuery = '') {
+        currentPage = page;
+        const loadingState = document.getElementById('loadingState');
+        const tableContainer = document.getElementById('salesTableContainer');
+        const emptyState = document.getElementById('emptyState');
+        const paginationContainer = document.getElementById('paginationContainer');
+
+        loadingState.style.display = 'block';
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'none';
+        if (paginationContainer) paginationContainer.setAttribute('style', 'display: none !important;');
+
+        let url = `/api/orders?page=${page}&per_page=10`;
+        if (searchQuery) {
+            url += `&q=${encodeURIComponent(searchQuery)}`;
+        }
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                loadingState.style.display = 'none';
+
+                if (data.success && data.orders.length > 0) {
+                    renderSalesTable(data.orders);
+                    tableContainer.style.display = 'block';
+
+                    totalPages = data.total_pages;
+                    if (totalPages > 1) {
+                        renderPagination(data.current_page, data.total_pages, data.total_count, searchQuery);
+                        if (paginationContainer) paginationContainer.setAttribute('style', 'display: flex !important;');
+                    } else if (totalPages === 1) {
+                        const paginationUl = document.getElementById('salesPagination');
+                        const paginationInfo = document.getElementById('paginationInfo');
+
+                        // Still show pagination info even if only 1 page
+                        if (paginationInfo) {
+                            paginationInfo.textContent = `Showing 1 to ${data.total_count} of ${data.total_count} sales`;
+                        }
+                        if (paginationUl) paginationUl.innerHTML = '';
+                        if (paginationContainer) paginationContainer.setAttribute('style', 'display: flex !important;');
+                    }
+                } else {
+                    emptyState.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading sales:', error);
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'block';
+                if (typeof showToast === 'function') showToast('Error loading sales data', 'error');
+            });
+    }
+
+    function renderPagination(current, total, totalCount, searchQuery = '') {
+        const paginationUl = document.getElementById('salesPagination');
+        const paginationInfo = document.getElementById('paginationInfo');
+        if (!paginationUl) return;
+
+        paginationUl.innerHTML = '';
+
+        const perPage = 10;
+        const start = (current - 1) * perPage + 1;
+        const end = Math.min(current * perPage, totalCount);
+        if (paginationInfo) paginationInfo.textContent = `Showing ${start} to ${end} of ${totalCount} sales`;
+
+        const queryStr = searchQuery ? `, '${searchQuery}'` : '';
+
+        // Previous button
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${current <= 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `<button class="page-link" onclick="loadSalesData(${current - 1}${queryStr})">&laquo;</button>`;
+        paginationUl.appendChild(prevLi);
+
+        // Page numbers
+        for (let i = 1; i <= total; i++) {
+            if (i <= 3 || i > total - 3 || (i >= current - 1 && i <= current + 1)) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === current ? 'active' : ''}`;
+                li.innerHTML = `<button class="page-link" onclick="loadSalesData(${i}${queryStr})">${i}</button>`;
+                paginationUl.appendChild(li);
+            } else if (i === 4 || i === total - 3) {
+                const li = document.createElement('li');
+                li.className = 'page-item disabled';
+                li.innerHTML = '<span class="page-link">...</span>';
+                paginationUl.appendChild(li);
+            }
+        }
+
+        // Next button
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${current >= total ? 'disabled' : ''}`;
+        nextLi.innerHTML = `<button class="page-link" onclick="loadSalesData(${current + 1}${queryStr})">&raquo;</button>`;
+        paginationUl.appendChild(nextLi);
+    }
+
+    // Render sales table (using orders data)
+    function renderSalesTable(orders) {
+        const tbody = document.getElementById('salesTableBody');
+        tbody.innerHTML = '';
+
+        orders.forEach(order => {
+            const statusClass = getStatusClass(order.order_status);
+            const statusText = getStatusText(order.order_status);
+
+            const row = document.createElement('tr');
+            row.dataset.orderId = order.order_id?.toString().toLowerCase() || '';
+            row.dataset.customer = order.customer_name?.toLowerCase() || '';
+            row.dataset.products = order.items?.map(item => item.product_name).join(' ').toLowerCase() || '';
+
+            row.innerHTML = `
+            <td>
+                <span class="fw-bold">#${order.order_id}</span>
+            </td>
+            <td>
+                <div>
+                    <div class="fw-bold">${order.customer_name || 'Guest'}</div>
+                    ${order.customer_phone ? `<div class="text-muted small">${order.customer_phone}</div>` : ''}
+                </div>
+            </td>
+            <td>
+                <div class="small">
+                    ${order.items?.map(item => `
+                        <div>${item.product_name} x ${item.quantity}</div>
+                    `).join('') || '-'}
+                </div>
+            </td>
+            <td>
+                <span class="fw-bold text-success">Rs. ${parseFloat(order.total_amount).toFixed(2)}</span>
+            </td>
+            <td>
+                <div class="small">${formatDate(order.created_at)}</div>
+            </td>
+            <td>
+                <span class="badge ${statusClass}">${statusText}</span>
+            </td>
+            <td>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-view action-btn" onclick="viewSale('${order.order_id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+
+            tbody.appendChild(row);
+        });
+    }
+
+    // Load products for dropdown
+    function loadProducts() {
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const selects = document.querySelectorAll('.product-select');
+                    selects.forEach(select => {
+                        select.innerHTML = '<option value="">Select Product</option>';
+                        data.products.forEach(product => {
+                            select.innerHTML += `<option value="${product.product_id}" data-price="${product.selling_price}">${product.product_name} - Rs. ${product.selling_price}</option>`;
+                        });
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+            });
+    }
+
+    // Add product row
+    document.getElementById('addProductBtn').addEventListener('click', function () {
+        const container = document.getElementById('productsContainer');
+        const newRow = document.createElement('div');
+        newRow.className = 'product-row mb-2';
+        newRow.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <select class="form-control product-select" name="product_id[]" required>
+                    <option value="">Select Product</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="number" class="form-control" name="quantity[]" placeholder="Quantity" min="1" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" name="price[]" placeholder="Price" step="0.01" min="0" required>
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeProductRow(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+        container.appendChild(newRow);
+
+        // Load products for new select
+        loadProductsForSelect(newRow.querySelector('.product-select'));
+    });
+
+    // Remove product row
+    function removeProductRow(button) {
+        const rows = document.querySelectorAll('.product-row');
+        if (rows.length > 1) {
+            button.closest('.product-row').remove();
+            calculateTotal();
+        }
+    }
+
+    // Load products for specific select
+    function loadProductsForSelect(select) {
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    select.innerHTML = '<option value="">Select Product</option>';
+                    data.products.forEach(product => {
+                        select.innerHTML += `<option value="${product.product_id}" data-price="${product.selling_price}">${product.product_name} - Rs. ${product.selling_price}</option>`;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+            });
+    }
+
+    // Calculate total amount
+    function calculateTotal() {
+        let total = 0;
+        const rows = document.querySelectorAll('.product-row');
+
+        rows.forEach(row => {
+            const quantity = parseFloat(row.querySelector('input[name="quantity[]"]').value) || 0;
+            const price = parseFloat(row.querySelector('input[name="price[]"]').value) || 0;
+            total += quantity * price;
+        });
+
+        document.getElementById('totalAmount').value = total.toFixed(2);
+    }
+
+    // Update total when product or quantity changes
+    document.addEventListener('change', function (e) {
+        if (e.target.matches('.product-select, input[name="quantity[]"], input[name="price[]"]')) {
+            calculateTotal();
+
+            // Auto-fill price when product is selected
+            if (e.target.matches('.product-select')) {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                const price = selectedOption.dataset.price;
+                if (price) {
+                    const priceInput = e.target.closest('.product-row').querySelector('input[name="price[]"]');
+                    priceInput.value = price;
+                    calculateTotal();
+                }
+            }
+        }
+    });
+
+    // Add sale function
+    function addSale() {
+        const form = document.getElementById('addSaleForm');
+        const formData = new FormData(form);
+        const submitBtn = document.getElementById('addSaleBtn');
+
+        // Clear previous validation states
+        form.querySelectorAll('.form-control').forEach(input => {
+            input.classList.remove('is-invalid');
+        });
+
+        // Form validation
+        const customerName = formData.get('customer_name')?.trim();
+        const customerPhone = formData.get('customer_phone')?.trim();
+        const saleDate = formData.get('sale_date');
+        const totalAmount = formData.get('total_amount');
+        const paymentMethod = formData.get('payment_method');
+
+        // Check required fields
+        if (!customerName) {
+            showToast('Customer name is required', 'error');
+            document.getElementById('customerName').classList.add('is-invalid');
+            document.getElementById('customerName').focus();
+            return;
+        }
+
+        if (!customerPhone) {
+            showToast('Customer phone is required', 'error');
+            document.getElementById('customerPhone').classList.add('is-invalid');
+            document.getElementById('customerPhone').focus();
+            return;
+        }
+
+        if (!saleDate) {
+            showToast('Sale date is required', 'error');
+            document.getElementById('saleDate').classList.add('is-invalid');
+            document.getElementById('saleDate').focus();
+            return;
+        }
+
+        if (!totalAmount || totalAmount <= 0) {
+            showToast('Total amount must be greater than 0', 'error');
+            document.getElementById('totalAmount').classList.add('is-invalid');
+            document.getElementById('totalAmount').focus();
+            return;
+        }
+
+        if (!paymentMethod) {
+            showToast('Payment method is required', 'error');
+            document.getElementById('paymentMethod').classList.add('is-invalid');
+            document.getElementById('paymentMethod').focus();
+            return;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding...';
+
+        fetch('/orders/add', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Sale added successfully!', 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addSaleModal'));
+                    modal.hide();
+
+                    // Reset form
+                    form.reset();
+                    document.getElementById('saleDate').valueAsDate = new Date();
+                    document.getElementById('totalAmount').value = '';
+
+                    // Reset products container to single row
+                    const container = document.getElementById('productsContainer');
+                    container.innerHTML = `
+                <div class="product-row mb-2">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select class="form-control product-select" name="product_id[]" required>
+                                <option value="">Select Product</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" name="quantity[]" placeholder="Quantity" min="1" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" name="price[]" placeholder="Price" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                </div>
+            `;
+                    loadProducts();
+
+                    // Refresh sales data
+                    loadSalesData();
+                    updateStats();
+                } else {
+                    showToast('Error adding sale: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred while adding the sale', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Add Sale';
+            });
+    }
+
+    // Update statistics (using orders data)
+    function updateStats() {
+        fetch('/api/orders/stats')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('totalSales').textContent = `Rs.${parseFloat(data.total_sales || 0).toFixed(2)}`;
+                    document.getElementById('todaySales').textContent = `Rs.${parseFloat(data.today_sales || 0).toFixed(2)}`;
+                    document.getElementById('totalOrders').textContent = data.total_orders || 0;
+                    document.getElementById('avgOrderValue').textContent = `Rs.${parseFloat(data.avg_order_value || 0).toFixed(2)}`;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading stats:', error);
+            });
+    }
+
+    // View sale details
+    function viewSale(orderId) {
+        const modalElement = document.getElementById('viewSaleModal');
+        let modal = bootstrap.Modal.getInstance(modalElement);
+        if (!modal) {
+            modal = new bootstrap.Modal(modalElement);
+        }
+        const modalBody = document.getElementById('viewSaleModalBody');
+
+        // Show loading state
+        modalBody.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading order details...</p>
+        </div>
+    `;
+
+        modal.show();
+
+        // Fetch order details
+        fetch(`/api/orders/${orderId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const order = data.order;
+                    const statusClass = getStatusClass(order.order_status);
+                    const statusText = getStatusText(order.order_status);
+
+                    modalBody.innerHTML = `
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <h6 class="text-muted text-uppercase small">Order Info</h6>
+                            <div class="fw-bold">Order #${order.order_id}</div>
+                            <div class="small text-muted">${formatDate(order.created_at)}</div>
+                            <div class="mt-2">
+                                <span class="badge ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h6 class="text-muted text-uppercase small">Customer</h6>
+                            <div class="fw-bold">${order.customer_name || 'Walk-in Customer'}</div>
+                            <div class="small text-muted">${order.customer_phone || ''}</div>
+                            <div class="small text-muted">${order.customer_email || ''}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Price</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${order.items.map(item => `
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">${item.product_name}</div>
+                                            <div class="small text-muted">${item.sku || ''}</div>
+                                        </td>
+                                        <td class="text-center">${item.quantity}</td>
+                                        <td class="text-end">Rs.${parseFloat(item.price_at_order).toFixed(2)}</td>
+                                        <td class="text-end">Rs.${(item.quantity * item.price_at_order).toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="3" class="text-end">Total Amount:</td>
+                                    <td class="text-end">Rs.${parseFloat(order.total_amount).toFixed(2)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small">Payment Info</h6>
+                            <div>Method: <span class="fw-bold text-capitalize">${order.payment_type || 'N/A'}</span></div>
+                            <div>Status: <span class="fw-bold text-capitalize">${order.payment_status || 'N/A'}</span></div>
+                            ${order.transaction_code ? `<div>Ref: <span class="font-monospace">${order.transaction_code}</span></div>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                    // Set order ID for print function
+                    document.getElementById('printInvoiceBtn').onclick = function () {
+                        printInvoice(order.order_id);
+                    };
+                } else {
+                    modalBody.innerHTML = `<div class="alert alert-danger">Error: ${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                modalBody.innerHTML = `<div class="alert alert-danger">Failed to load order details.</div>`;
+            });
+    }
+
+    function printInvoice(orderId) {
+        if (!orderId) return;
+        showToast('Printing functionality coming soon!', 'info');
+        // window.open(/invoice/${orderId}, '_blank');
+    }
+
+    // Helper functions
+    function getStatusClass(status) {
+        switch (status) {
+            case 'completed': return 'badge-completed';
+            case 'processing': return 'badge-pending';
+            case 'ready_for_pickup': return 'badge-pending';
+            case 'cancelled': return 'badge-cancelled';
+            default: return 'badge-pending';
+        }
+    }
+
+    function getStatusText(status) {
+        switch (status) {
+            case 'completed': return 'Completed';
+            case 'processing': return 'Processing';
+            case 'ready_for_pickup': return 'Ready for Pickup';
+            case 'cancelled': return 'Cancelled';
+            default: return 'Processing';
+        }
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    // Toast notification functions
+    function showToast(message, type = 'success') {
+        // Remove any existing toasts
+        const existingToasts = document.querySelectorAll('.toast-notification');
+        existingToasts.forEach(toast => toast.remove());
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'} toast-icon"></i>
+            <span class="toast-message">${message}</span>
+        </div>
+    `;
+
+        // Add to page
+        document.body.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => toast.classList.add('show'), 100);
+
+        // Auto remove after 2 seconds for success, 8 seconds for error
+        const removeTime = type === 'success' ? 2000 : 8000;
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, removeTime);
+    }
+
+    // Form validation and submission
+    document.getElementById('addSaleForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        addSale();
+    });
+
+    // Clear validation on input
+    document.getElementById('addSaleForm').addEventListener('input', function (e) {
+        if (e.target.classList.contains('form-control')) {
+            e.target.classList.remove('is-invalid');
+        }
+    });
+
+    // Add event listener for add sale button
+    document.getElementById('addSaleBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        addSale();
+    });
+</script>
+{% endblock %}

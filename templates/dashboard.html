@@ -1,49 +1,393 @@
- {% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Dashboard - SmartStationery{% endblock %}
 
-{% block content %}
-<div class="container-fluid py-4">
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+{% block extra_css %}
+<style>
+    /* Dashboard specific styles */
+    .dashboard-container {
+        padding: 1.5rem 0;
+    }
 
-    <div class="row mt-4">
-                        <div class="col-md-4">
-                            <div class="card bg-primary text-white mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Products</h5>
-                                    <p class="h2">0</p>
-                                    <a href="#" class="text-white">View Details</a>
-                                </div>
+    .stats-card {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+        border-left: 4px solid transparent;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-card.sales {
+        border-left-color: #10b981;
+    }
+
+    .stats-card.orders {
+        border-left-color: #3b82f6;
+    }
+
+    .stats-card.customers {
+        border-left-color: #8b5cf6;
+    }
+
+    .stats-card.stock {
+        border-left-color: #ef4444;
+    }
+
+    .stats-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stats-card.sales .stats-icon {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .stats-card.orders .stats-icon {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+    }
+
+    .stats-card.customers .stats-icon {
+        background: rgba(139, 92, 246, 0.1);
+        color: #8b5cf6;
+    }
+
+    .stats-card.stock .stats-icon {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .stats-value {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .stats-label {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Charts Section */
+    .chart-container {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        height: 400px;
+        position: relative;
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-title {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    /* Recent Activity */
+    .activity-card {
+        background: var(--white);
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .activity-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .activity-title {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .action-btn {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        color: var(--gray-700);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .action-btn:hover {
+        border-color: var(--primary);
+        background: var(--gray-50);
+        transform: translateY(-2px);
+        color: var(--primary);
+    }
+
+    .action-icon {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+
+    /* Dark Theme Overrides */
+    .dark-theme .stats-card,
+    .dark-theme .chart-container,
+    .dark-theme .activity-card,
+    .dark-theme .action-btn {
+        background: var(--dark-bg-2);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark-theme .stats-value,
+    .dark-theme .chart-title,
+    .dark-theme .activity-title {
+        color: var(--dark-text-1);
+    }
+
+    .dark-theme .stats-label {
+        color: var(--dark-text-3);
+    }
+
+    .dark-theme .activity-header {
+        border-bottom-color: var(--dark-border);
+    }
+
+    .dark-theme .action-btn {
+        border-color: var(--dark-border);
+        color: var(--dark-text-2);
+    }
+
+    .dark-theme .action-btn:hover {
+        background: var(--dark-bg-3);
+        border-color: var(--primary-light);
+        color: var(--primary-light);
+    }
+
+    .dark-theme .table {
+        color: var(--dark-text-2);
+    }
+
+    .dark-theme .table th {
+        background: var(--dark-bg-3);
+        color: var(--dark-text-1);
+        border-bottom-color: var(--dark-border);
+    }
+
+    .dark-theme .table td {
+        border-bottom-color: var(--dark-border);
+    }
+</style>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0 fw-bold">Dashboard</h1>
+                <p class="text-muted mb-0">Overview of your store's performance</p>
+            </div>
+            <div class="date-display text-muted">
+                <i class="far fa-calendar-alt me-2"></i>
+                <span id="currentDate"></span>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row g-4 mb-4">
+            <!-- Total Sales -->
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card sales">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stats-label">Total Revenue</div>
+                            <div class="stats-value">Rs. {{ "%.2f"|format(total_sales) }}</div>
+                            <div class="small text-success">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                <span>Overview</span>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card bg-success text-white mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Sales</h5>
-                                    <p class="h2">0</p>
-                                    <a href="#" class="text-white">View Details</a>
-                                </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Orders -->
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card orders">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stats-label">Total Orders</div>
+                            <div class="stats-value">{{ total_orders }}</div>
+                            <div class="small text-primary">
+                                <i class="fas fa-shopping-cart me-1"></i>
+                                <span>Lifetime</span>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card bg-warning text-white mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Users</h5>
-                                    <p class="h2">0</p>
-                                    <a href="#" class="text-white">View Details</a>
-                                </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers -->
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card customers">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stats-label">Customers</div>
+                            <div class="stats-value">{{ total_customers }}</div>
+                            <div class="small text-info">
+                                <i class="fas fa-users me-1"></i>
+                                <span>Registered</span>
                             </div>
                         </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Low Stock -->
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card stock">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stats-label">Low Stock Items</div>
+                            <div class="stats-value">{{ low_stock_count }}</div>
+                            <div class="small text-danger">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                <span>Action Needed</span>
+                            </div>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h5 class="chart-title">Sales Overview</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown">
+                                Last 6 Months
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Last 6 Months</a></li>
+                                <li><a class="dropdown-item" href="#">Last Year</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h5 class="chart-title">Top Products</h5>
+                    </div>
+                    <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="productsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <h5 class="activity-title">Recent Orders</h5>
+                        <a href="{{ url_for('main.sales') }}" class="btn btn-sm btn-primary">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_orders %}
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">#{{ order.order_id }}</td>
+                                    <td>{{ order.customer_name or 'Walk-in' }}</td>
+                                    <td class="fw-bold">Rs. {{ "%.2f"|format(order.total_amount) }}</td>
+                                    <td>
+                                        {% if order.order_status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                        {% elif order.order_status == 'cancelled' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">{{ order.order_status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No recent orders found</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -53,14 +397,206 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Server data injected as JSON -->
+<script id="chartMonths" type="application/json">{{ months | tojson }}</script>
+<script id="chartSales" type="application/json">{{ sales | tojson }}</script>
+<script id="chartProductNames" type="application/json">{{ product_names | tojson }}</script>
+<script id="chartProductSales" type="application/json">{{ product_sales | tojson }}</script>
+
 <script>
-// Auto-dismiss alerts after 5 seconds
-setTimeout(function() {
-    var alerts = document.querySelectorAll('.alert');
-    alerts.forEach(function(alert) {
-        var bsAlert = new bootstrap.Alert(alert);
-        bsAlert.close();
+    // Set current date
+    var dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', dateOptions);
+
+    // Parse server data
+    var monthLabels = JSON.parse(document.getElementById('chartMonths').textContent);
+    var salesValues = JSON.parse(document.getElementById('chartSales').textContent);
+    var productNames = JSON.parse(document.getElementById('chartProductNames').textContent);
+    var productSalesValues = JSON.parse(document.getElementById('chartProductSales').textContent);
+
+    // Chart Data
+
+
+    var productsData = {
+        labels: productNames,
+        datasets: [{
+            data: productSalesValues,
+            backgroundColor: [
+                '#3b82f6',
+                '#10b981',
+                '#8b5cf6',
+                '#f59e0b',
+                '#ef4444'
+            ],
+            borderWidth: 0
+        }]
+    };
+
+    // Chart Instances
+    let salesChart = null;
+    let productsChart = null;
+
+    // Theme Colors
+    function getThemeColors(isDark) {
+        return {
+            textColor: isDark ? '#cbd5e1' : '#64748b',
+            gridColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)', // Increased opacity for visibility
+            tooltipBg: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+            tooltipTitle: isDark ? '#f8fafc' : '#0f172a',
+            tooltipBody: isDark ? '#cbd5e1' : '#475569',
+            tooltipBorder: isDark ? '#334155' : '#e2e8f0',
+            pointBg: isDark ? '#1e293b' : '#ffffff'
+        };
+    }
+
+    // Initialize Charts
+    function initCharts() {
+        const isDark = document.documentElement.classList.contains('dark-theme');
+        const colors = getThemeColors(isDark);
+
+        // Sales Chart
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        salesChart = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: 'Monthly Sales',
+                    data: salesValues,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: colors.pointBg,
+                    pointBorderColor: '#3b82f6',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverBackgroundColor: '#3b82f6',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: colors.tooltipBg,
+                        titleColor: colors.tooltipTitle,
+                        bodyColor: colors.tooltipBody,
+                        borderColor: colors.tooltipBorder,
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function (context) {
+                                return 'Revenue: Rs. ' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: colors.gridColor,
+                            borderDash: [5, 5]
+                        },
+                        ticks: {
+                            color: colors.textColor,
+                            callback: function (value) {
+                                return 'Rs. ' + value;
+                            },
+                            padding: 10
+                        },
+                        border: {
+                            display: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: colors.textColor,
+                            padding: 10
+                        },
+                        border: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Products Chart
+        const productsCtx = document.getElementById('productsChart').getContext('2d');
+        productsChart = new Chart(productsCtx, {
+            type: 'doughnut',
+            data: productsData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: colors.textColor,
+                            padding: 20
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+
+    // Update Charts on Theme Change
+    function updateChartsTheme(isDark) {
+        if (!salesChart || !productsChart) return;
+
+        const colors = getThemeColors(isDark);
+
+        // Update Sales Chart
+        salesChart.options.scales.y.grid.color = colors.gridColor;
+        salesChart.options.scales.y.ticks.color = colors.textColor;
+        salesChart.options.scales.x.ticks.color = colors.textColor;
+        salesChart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
+        salesChart.options.plugins.tooltip.titleColor = colors.tooltipTitle;
+        salesChart.options.plugins.tooltip.bodyColor = colors.tooltipBody;
+        salesChart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
+        salesChart.data.datasets[0].pointBackgroundColor = colors.pointBg;
+        salesChart.update('none'); // Update without animation for theme switch
+
+        // Update Products Chart
+        productsChart.options.plugins.legend.labels.color = colors.textColor;
+        productsChart.update('none');
+    }
+
+    // Initialize
+    initCharts();
+
+    // Watch for theme changes
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const isDark = document.documentElement.classList.contains('dark-theme');
+                updateChartsTheme(isDark);
+            }
+        });
     });
-}, 5000);
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
 </script>
 {% endblock %}
