@@ -469,12 +469,13 @@ def get_customer_orders():
             FROM (
                 SELECT * FROM orders 
                 WHERE user_id = %s
-                ORDER BY created_at DESC, order_id DESC
+                ORDER BY order_id DESC, created_at DESC
                 LIMIT %s OFFSET %s
             ) o
             LEFT JOIN order_items oi ON o.order_id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.product_id
-            ORDER BY o.created_at DESC, o.order_id DESC, oi.order_item_id ASC
+            ORDER BY o.order_id DESC, o.created_at DESC, 
+                oi.order_item_id ASC
             """,
             (user_id, per_page, offset),
         )
