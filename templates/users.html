@@ -921,638 +921,1121 @@
     .toast-error {
         border-left: 4px solid #dc2626;
     }
+
+    /* Dark theme for Bootstrap modals */
+    .dark-theme .modal-content {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f1f5f9 !important;
+    }
+
+    .dark-theme .modal-header {
+        background: #0f172a !important;
+        border-bottom-color: #334155 !important;
+    }
+
+    .dark-theme .modal-title {
+        color: #f1f5f9 !important;
+    }
+
+    .dark-theme .modal-body {
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+    }
+
+    .dark-theme .modal-footer {
+        background: #0f172a !important;
+        border-top-color: #334155 !important;
+    }
+
+    .dark-theme .form-label {
+        color: #e2e8f0 !important;
+    }
+
+    .dark-theme .form-control {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+        color: #f1f5f9 !important;
+    }
+
+    .dark-theme .form-control:focus {
+        background: #0f172a !important;
+        border-color: #3b82f6 !important;
+        color: #f1f5f9 !important;
+    }
+
+    .dark-theme .form-control::placeholder {
+        color: #94a3b8 !important;
+        opacity: 1 !important;
+    }
+
+    .dark-theme .form-select {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+        color: #f1f5f9 !important;
+    }
+
+    .dark-theme .form-select:focus {
+        background: #0f172a !important;
+        border-color: #3b82f6 !important;
+        color: #f1f5f9 !important;
+    }
+
+    .dark-theme .btn-close {
+        filter: invert(1) !important;
+    }
+
+    .dark-theme .dropdown-list {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .dark-theme .dropdown-item {
+        border-color: #334155 !important;
+        color: #e2e8f0 !important;
+    }
+
+    .dark-theme .dropdown-item:hover {
+        background: #334155 !important;
+    }
+
+    .dark-theme .dropdown-item.selected {
+        background: #0c4a6e !important;
+        color: #7dd3fc !important;
+    }
+
+    .dark-theme .dropdown-item small {
+        color: #94a3b8 !important;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-    <section class="users-page">
-        <div class="users-container">
-            <div class="users-header">
-                <div>
-                    <h1>User Management</h1>
-                    <p class="text-muted">Manage all users and their permissions</p>
+<section class="users-page">
+    <div class="users-container">
+        <div class="users-header">
+            <div>
+                <h1>User Management</h1>
+                <p class="text-muted">Manage all users and their permissions</p>
 
-                </div>
-                <div class="header-buttons">
-                    <button class="btn btn-warning" onclick="openPasswordResetModal()">
-                        <i class="fas fa-key me-2"></i>Reset Password
-                    </button>
-                    <button class="btn btn-primary" onclick="addStaff()">
-                        <i class="fas fa-user-plus me-2"></i>Add Staff
-                    </button>
-                </div>
             </div>
+            <div class="header-buttons">
+                <button class="btn btn-warning" onclick="openPasswordResetModal()">
+                    <i class="fas fa-key me-2"></i>Reset Password
+                </button>
+                <button class="btn btn-success" id="exportReportBtn" onclick="openExportModal()">
+                    <i class="fas fa-file-pdf me-2"></i>Export Report
+                </button>
+                <button class="btn btn-primary" onclick="addStaff()">
+                    <i class="fas fa-user-plus me-2"></i>Add Staff
+                </button>
+            </div>
+        </div>
 
-            <!-- Add Staff Modal -->
-            <div class="modal fade" id="addStaffModal" tabindex="-1" aria-labelledby="addStaffModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="addStaffModalLabel">Add Staff Member</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <form id="addStaffForm" method="POST" action="{{ url_for('register.create_staff') }}">
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label for="staffFirstName" class="form-label">First Name</label>
-                                    <input type="text" class="form-control" id="staffFirstName" name="first_name" placeholder="First Name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="staffLastName" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" id="staffLastName" name="last_name" placeholder="Last Name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="staffPhone" class="form-label">Phone Number</label>
-                                    <input type="text" class="form-control" id="staffPhone" name="phone" placeholder="Phone Number" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="staffEmail" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="staffEmail" name="email" placeholder="Email" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="staffPassword" class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="staffPassword" name="password" placeholder="Password" required>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Add Staff</button>
-                            </div>
-                        </form>
+        <!-- Add Staff Modal -->
+        <div class="modal fade" id="addStaffModal" tabindex="-1" aria-labelledby="addStaffModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addStaffModalLabel">Add Staff Member</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
+                    <form id="addStaffForm" method="POST" action="{{ url_for('register.create_staff') }}">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="staffFirstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="staffFirstName" name="first_name"
+                                    placeholder="First Name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="staffLastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="staffLastName" name="last_name"
+                                    placeholder="Last Name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="staffPhone" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="staffPhone" name="phone"
+                                    placeholder="e.g., +1 234-567-8900" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="staffCitizenId" class="form-label">Citizen ID <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="staffCitizenId" name="citizen_id"
+                                    placeholder="Enter Citizen ID" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="staffProvince" class="form-label">Province</label>
+                                <select class="form-select" id="staffProvince" name="province"
+                                    onchange="loadDistricts('staff')">
+                                    <option value="">Select Province</option>
+                                    <option value="Koshi">Koshi Province</option>
+                                    <option value="Madhesh">Madhesh Province</option>
+                                    <option value="Bagmati">Bagmati Province</option>
+                                    <option value="Gandaki">Gandaki Province</option>
+                                    <option value="Lumbini">Lumbini Province</option>
+                                    <option value="Karnali">Karnali Province</option>
+                                    <option value="Sudurpashchim">Sudurpashchim Province</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="staffDistrict" class="form-label">District</label>
+                                <select class="form-select" id="staffDistrict" name="district">
+                                    <option value="">Select District</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="staffAddress" class="form-label">Address</label>
+                                <textarea class="form-control" id="staffAddress" name="address"
+                                    placeholder="Street address, municipality, ward number, house number"
+                                    rows="2"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="staffEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="staffEmail" name="email"
+                                    placeholder="Email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="staffPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="staffPassword" name="password"
+                                    placeholder="Password" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Staff</button>
+                        </div>
+                    </form>
                 </div>
             </div>
+        </div>
 
-            <!-- Password Reset Modal -->
-            <div class="modal fade" id="passwordResetModal" tabindex="-1" aria-labelledby="passwordResetModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="passwordResetModalLabel">Reset User Password</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Edit User Modal -->
+        <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="editUserForm" method="POST">
+                        <div class="modal-body">
+                            <input type="hidden" id="editUserId" name="user_id">
+                            <div class="mb-3">
+                                <label for="editFirstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="editFirstName" name="first_name"
+                                    placeholder="First Name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editLastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="editLastName" name="last_name"
+                                    placeholder="Last Name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editPhone" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="editPhone" name="phone"
+                                    placeholder="e.g., +1 234-567-8900" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editCitizenId" class="form-label">Citizen ID</label>
+                                <input type="text" class="form-control" id="editCitizenId" name="citizen_id"
+                                    placeholder="Enter Citizen ID">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editProvince" class="form-label">Province</label>
+                                <select class="form-select" id="editProvince" name="province"
+                                    onchange="loadDistricts('edit')">
+                                    <option value="">Select Province</option>
+                                    <option value="Koshi">Koshi Province</option>
+                                    <option value="Madhesh">Madhesh Province</option>
+                                    <option value="Bagmati">Bagmati Province</option>
+                                    <option value="Gandaki">Gandaki Province</option>
+                                    <option value="Lumbini">Lumbini Province</option>
+                                    <option value="Karnali">Karnali Province</option>
+                                    <option value="Sudurpashchim">Sudurpashchim Province</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDistrict" class="form-label">District</label>
+                                <select class="form-select" id="editDistrict" name="district">
+                                    <option value="">Select District</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editAddress" class="form-label">Address</label>
+                                <textarea class="form-control" id="editAddress" name="address"
+                                    placeholder="Street address, municipality, ward number, house number"
+                                    rows="2"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editEmail" name="email" placeholder="Email"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editRole" class="form-label">Role</label>
+                                <select class="form-select" id="editRoleDisplay" disabled>
+                                    <option value="Customer">Customer</option>
+                                    <option value="Staff">Staff</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                                <input type="hidden" id="editRole" name="role">
+                                <small class="text-muted">Role cannot be changed</small>
+                            </div>
                         </div>
-                        <form id="passwordResetForm" method="POST" action="{{ url_for('main.admin_reset_password') }}">
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label for="resetUserEmail" class="form-label">User Email</label>
-                                    <div class="user-search-dropdown">
-                                        <input type="text" class="form-control" id="resetUserEmail" name="user_email" placeholder="Type to search users..." required autocomplete="off">
-                                        <div class="dropdown-list" id="userDropdownList"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update User</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Reset Modal -->
+        <div class="modal fade" id="passwordResetModal" tabindex="-1" aria-labelledby="passwordResetModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="passwordResetModalLabel">Reset User Password</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="passwordResetForm" method="POST" action="{{ url_for('main.admin_reset_password') }}">
+                        <div class="modal-body">
+                            <div class="mb-3 user-search-dropdown">
+                                <label for="resetUserEmail" class="form-label">Search User Email</label>
+                                <input type="text" class="form-control" id="resetUserEmail"
+                                    placeholder="Type user email..." autocomplete="off">
+                                <div id="emailDropdown" class="dropdown-list"></div>
+                                <input type="hidden" id="selectedUserId" name="user_id">
+                                <div class="invalid-feedback">Please select a user from the list.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" name="new_password"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmNewPassword"
+                                    name="confirm_password" required>
+                                <div class="invalid-feedback">Passwords do not match</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Reset Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export User Report Modal -->
+        <div class="modal fade" id="exportUserModal" tabindex="-1" aria-labelledby="exportUserModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exportUserModalLabel">
+                            <i class="fas fa-file-pdf me-2"></i>Export User Report
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-4 text-muted">Select the type of report you want to generate. This will include
+                            basic info and purchase history.</p>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="card h-100 border-primary-subtle cursor-pointer report-option"
+                                    onclick="toggleReportOption('customer')">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input" type="radio" name="reportType"
+                                                id="reportCustomer" value="customer" checked>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Customer Report Only</h6>
+                                            <small class="text-muted">Detailed list of all customers and their total
+                                                orders.</small>
+                                        </div>
+                                        <i class="fas fa-user fa-2x text-primary opacity-25"></i>
                                     </div>
-                                    <input type="hidden" id="selectedUserId" name="user_id">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="newPassword" class="form-label">New Password</label>
-                                    <input type="password" class="form-control" id="newPassword" name="new_password" placeholder="Enter new password" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
-                                    <input type="password" class="form-control" id="confirmNewPassword" name="confirm_new_password" placeholder="Confirm new password" required>
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-warning">Reset Password</button>
+                            <div class="col-12">
+                                <div class="card h-100 border-warning-subtle cursor-pointer report-option"
+                                    onclick="toggleReportOption('staff')">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input" type="radio" name="reportType"
+                                                id="reportStaff" value="staff">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Staff Report Only</h6>
+                                            <small class="text-muted">List of staff members and management
+                                                users.</small>
+                                        </div>
+                                        <i class="fas fa-user-shield fa-2x text-warning opacity-25"></i>
+                                    </div>
+                                </div>
                             </div>
-                        </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" id="generateReportBtn"
+                            onclick="generateUserPDF()">
+                            <i class="fas fa-download me-2"></i>Generate PDF
+                        </button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Stats Cards -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #e0f2fe;">
-                        <i class="fas fa-users" style="color: #0ea5e9;"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-label">Total Users</span>
-                        <span class="stat-value">{{ users|length }}</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #dcfce7;">
-                        <i class="fas fa-user-tie" style="color: #16a34a;"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-label">Customers</span>
-                        <span class="stat-value">{{ users|selectattr('role', 'equalto', 'Customer')|list|length }}</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #fef3c7;">
-                        <i class="fas fa-user-shield" style="color: #d97706;"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-label">Staff Members</span>
-                        <span class="stat-value">{{ users|selectattr('role', 'equalto', 'Staff')|list|length }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filter Tabs -->
-            <div class="users-filter-tabs">
-                <button class="users-tab-btn active" onclick="filterUsers('all', this)">All Users</button>
-                <button class="users-tab-btn" onclick="filterUsers('Customer', this)">Customers</button>
-                <button class="users-tab-btn" onclick="filterUsers('Staff', this)">Staff</button>
-            </div>
-
-            <!-- Users Table -->
-            <div class="table-container">
-                <table class="users-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        {% if users %}
-                            {% for user in users %}
-                            <tr data-role="{{ user.role }}">
-                                <td>{{ user.id }}</td>
-                                <td>{{ user.first_name }} {{ user.last_name }}</td>
-                                <td>{{ user.email }}</td>
-                                <td>
-                                    <span class="role-badge role-{{ user.role|lower }}">
-                                        {{ user.role }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-edit" onclick="editUser('{{ user.id }}')">Edit</button>
-                                    <button class="btn btn-sm btn-delete" onclick="deleteUser('{{ user.id }}', '{{ user.first_name }} {{ user.last_name }}')">Delete</button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center py-4">No users found</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
             </div>
         </div>
-    </section>
 
-    <!-- Custom Delete Confirmation Modal -->
-    <div class="delete-confirm-modal" id="deleteConfirmModal">
-        <div class="delete-confirm-content">
-            <div class="delete-confirm-header">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h5 class="delete-confirm-title">Delete User</h5>
+        <style>
+            .report-option {
+                transition: all 0.2s ease;
+                cursor: pointer;
+                border-width: 2px !important;
+                border-style: solid !important;
+            }
+
+            .report-option:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Highlight the card when the radio inside is checked */
+            .report-option:has(input:checked) {
+                background-color: #f0f9ff !important;
+                border-color: #0ea5e9 !important;
+                box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+            }
+
+            .dark-theme .report-option {
+                background: #1e293b;
+                border-color: #334155;
+            }
+
+            .dark-theme .report-option:has(input:checked) {
+                background-color: #0c4a6e !important;
+                border-color: #0ea5e9 !important;
+            }
+
+            .report-option i {
+                transition: all 0.2s ease;
+            }
+
+            .report-option:has(input:checked) i {
+                transform: scale(1.1);
+                opacity: 1 !important;
+            }
+        </style>
+
+        <script>
+            function openExportModal() {
+                const modal = new bootstrap.Modal(document.getElementById('exportUserModal'));
+                modal.show();
+            }
+
+            function toggleReportOption(type) {
+                document.getElementById('report' + type.charAt(0).toUpperCase() + type.slice(1)).checked = true;
+            }
+
+            async function generateUserPDF() {
+                const btn = document.getElementById('generateReportBtn');
+                const type = document.querySelector('input[name="reportType"]:checked').value;
+                const originalContent = btn.innerHTML;
+
+                try {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+
+                    const response = await fetch(`/api/export/users?type=${type}`);
+                    const data = await response.json();
+
+                    if (!data.success) throw new Error(data.error || 'Failed to fetch data');
+
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    // Header
+                    doc.setFontSize(22);
+                    doc.setTextColor(30, 58, 138); // Primary color
+                    doc.text('SmartStationery - User Report', 14, 22);
+
+                    doc.setFontSize(12);
+                    doc.setTextColor(100);
+                    doc.text(`Report Type: ${type.toUpperCase()}`, 14, 30);
+                    doc.text(`Generated on: ${data.generated_at}`, 14, 37);
+
+                    // Summary Section
+                    doc.setFontSize(14);
+                    doc.setTextColor(0);
+                    doc.text('Summary', 14, 50);
+                    let yPos = 58;
+                    data.summary.forEach(stat => {
+                        doc.setFontSize(11);
+                        doc.text(`${stat.role}: ${stat.count} users`, 20, yPos);
+                        yPos += 7;
+                    });
+
+                    // Table Configuration
+                    let headers = [];
+                    let tableData = [];
+
+                    if (type === 'staff') {
+                        headers = [['Staff Name', 'Phone Number', 'Location', 'Orders Sold', 'Email', 'Joined Date']];
+                        tableData = data.users.map(u => [
+                            `${u.first_name} ${u.last_name}`,
+                            u.phone || '-',
+                            `${u.district || '-'}, ${u.province || '-'}`,
+                            u.orders_sold || 0,
+                            u.email,
+                            u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'
+                        ]);
+                    } else if (type === 'customer') {
+                        headers = [['Customer Name', 'Email', 'Phone Number', 'Total Orders', 'Total Money Spent', 'Last Order Date']];
+                        tableData = data.users.map(u => [
+                            `${u.first_name} ${u.last_name}`,
+                            u.email,
+                            u.phone || '-',
+                            u.total_orders || 0,
+                            `Rs. ${parseFloat(u.total_spent || 0).toFixed(2)}`,
+                            u.last_order_date ? new Date(u.last_order_date).toLocaleDateString() : 'No orders'
+                        ]);
+                    } else {
+                        // 'all' report - combination
+                        headers = [['Name', 'Email', 'Role', 'Phone', 'Location', 'Orders']];
+                        tableData = data.users.map(u => [
+                            `${u.first_name} ${u.last_name}`,
+                            u.email,
+                            u.role,
+                            u.phone || '-',
+                            u.district ? `${u.district}, ${u.province}` : '-',
+                            u.total_orders || 0
+                        ]);
+                    }
+
+                    doc.autoTable({
+                        startY: yPos + 10,
+                        head: headers,
+                        body: tableData,
+                        headStyles: { fillColor: [30, 58, 138], textColor: 255 },
+                        alternateRowStyles: { fillColor: [245, 247, 250] },
+                        margin: { top: 30 },
+                        styles: { fontSize: 9 }
+                    });
+
+                    doc.save(`SmartStationery_${type}_Report_${new Date().getTime()}.pdf`);
+
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('exportUserModal')).hide();
+                    showToast('Report generated successfully!', 'success');
+
+                } catch (error) {
+                    console.error('Export Error:', error);
+                    showToast(error.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            }
+        </script>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e0f2fe;">
+                    <i class="fas fa-users" style="color: #0ea5e9;"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Users</span>
+                    <span class="stat-value">{{ users|length }}</span>
+                </div>
             </div>
-            <div class="delete-confirm-body">
-                Are you sure you want to delete the user "<span class="delete-confirm-user-name" id="deleteUserName"></span>"? This action cannot be undone.
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #dcfce7;">
+                    <i class="fas fa-user-tie" style="color: #16a34a;"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Customers</span>
+                    <span class="stat-value">{{ users|selectattr('role', 'equalto', 'Customer')|list|length }}</span>
+                </div>
             </div>
-            <div class="delete-confirm-footer">
-                <button class="delete-confirm-btn delete-confirm-btn-cancel" id="deleteCancelBtn">
-                    Cancel
-                </button>
-                <button class="delete-confirm-btn delete-confirm-btn-delete" id="deleteConfirmBtn">
-                    <i class="fas fa-trash me-1"></i> Delete User
-                </button>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fef3c7;">
+                    <i class="fas fa-user-shield" style="color: #d97706;"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Staff Members</span>
+                    <span class="stat-value">{{ users|selectattr('role', 'equalto', 'Staff')|list|length }}</span>
+                </div>
             </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="users-filter-tabs">
+            <button class="users-tab-btn active" onclick="filterUsers('all', this)">All Users</button>
+            <button class="users-tab-btn" onclick="filterUsers('Customer', this)">Customers</button>
+            <button class="users-tab-btn" onclick="filterUsers('Staff', this)">Staff</button>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-container">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    {% if users %}
+                    {% for user in users %}
+                    <tr data-role="{{ user.role }}">
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.first_name }} {{ user.last_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="role-badge role-{{ user.role|lower }}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-edit" onclick="editUser('{{ user.id }}')">Edit</button>
+                            <button class="btn btn-sm btn-delete"
+                                onclick="deleteUser('{{ user.id }}', '{{ user.first_name }} {{ user.last_name }}')">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No users found</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
     </div>
+</section>
 
-    <!-- Custom Error Modal -->
-    <div class="error-modal" id="errorModal">
-        <div class="error-modal-content">
-            <div class="error-modal-header">
-                <i class="fas fa-exclamation-circle"></i>
-                <h5 class="error-modal-title">Deletion Failed</h5>
-            </div>
-            <div class="error-modal-body">
-                <div class="error-modal-message" id="errorMessage"></div>
-                <div class="error-modal-suggestion" id="errorSuggestion"></div>
-            </div>
-            <div class="error-modal-footer">
-                <button class="error-modal-btn" id="errorCloseBtn">
-                    <i class="fas fa-times me-1"></i> Close
-                </button>
-            </div>
+<!-- Custom Delete Confirmation Modal -->
+<div class="delete-confirm-modal" id="deleteConfirmModal">
+    <div class="delete-confirm-content">
+        <div class="delete-confirm-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h5 class="delete-confirm-title">Delete User</h5>
+        </div>
+        <div class="delete-confirm-body">
+            Are you sure you want to delete the user "<span class="delete-confirm-user-name"
+                id="deleteUserName"></span>"? This action cannot be undone.
+        </div>
+        <div class="delete-confirm-footer">
+            <button class="delete-confirm-btn delete-confirm-btn-cancel" id="deleteCancelBtn">
+                Cancel
+            </button>
+            <button class="delete-confirm-btn delete-confirm-btn-delete" id="deleteConfirmBtn">
+                <i class="fas fa-trash me-1"></i> Delete User
+            </button>
         </div>
     </div>
+</div>
+
+<!-- Custom Error Modal -->
+<div class="error-modal" id="errorModal">
+    <div class="error-modal-content">
+        <div class="error-modal-header">
+            <i class="fas fa-exclamation-circle"></i>
+            <h5 class="error-modal-title">Deletion Failed</h5>
+        </div>
+        <div class="error-modal-body">
+            <div class="error-modal-message" id="errorMessage"></div>
+            <div class="error-modal-suggestion" id="errorSuggestion"></div>
+        </div>
+        <div class="error-modal-footer">
+            <button class="error-modal-btn" id="errorCloseBtn">
+                <i class="fas fa-times me-1"></i> Close
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-    <script>
-        // Toast notification functions
-        function showToast(message, type = 'success') {
-            // Remove any existing toasts
-            const existingToasts = document.querySelectorAll('.toast-notification');
-            existingToasts.forEach(toast => toast.remove());
-            
-            // Create toast element
-            const toast = document.createElement('div');
-            toast.className = `toast-notification toast-${type}`;
-            toast.innerHTML = `
+<script>
+    // Province-District Data for Nepal
+    const provinceDistricts = {
+        Koshi: [
+            "Bhojpur", "Dhankuta", "Ilam", "Jhapa", "Khotang", "Morang",
+            "Okhaldhunga", "Panchthar", "Sankhuwasabha", "Solukhumbu",
+            "Sunsari", "Taplejung", "Terhathum", "Udayapur"
+        ],
+        Madhesh: [
+            "Bara", "Dhanusha", "Mahottari", "Parsa", "Rautahat",
+            "Saptari", "Sarlahi", "Siraha"
+        ],
+        Bagmati: [
+            "Bhaktapur", "Chitwan", "Dhading", "Dolakha", "Kavrepalanchok",
+            "Kathmandu", "Lalitpur", "Makwanpur", "Nuwakot", "Ramechhap",
+            "Rasuwa", "Sindhuli", "Sindhupalchok"
+        ],
+        Gandaki: [
+            "Baglung", "Gorkha", "Kaski", "Lamjung", "Manang", "Mustang",
+            "Myagdi", "Nawalpur", "Parbat", "Syangja", "Tanahun"
+        ],
+        Lumbini: [
+            "Arghakhanchi", "Banke", "Bardiya", "Dang", "Gulmi",
+            "Kapilvastu", "Parasi", "Palpa", "Pyuthan", "Rolpa", "Rupandehi"
+        ],
+        Karnali: [
+            "Dailekh", "Dolpa", "Humla", "Jajarkot", "Jumla",
+            "Kalikot", "Mugu", "Rukum West", "Salyan", "Surkhet"
+        ],
+        Sudurpashchim: [
+            "Achham", "Baitadi", "Bajhang", "Bajura", "Dadeldhura",
+            "Darchula", "Kailali", "Kanchanpur"
+        ]
+    };
+
+    function loadDistricts(prefix) {
+        const provinceField = document.getElementById(prefix + "Province");
+        const districtField = document.getElementById(prefix + "District");
+
+        const province = provinceField.value;
+
+        // Clear current districts
+        districtField.innerHTML = '<option value="">Select District</option>';
+
+        if (province && provinceDistricts[province]) {
+            provinceDistricts[province].forEach(district => {
+                const option = document.createElement('option');
+                option.value = district;
+                option.textContent = district;
+                districtField.appendChild(option);
+            });
+        }
+    }
+    // Toast notification functions
+    function showToast(message, type = 'success') {
+        // Remove any existing toasts
+        const existingToasts = document.querySelectorAll('.toast-notification');
+        existingToasts.forEach(toast => toast.remove());
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        toast.innerHTML = `
                 <div class="toast-content">
                     <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} toast-icon"></i>
                     <span class="toast-message">${message}</span>
                 </div>
             `;
-            
-            // Add to page
-            document.body.appendChild(toast);
-            
-            // Animate in
-            setTimeout(() => toast.classList.add('show'), 100);
-            
-            // Auto remove after 2 seconds for success, 8 seconds for error
-            const removeTime = type === 'success' ? 2000 : 8000;
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, removeTime);
-        }
 
-        function addStaff() {
-            const modalEl = document.getElementById('addStaffModal');
-            if (!modalEl) return;
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
-        }
+        // Add to page
+        document.body.appendChild(toast);
 
-        function openPasswordResetModal() {
-            const modalEl = document.getElementById('passwordResetModal');
-            if (!modalEl) return;
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
-            
-            // Initialize user search dropdown
-            initializeUserSearch();
-        }
+        // Animate in
+        setTimeout(() => toast.classList.add('show'), 100);
 
-        function initializeUserSearch() {
-            const searchInput = document.getElementById('resetUserEmail');
-            const dropdownList = document.getElementById('userDropdownList');
-            const selectedUserId = document.getElementById('selectedUserId');
-            
-            // User data from the table
-            const users = [];
-            document.querySelectorAll('#usersTableBody tr[data-role]').forEach(row => {
-                const cells = row.cells;
-                users.push({
-                    id: cells[0].textContent,
-                    name: cells[1].textContent,
-                    email: cells[2].textContent,
-                    role: cells[3].textContent.trim()
-                });
+        // Auto remove after 2 seconds for success, 8 seconds for error
+        const removeTime = type === 'success' ? 2000 : 8000;
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, removeTime);
+    }
+
+    function addStaff() {
+        const modalEl = document.getElementById('addStaffModal');
+        if (!modalEl) return;
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    function openPasswordResetModal() {
+        const modalEl = document.getElementById('passwordResetModal');
+        if (!modalEl) return;
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        // Initialize user search dropdown
+        initializeUserSearch();
+    }
+
+    function initializeUserSearch() {
+        const searchInput = document.getElementById('resetUserEmail');
+        const dropdownList = document.getElementById('userDropdownList');
+        const selectedUserId = document.getElementById('selectedUserId');
+
+        // User data from the table
+        const users = [];
+        document.querySelectorAll('#usersTableBody tr[data-role]').forEach(row => {
+            const cells = row.cells;
+            users.push({
+                id: cells[0].textContent,
+                name: cells[1].textContent,
+                email: cells[2].textContent,
+                role: cells[3].textContent.trim()
             });
-            
-            let selectedIndex = -1;
-            
-            function filterUsers(query) {
-                const filtered = users.filter(user => {
-                    const searchStr = query.toLowerCase();
-                    return user.name.toLowerCase().includes(searchStr) || 
-                           user.email.toLowerCase().includes(searchStr) ||
-                           user.role.toLowerCase().includes(searchStr);
-                });
-                
-                return filtered;
-            }
-            
-            function renderDropdown(filteredUsers) {
-                dropdownList.innerHTML = '';
-                
-                if (filteredUsers.length === 0) {
-                    dropdownList.innerHTML = '<div class="dropdown-item">No users found</div>';
-                } else {
-                    filteredUsers.forEach((user, index) => {
-                        const item = document.createElement('div');
-                        item.className = 'dropdown-item';
-                        item.innerHTML = `
+        });
+
+        let selectedIndex = -1;
+
+        function filterUsers(query) {
+            const filtered = users.filter(user => {
+                const searchStr = query.toLowerCase();
+                return user.name.toLowerCase().includes(searchStr) ||
+                    user.email.toLowerCase().includes(searchStr) ||
+                    user.role.toLowerCase().includes(searchStr);
+            });
+
+            return filtered;
+        }
+
+        function renderDropdown(filteredUsers) {
+            dropdownList.innerHTML = '';
+
+            if (filteredUsers.length === 0) {
+                dropdownList.innerHTML = '<div class="dropdown-item">No users found</div>';
+            } else {
+                filteredUsers.forEach((user, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item';
+                    item.innerHTML = `
                             <strong>${user.name}</strong>
                             <small>${user.email} - ${user.role}</small>
                         `;
-                        item.addEventListener('click', () => selectUser(user));
-                        dropdownList.appendChild(item);
-                    });
-                }
-                
-                dropdownList.style.display = filteredUsers.length > 0 || searchInput.value ? 'block' : 'none';
-                selectedIndex = -1;
-            }
-            
-            function selectUser(user) {
-                searchInput.value = user.email;
-                selectedUserId.value = user.id;
-                dropdownList.style.display = 'none';
-                searchInput.classList.remove('is-invalid');
-                searchInput.classList.add('is-valid');
-            }
-            
-            // Event listeners
-            searchInput.addEventListener('input', (e) => {
-                const query = e.target.value;
-                const filtered = filterUsers(query);
-                renderDropdown(filtered);
-                
-                if (query === '') {
-                    selectedUserId.value = '';
-                    searchInput.classList.remove('is-valid', 'is-invalid');
-                }
-            });
-            
-            searchInput.addEventListener('keydown', (e) => {
-                const items = dropdownList.querySelectorAll('.dropdown-item');
-                
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
-                    updateSelection(items);
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    selectedIndex = Math.max(selectedIndex - 1, 0);
-                    updateSelection(items);
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (selectedIndex >= 0 && items[selectedIndex]) {
-                        items[selectedIndex].click();
-                    }
-                } else if (e.key === 'Escape') {
-                    dropdownList.style.display = 'none';
-                }
-            });
-            
-            function updateSelection(items) {
-                items.forEach((item, index) => {
-                    item.classList.toggle('selected', index === selectedIndex);
+                    item.addEventListener('click', () => selectUser(user));
+                    dropdownList.appendChild(item);
                 });
             }
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.user-search-dropdown')) {
-                    dropdownList.style.display = 'none';
+
+            dropdownList.style.display = filteredUsers.length > 0 || searchInput.value ? 'block' : 'none';
+            selectedIndex = -1;
+        }
+
+        function selectUser(user) {
+            searchInput.value = user.email;
+            selectedUserId.value = user.id;
+            dropdownList.style.display = 'none';
+            searchInput.classList.remove('is-invalid');
+            searchInput.classList.add('is-valid');
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value;
+            const filtered = filterUsers(query);
+            renderDropdown(filtered);
+
+            if (query === '') {
+                selectedUserId.value = '';
+                searchInput.classList.remove('is-valid', 'is-invalid');
+            }
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const items = dropdownList.querySelectorAll('.dropdown-item');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, 0);
+                updateSelection(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0 && items[selectedIndex]) {
+                    items[selectedIndex].click();
                 }
-            });
-            
-            // Show all users on focus
-            searchInput.addEventListener('focus', () => {
-                if (searchInput.value === '') {
-                    renderDropdown(users.slice(0, 10)); // Show first 10 users
-                }
+            } else if (e.key === 'Escape') {
+                dropdownList.style.display = 'none';
+            }
+        });
+
+        function updateSelection(items) {
+            items.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedIndex);
             });
         }
 
-        function filterUsers(role, button) {
-            // Update active tab
-            document.querySelectorAll('.users-tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            if (button) {
-                button.classList.add('active');
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-search-dropdown')) {
+                dropdownList.style.display = 'none';
             }
-            
-            // Filter table rows
-            const rows = document.querySelectorAll('#usersTableBody tr');
-            let visibleCount = 0;
-            
-            rows.forEach(row => {
-                if (role === 'all' || row.getAttribute('data-role') === role) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            
-            // Show empty state if no users found
-            const tableBody = document.getElementById('usersTableBody');
-            let emptyState = tableBody.querySelector('.empty-state');
-            
-            if (visibleCount === 0) {
-                if (!emptyState) {
-                    emptyState = document.createElement('tr');
-                    emptyState.className = 'empty-state';
-                    emptyState.innerHTML = `
+        });
+
+        // Show all users on focus
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value === '') {
+                renderDropdown(users.slice(0, 10)); // Show first 10 users
+            }
+        });
+    }
+
+    function filterUsers(role, button) {
+        // Update active tab
+        document.querySelectorAll('.users-tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if (button) {
+            button.classList.add('active');
+        }
+
+        // Filter table rows
+        const rows = document.querySelectorAll('#usersTableBody tr');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            if (role === 'all' || row.getAttribute('data-role') === role) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Show empty state if no users found
+        const tableBody = document.getElementById('usersTableBody');
+        let emptyState = tableBody.querySelector('.empty-state');
+
+        if (visibleCount === 0) {
+            if (!emptyState) {
+                emptyState = document.createElement('tr');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
                         <td colspan="5">
                             <h3>No users found</h3>
                             <p>No users match the selected filter.</p>
                         </td>
                     `;
-                    tableBody.appendChild(emptyState);
-                }
-                emptyState.style.display = '';
-            } else if (emptyState) {
-                emptyState.style.display = 'none';
+                tableBody.appendChild(emptyState);
             }
+            emptyState.style.display = '';
+        } else if (emptyState) {
+            emptyState.style.display = 'none';
+        }
+    }
+
+
+    // Handle form submission with AJAX
+    document.addEventListener('DOMContentLoaded', function () {
+        const addStaffForm = document.getElementById('addStaffForm');
+        const passwordResetForm = document.getElementById('passwordResetForm');
+
+        if (addStaffForm) {
+            addStaffForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+
+                try {
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
+
+                    // Clear any existing alerts
+                    const existingAlerts = document.querySelectorAll('.alert');
+                    existingAlerts.forEach(alert => alert.remove());
+
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'  // Helps identify AJAX requests
+                        }
+                    });
+
+                    console.log('Response status:', response.status);
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Server error:', errorData);
+                        throw new Error(errorData.error || 'Server returned an error');
+                    }
+
+                    const result = await response.json();
+                    console.log('Success response:', result);
+
+                    if (result.success) {
+                        // Show success toast
+                        showToast(result.message || 'Staff member added successfully!', 'success');
+
+                        // Close the modal
+                        const modalEl = document.getElementById('addStaffModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        // Reset form
+                        this.reset();
+
+                        // Reload the page after a short delay to show the new staff
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        throw new Error(result.error || 'Unknown error occurred');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+
+                    // Show error toast
+                    showToast(error.message || 'An unexpected error occurred. Please try again.', 'error');
+                } finally {
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
         }
 
+        // Password Reset Form Handler
+        if (passwordResetForm) {
+            passwordResetForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
 
-        // Handle form submission with AJAX
-        document.addEventListener('DOMContentLoaded', function() {
-            const addStaffForm = document.getElementById('addStaffForm');
-            const passwordResetForm = document.getElementById('passwordResetForm');
-            
-            if (addStaffForm) {
-                addStaffForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    const formData = new FormData(this);
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const originalBtnText = submitBtn.innerHTML;
-                    
-                    try {
-                        // Show loading state
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
-                        
-                        // Clear any existing alerts
-                        const existingAlerts = document.querySelectorAll('.alert');
-                        existingAlerts.forEach(alert => alert.remove());
-                        
-                        const response = await fetch(this.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'  // Helps identify AJAX requests
-                            }
-                        });
-                        
-                        console.log('Response status:', response.status);
-                        
-                        if (!response.ok) {
-                            const errorData = await response.json().catch(() => ({}));
-                            console.error('Server error:', errorData);
-                            throw new Error(errorData.error || 'Server returned an error');
-                        }
-                        
-                        const result = await response.json();
-                        console.log('Success response:', result);
-                        
-                        if (result.success) {
-                            // Show success toast
-                            showToast(result.message || 'Staff member added successfully!', 'success');
-                            
-                            // Close the modal
-                            const modalEl = document.getElementById('addStaffModal');
-                            const modal = bootstrap.Modal.getInstance(modalEl);
-                            if (modal) {
-                                modal.hide();
-                            }
-                            
-                            // Reset form
-                            this.reset();
-                            
-                            // Reload the page after a short delay to show the new staff
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1500);
-                        } else {
-                            throw new Error(result.error || 'Unknown error occurred');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        
-                        // Show error toast
-                        showToast(error.message || 'An unexpected error occurred. Please try again.', 'error');
-                    } finally {
-                        // Reset button state
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnText;
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+
+                try {
+                    // Clear any existing alerts
+                    const existingAlerts = this.querySelectorAll('.alert');
+                    existingAlerts.forEach(alert => alert.remove());
+
+                    // Validate user selection
+                    const selectedUserId = document.getElementById('selectedUserId').value;
+                    if (!selectedUserId) {
+                        throw new Error('Please select a user from the dropdown');
                     }
-                });
-            }
 
-            // Password Reset Form Handler
-            if (passwordResetForm) {
-                passwordResetForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    const formData = new FormData(this);
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const originalBtnText = submitBtn.innerHTML;
-                    
-                    try {
-                        // Clear any existing alerts
-                        const existingAlerts = this.querySelectorAll('.alert');
-                        existingAlerts.forEach(alert => alert.remove());
-                        
-                        // Validate user selection
-                        const selectedUserId = document.getElementById('selectedUserId').value;
-                        if (!selectedUserId) {
-                            throw new Error('Please select a user from the dropdown');
+                    // Get password fields
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+                    // Password requirements validation (same as register.py)
+                    function validatePasswordStrength(password) {
+                        if (password.length < 8) {
+                            return false, "Password must be at least 8 characters long";
                         }
-                        
-                        // Get password fields
-                        const newPassword = document.getElementById('newPassword').value;
-                        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-                        
-                        // Password requirements validation (same as register.py)
-                        function validatePasswordStrength(password) {
-                            if (password.length < 8) {
-                                return false, "Password must be at least 8 characters long";
-                            }
-                            if (!/[a-z]/.test(password)) {
-                                return false, "Password must contain at least one lowercase letter";
-                            }
-                            if (!/[A-Z]/.test(password)) {
-                                return false, "Password must contain at least one uppercase letter";
-                            }
-                            if (!/[0-9]/.test(password)) {
-                                return false, "Password must contain at least one number";
-                            }
-                            if (!/[^A-Za-z0-9]/.test(password)) {
-                                return false, "Password must contain at least one special character";
-                            }
-                            return true, "Password meets all requirements";
+                        if (!/[a-z]/.test(password)) {
+                            return false, "Password must contain at least one lowercase letter";
                         }
-                        
-                        // Validate new password
-                        const [isValidPassword, passwordMessage] = validatePasswordStrength(newPassword);
-                        if (!isValidPassword) {
-                            throw new Error(passwordMessage);
+                        if (!/[A-Z]/.test(password)) {
+                            return false, "Password must contain at least one uppercase letter";
                         }
-                        
-                        // Validate password confirmation
-                        if (newPassword !== confirmNewPassword) {
-                            throw new Error('New passwords do not match');
+                        if (!/[0-9]/.test(password)) {
+                            return false, "Password must contain at least one number";
                         }
-                        
-                        // Show loading state
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Resetting...';
-                        
-                        const response = await fetch(this.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        });
-                        
-                        if (!response.ok) {
-                            const errorData = await response.json().catch(() => ({}));
-                            throw new Error(errorData.error || 'Password reset failed');
+                        if (!/[^A-Za-z0-9]/.test(password)) {
+                            return false, "Password must contain at least one special character";
                         }
-                        
-                        const result = await response.json();
-                        
-                        if (result.success) {
-                            // Close modal first
-                            const modalEl = document.getElementById('passwordResetModal');
-                            const modal = bootstrap.Modal.getInstance(modalEl);
-                            if (modal) {
-                                modal.hide();
-                            }
-                            
-                            // Reset form
-                            this.reset();
-                            document.getElementById('selectedUserId').value = '';
-                            document.getElementById('resetUserEmail').classList.remove('is-valid');
-                            
-                            // Show success toast outside modal after it closes
-                            setTimeout(() => {
-                                showToast(result.message || 'Password reset successfully!', 'success');
-                            }, 300);
-                            
-                        } else {
-                            throw new Error(result.error || 'Password reset failed');
+                        return true, "Password meets all requirements";
+                    }
+
+                    // Validate new password
+                    const [isValidPassword, passwordMessage] = validatePasswordStrength(newPassword);
+                    if (!isValidPassword) {
+                        throw new Error(passwordMessage);
+                    }
+
+                    // Validate password confirmation
+                    if (newPassword !== confirmNewPassword) {
+                        throw new Error('New passwords do not match');
+                    }
+
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Resetting...';
+
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
-                        
-                    } catch (error) {
-                        console.error('Password reset error:', error);
-                        
-                        // Show error message
-                        const errorHtml = `
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Password reset failed');
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Close modal first
+                        const modalEl = document.getElementById('passwordResetModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        // Reset form
+                        this.reset();
+                        document.getElementById('selectedUserId').value = '';
+                        document.getElementById('resetUserEmail').classList.remove('is-valid');
+
+                        // Show success toast outside modal after it closes
+                        setTimeout(() => {
+                            showToast(result.message || 'Password reset successfully!', 'success');
+                        }, 300);
+
+                    } else {
+                        throw new Error(result.error || 'Password reset failed');
+                    }
+
+                } catch (error) {
+                    console.error('Password reset error:', error);
+
+                    // Show error message
+                    const errorHtml = `
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
                                 ${error.message || 'Password reset failed. Please try again.'}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         `;
-                        
-                        // Insert alert at the top of modal body
-                        const modalBody = this.querySelector('.modal-body');
-                        const existingAlert = modalBody.querySelector('.alert');
-                        if (existingAlert) {
-                            existingAlert.remove();
-                        }
-                        modalBody.insertAdjacentHTML('afterbegin', errorHtml);
-                    } finally {
-                        // Reset button state
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnText;
-                    }
-                });
 
-                // Real-time password validation feedback
-                const newPasswordInput = document.getElementById('newPassword');
-                const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
-                
-                if (newPasswordInput && confirmNewPasswordInput) {
-                    // Create password requirements element
-                    const requirementsHtml = `
+                    // Insert alert at the top of modal body
+                    const modalBody = this.querySelector('.modal-body');
+                    const existingAlert = modalBody.querySelector('.alert');
+                    if (existingAlert) {
+                        existingAlert.remove();
+                    }
+                    modalBody.insertAdjacentHTML('afterbegin', errorHtml);
+                } finally {
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
+
+            // Real-time password validation feedback
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+
+            if (newPasswordInput && confirmNewPasswordInput) {
+                // Create password requirements element
+                const requirementsHtml = `
                         <div class="password-requirements mt-2" style="display: none;">
                             <small class="text-muted">Password must contain:</small>
                             <ul class="small mt-1 mb-0">
@@ -1564,148 +2047,286 @@
                             </ul>
                         </div>
                     `;
-                    
-                    // Insert requirements after password field
-                    newPasswordInput.parentElement.insertAdjacentHTML('beforeend', requirementsHtml);
-                    const requirementsDiv = newPasswordInput.parentElement.querySelector('.password-requirements');
-                    
-                    // Show/hide requirements based on input
-                    newPasswordInput.addEventListener('focus', () => {
-                        requirementsDiv.style.display = 'block';
-                    });
-                    
-                    newPasswordInput.addEventListener('blur', () => {
-                        if (newPasswordInput.value === '') {
-                            requirementsDiv.style.display = 'none';
-                        }
-                    });
-                    
-                    // Real-time validation
-                    newPasswordInput.addEventListener('input', () => {
-                        const password = newPasswordInput.value;
-                        
-                        // Update requirement indicators
-                        document.getElementById('req-length').style.color = password.length >= 8 ? '#28a745' : '#dc3545';
-                        document.getElementById('req-lowercase').style.color = /[a-z]/.test(password) ? '#28a745' : '#dc3545';
-                        document.getElementById('req-uppercase').style.color = /[A-Z]/.test(password) ? '#28a745' : '#dc3545';
-                        document.getElementById('req-number').style.color = /[0-9]/.test(password) ? '#28a745' : '#dc3545';
-                        document.getElementById('req-special').style.color = /[^A-Za-z0-9]/.test(password) ? '#28a745' : '#dc3545';
-                        
-                        // Check if passwords match
-                        if (confirmNewPasswordInput.value) {
-                            validatePasswordMatch();
-                        }
-                    });
-                    
-                    // Confirm password validation
-                    function validatePasswordMatch() {
-                        if (newPasswordInput.value && confirmNewPasswordInput.value) {
-                            if (newPasswordInput.value === confirmNewPasswordInput.value) {
-                                confirmNewPasswordInput.classList.remove('is-invalid');
-                                confirmNewPasswordInput.classList.add('is-valid');
-                            } else {
-                                confirmNewPasswordInput.classList.remove('is-valid');
-                                confirmNewPasswordInput.classList.add('is-invalid');
-                            }
-                        } else {
-                            confirmNewPasswordInput.classList.remove('is-valid', 'is-invalid');
-                        }
-                    }
-                    
-                    confirmNewPasswordInput.addEventListener('input', validatePasswordMatch);
-                }
-            }
-            
-            // Add click handlers for action buttons
-            document.querySelectorAll('.btn-edit').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const row = this.closest('tr');
-                    const userName = row.cells[1].textContent;
-                    alert(`Edit user: ${userName}`);
+
+                // Insert requirements after password field
+                newPasswordInput.parentElement.insertAdjacentHTML('beforeend', requirementsHtml);
+                const requirementsDiv = newPasswordInput.parentElement.querySelector('.password-requirements');
+
+                // Show/hide requirements based on input
+                newPasswordInput.addEventListener('focus', () => {
+                    requirementsDiv.style.display = 'block';
                 });
-            });
+
+                newPasswordInput.addEventListener('blur', () => {
+                    if (newPasswordInput.value === '') {
+                        requirementsDiv.style.display = 'none';
+                    }
+                });
+
+                // Real-time validation
+                newPasswordInput.addEventListener('input', () => {
+                    const password = newPasswordInput.value;
+
+                    // Update requirement indicators
+                    document.getElementById('req-length').style.color = password.length >= 8 ? '#28a745' : '#dc3545';
+                    document.getElementById('req-lowercase').style.color = /[a-z]/.test(password) ? '#28a745' : '#dc3545';
+                    document.getElementById('req-uppercase').style.color = /[A-Z]/.test(password) ? '#28a745' : '#dc3545';
+                    document.getElementById('req-number').style.color = /[0-9]/.test(password) ? '#28a745' : '#dc3545';
+                    document.getElementById('req-special').style.color = /[^A-Za-z0-9]/.test(password) ? '#28a745' : '#dc3545';
+
+                    // Check if passwords match
+                    if (confirmNewPasswordInput.value) {
+                        validatePasswordMatch();
+                    }
+                });
+
+                // Confirm password validation
+                function validatePasswordMatch() {
+                    if (newPasswordInput.value && confirmNewPasswordInput.value) {
+                        if (newPasswordInput.value === confirmNewPasswordInput.value) {
+                            confirmNewPasswordInput.classList.remove('is-invalid');
+                            confirmNewPasswordInput.classList.add('is-valid');
+                        } else {
+                            confirmNewPasswordInput.classList.remove('is-valid');
+                            confirmNewPasswordInput.classList.add('is-invalid');
+                        }
+                    } else {
+                        confirmNewPasswordInput.classList.remove('is-valid', 'is-invalid');
+                    }
+                }
+
+                confirmNewPasswordInput.addEventListener('input', validatePasswordMatch);
+            }
+        }
+    });
+
+    function editUser(userId) {
+        // Get user data from table row
+        const rows = document.querySelectorAll('#usersTableBody tr[data-role]');
+        let userData = null;
+
+        rows.forEach(row => {
+            if (row.cells[0].textContent === userId) {
+                const nameParts = row.cells[1].textContent.trim().split(' ');
+                userData = {
+                    id: row.cells[0].textContent,
+                    firstName: nameParts[0] || '',
+                    lastName: nameParts.slice(1).join(' ') || '',
+                    email: row.cells[2].textContent,
+                    role: row.cells[3].textContent.trim()
+                };
+            }
         });
 
-        // Delete user function
-        function deleteUser(userId, userName) {
-            showDeleteConfirmModal(userId, userName);
+        if (!userData) {
+            showToast('User data not found', 'error');
+            return;
         }
 
-        // Function to show delete confirmation modal
-        function showDeleteConfirmModal(userId, userName) {
-            const modal = document.getElementById('deleteConfirmModal');
-            const titleElement = document.getElementById('deleteUserName');
-            const confirmBtn = document.getElementById('deleteConfirmBtn');
-            const cancelBtn = document.getElementById('deleteCancelBtn');
-            
-            // Set user name
-            titleElement.textContent = userName;
-            
-            // Show modal with animation
-            modal.classList.add('show');
-            
-            // Handle confirm button
-            confirmBtn.onclick = function() {
-                modal.classList.remove('show');
-                performDeleteUser(userId, userName);
-            };
-            
-            // Handle cancel button
-            cancelBtn.onclick = function() {
-                modal.classList.remove('show');
-            };
-            
-            // Handle click outside modal
-            modal.onclick = function(e) {
-                if (e.target === modal) {
-                    modal.classList.remove('show');
-                }
-            };
-        }
+        // Fetch full user data including address from backend
+        fetch(`/users/get/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const user = data.user;
 
-        // Function to show error modal
-        function showErrorModal(message, suggestion = '') {
-            const modal = document.getElementById('errorModal');
-            const messageElement = document.getElementById('errorMessage');
-            const suggestionElement = document.getElementById('errorSuggestion');
-            const closeBtn = document.getElementById('errorCloseBtn');
-            
-            // Set error message
-            messageElement.textContent = message;
-            
-            // Set suggestion if provided
-            if (suggestion) {
-                suggestionElement.textContent = suggestion;
-                suggestionElement.style.display = 'block';
-            } else {
-                suggestionElement.style.display = 'none';
-            }
-            
-            // Show modal with animation
-            modal.classList.add('show');
-            
-            // Handle close button
-            closeBtn.onclick = function() {
-                modal.classList.remove('show');
-            };
-            
-            // Handle click outside modal
-            modal.onclick = function(e) {
-                if (e.target === modal) {
-                    modal.classList.remove('show');
-                }
-            };
-        }
+                    // Populate form fields
+                    document.getElementById('editUserId').value = user.user_id || userData.id;
+                    document.getElementById('editFirstName').value = user.first_name || userData.firstName;
+                    document.getElementById('editLastName').value = user.last_name || userData.lastName;
+                    document.getElementById('editEmail').value = user.email || userData.email;
+                    document.getElementById('editRole').value = user.role || userData.role;
+                    document.getElementById('editRoleDisplay').value = user.role || userData.role;
+                    document.getElementById('editPhone').value = user.phone || '';
+                    document.getElementById('editCitizenId').value = user.citizen_id || '';
 
-        // Function to perform the actual deletion
-        function performDeleteUser(userId, userName) {
-            fetch(`/users/delete/${userId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    // Populate location fields
+                    document.getElementById('editProvince').value = user.province || '';
+                    document.getElementById('editAddress').value = user.address || '';
+
+                    // Load districts for the province and set district
+                    loadDistricts('edit');
+                    setTimeout(() => {
+                        document.getElementById('editDistrict').value = user.district || '';
+                    }, 100);
+
+                    // Show modal
+                    const modalEl = document.getElementById('editUserModal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                } else {
+                    // Fallback to basic data if fetch fails
+                    document.getElementById('editUserId').value = userData.id;
+                    document.getElementById('editFirstName').value = userData.firstName;
+                    document.getElementById('editLastName').value = userData.lastName;
+                    document.getElementById('editEmail').value = userData.email;
+                    document.getElementById('editRole').value = userData.role;
+                    document.getElementById('editRoleDisplay').value = userData.role;
+
+                    const modalEl = document.getElementById('editUserModal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
                 }
             })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+                // Fallback to basic data
+                document.getElementById('editUserId').value = userData.id;
+                document.getElementById('editFirstName').value = userData.firstName;
+                document.getElementById('editLastName').value = userData.lastName;
+                document.getElementById('editEmail').value = userData.email;
+                document.getElementById('editRole').value = userData.role;
+                document.getElementById('editRoleDisplay').value = userData.role;
+
+                const modalEl = document.getElementById('editUserModal');
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            });
+    }
+
+    // Edit User Form Handler
+    document.addEventListener('DOMContentLoaded', function () {
+        const editUserForm = document.getElementById('editUserForm');
+
+        if (editUserForm) {
+            editUserForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+
+                try {
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
+
+                    const response = await fetch('/users/update', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Failed to update user');
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Show success toast
+                        showToast(result.message || 'User updated successfully!', 'success');
+
+                        // Close the modal
+                        const modalEl = document.getElementById('editUserModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        // Reload the page to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        throw new Error(result.error || 'Failed to update user');
+                    }
+                } catch (error) {
+                    console.error('Error updating user:', error);
+                    showToast(error.message || 'An unexpected error occurred. Please try again.', 'error');
+                } finally {
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
+        }
+    });
+
+    // Delete user function
+    function deleteUser(userId, userName) {
+        showDeleteConfirmModal(userId, userName);
+    }
+
+    // Function to show delete confirmation modal
+    function showDeleteConfirmModal(userId, userName) {
+        const modal = document.getElementById('deleteConfirmModal');
+        const titleElement = document.getElementById('deleteUserName');
+        const confirmBtn = document.getElementById('deleteConfirmBtn');
+        const cancelBtn = document.getElementById('deleteCancelBtn');
+
+        // Set user name
+        titleElement.textContent = userName;
+
+        // Show modal with animation
+        modal.classList.add('show');
+
+        // Handle confirm button
+        confirmBtn.onclick = function () {
+            modal.classList.remove('show');
+            performDeleteUser(userId, userName);
+        };
+
+        // Handle cancel button
+        cancelBtn.onclick = function () {
+            modal.classList.remove('show');
+        };
+
+        // Handle click outside modal
+        modal.onclick = function (e) {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        };
+    }
+
+    // Function to show error modal
+    function showErrorModal(message, suggestion = '') {
+        const modal = document.getElementById('errorModal');
+        const messageElement = document.getElementById('errorMessage');
+        const suggestionElement = document.getElementById('errorSuggestion');
+        const closeBtn = document.getElementById('errorCloseBtn');
+
+        // Set error message
+        messageElement.textContent = message;
+
+        // Set suggestion if provided
+        if (suggestion) {
+            suggestionElement.textContent = suggestion;
+            suggestionElement.style.display = 'block';
+        } else {
+            suggestionElement.style.display = 'none';
+        }
+
+        // Show modal with animation
+        modal.classList.add('show');
+
+        // Handle close button
+        closeBtn.onclick = function () {
+            modal.classList.remove('show');
+        };
+
+        // Handle click outside modal
+        modal.onclick = function (e) {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        };
+    }
+
+    // Function to perform the actual deletion
+    function performDeleteUser(userId, userName) {
+        fetch(`/users/delete/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
             .then(response => {
                 // Check if response is ok before parsing JSON
                 if (!response.ok) {
@@ -1720,18 +2341,18 @@
                 if (data && data.success) {
                     // Show success toast
                     showToast(data.message || 'User deleted successfully!', 'success');
-                    
+
                     // Remove the user row from table
                     const rows = document.querySelectorAll('#usersTableBody tr');
                     let userRemoved = false;
-                    
+
                     rows.forEach(row => {
                         if (row.cells[0].textContent === userId) {
                             row.remove();
                             userRemoved = true;
                         }
                     });
-                    
+
                     // Only update counts if user was actually removed
                     if (userRemoved) {
                         updateUserCounts();
@@ -1746,43 +2367,43 @@
                 console.error('Error deleting user:', error);
                 showDeleteError(error.message);
             });
+    }
+
+    // Helper function to show delete errors with suggestions
+    function showDeleteError(errorMessage) {
+        let suggestion = '';
+
+        if (errorMessage.includes('orders')) {
+            suggestion = 'Please check the user\'s order history and handle any pending orders.';
+        } else if (errorMessage.includes('stock requests')) {
+            suggestion = 'Please approve or reject the user\'s pending stock requests first.';
+        } else if (errorMessage.includes('arrival alerts')) {
+            suggestion = 'Please process the user\'s pending arrival alerts first.';
+        } else if (errorMessage.includes('Cannot delete') || errorMessage.includes('associated records')) {
+            suggestion = 'Please remove all associated records before deleting this user.';
+        } else {
+            suggestion = 'Please try again or contact support if the problem persists.';
         }
 
-        // Helper function to show delete errors with suggestions
-        function showDeleteError(errorMessage) {
-            let suggestion = '';
-            
-            if (errorMessage.includes('orders')) {
-                suggestion = 'Please check the user\'s order history and handle any pending orders.';
-            } else if (errorMessage.includes('stock requests')) {
-                suggestion = 'Please approve or reject the user\'s pending stock requests first.';
-            } else if (errorMessage.includes('arrival alerts')) {
-                suggestion = 'Please process the user\'s pending arrival alerts first.';
-            } else if (errorMessage.includes('Cannot delete') || errorMessage.includes('associated records')) {
-                suggestion = 'Please remove all associated records before deleting this user.';
-            } else {
-                suggestion = 'Please try again or contact support if the problem persists.';
-            }
-            
-            showErrorModal(errorMessage, suggestion);
-        }
+        showErrorModal(errorMessage, suggestion);
+    }
 
-        // Update user counts
-        function updateUserCounts() {
-            const allUsers = document.querySelectorAll('#usersTableBody tr[data-role]').length;
-            const customers = document.querySelectorAll('#usersTableBody tr[data-role="Customer"]').length;
-            const staff = document.querySelectorAll('#usersTableBody tr[data-role="Staff"]').length;
-            
-            // Update stat cards if they exist
-            const totalStat = document.querySelector('.stat-value');
-            const customerStat = document.querySelectorAll('.stat-value')[1];
-            const staffStat = document.querySelectorAll('.stat-value')[2];
-            
-            if (totalStat) totalStat.textContent = allUsers;
-            if (customerStat) customerStat.textContent = customers;
-            if (staffStat) staffStat.textContent = staff;
-        }
-    </script>
+    // Update user counts
+    function updateUserCounts() {
+        const allUsers = document.querySelectorAll('#usersTableBody tr[data-role]').length;
+        const customers = document.querySelectorAll('#usersTableBody tr[data-role="Customer"]').length;
+        const staff = document.querySelectorAll('#usersTableBody tr[data-role="Staff"]').length;
+
+        // Update stat cards if they exist
+        const totalStat = document.querySelector('.stat-value');
+        const customerStat = document.querySelectorAll('.stat-value')[1];
+        const staffStat = document.querySelectorAll('.stat-value')[2];
+
+        if (totalStat) totalStat.textContent = allUsers;
+        if (customerStat) customerStat.textContent = customers;
+        if (staffStat) staffStat.textContent = staff;
+    }
+</script>
 {% endblock %}
 
 <style>
@@ -1792,104 +2413,104 @@
             padding: 0 1rem;
             margin: 10px auto;
         }
-        
+
         .header {
             flex-direction: column;
             gap: 1rem;
             padding: 1rem;
         }
-        
+
         .header h1 {
             font-size: 22px;
         }
-        
+
         .stats-grid {
             grid-template-columns: 1fr;
             gap: 12px;
         }
-        
+
         .filter-tabs {
             flex-wrap: wrap;
             gap: 8px;
         }
-        
+
         .tab-btn {
             padding: 8px 16px;
             font-size: 13px;
         }
-        
+
         .users-table {
             font-size: 0.875rem;
             border-radius: 8px;
         }
-        
+
         .users-table th {
             padding: 12px 16px;
             font-size: 12px;
         }
-        
+
         .users-table td {
             padding: 12px 16px;
         }
-        
+
         .user-info {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        
+
         .user-avatar {
             width: 40px;
             height: 40px;
             font-size: 16px;
         }
-        
+
         .user-details h4 {
             font-size: 14px;
         }
-        
+
         .user-details p {
             font-size: 12px;
         }
-        
+
         .action-btn {
             padding: 6px 12px;
             font-size: 12px;
         }
-        
+
         .modal-dialog {
             margin: 1rem;
         }
-        
+
         .modal-content {
             border-radius: 12px;
         }
     }
-    
+
     @media (max-width: 480px) {
         .container {
             padding: 0 0.5rem;
         }
-        
+
         .header h1 {
             font-size: 20px;
         }
-        
+
         .users-table {
             font-size: 0.8rem;
         }
-        
+
         .users-table th,
         .users-table td {
             padding: 8px 12px;
         }
-        
+
         .user-avatar {
             width: 32px;
             height: 32px;
             font-size: 14px;
         }
-        
+
         .action-btn {
             padding: 4px 8px;
             font-size: 11px;

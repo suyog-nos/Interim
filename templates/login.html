@@ -4,339 +4,344 @@
 
 {% block extra_css %}
 <style>
-/* Alert Styles */
-.alert {
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    font-size: 0.9375rem;
-    line-height: 1.5;
-    transition: all 0.3s ease;
-}
-
-.alert-success {
-    background-color: #d1e7dd;
-    color: #0f5132;
-    border-color: #badbcc;
-}
-
-.alert.alert-success .btn-close {
-    filter: brightness(0) saturate(100%) invert(23%) sepia(24%) saturate(1288%) hue-rotate(98deg) brightness(95%) contrast(94%);
-    opacity: 0.8;
-    transition: opacity 0.2s ease;
-}
-
-.alert.alert-success .btn-close:hover {
-    opacity: 1;
-}
-
-.alert-dismissible .btn-close {
-    padding: 0.75rem 1rem;
-    background-size: 0.75rem;
-}
-
-/* Dark theme support */
-.dark-theme .alert-success {
-    background-color: #0f5132;
-    color: #d1e7dd;
-    border-color: #198754;
-}
-
-.dark-theme .alert.alert-success .btn-close {
-    filter: invert(1);
-}
-
-/* Animation for alert */
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
+    /* Alert Styles */
+    .alert {
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        font-size: 0.9375rem;
+        line-height: 1.5;
+        transition: all 0.3s ease;
     }
-    to {
-        transform: translateX(0);
+
+    .alert-success {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        border-color: #badbcc;
+    }
+
+    .alert.alert-success .btn-close {
+        filter: brightness(0) saturate(100%) invert(23%) sepia(24%) saturate(1288%) hue-rotate(98deg) brightness(95%) contrast(94%);
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+
+    .alert.alert-success .btn-close:hover {
         opacity: 1;
     }
-}
 
-#successMessage {
-    animation: slideInRight 0.3s ease-out forwards;
-}
-/* Login page specific styles */
-.login-section {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 1rem;
-    background-color: var(--gray-50);
-    margin-top: -64px; /* Offset the fixed navbar height */
-}
+    .alert-dismissible .btn-close {
+        padding: 0.75rem 1rem;
+        background-size: 0.75rem;
+    }
 
-.dark-theme .login-section {
-    background: var(--dark-bg-1);
-}
+    /* Dark theme support */
+    .dark-theme .alert-success {
+        background-color: #0f5132;
+        color: #d1e7dd;
+        border-color: #198754;
+    }
 
-/* Custom off-white color for login card in light theme */
-:root {
-    --login-card-bg: #fcfcfd;
-}
+    .dark-theme .alert.alert-success .btn-close {
+        filter: invert(1);
+    }
 
-.login-container {
-    width: 100%;
-    max-width: 420px;
-    margin: 0 auto;
-    padding: 1rem;
-}
+    /* Animation for alert */
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
 
-.login-card {
-    background: var(--login-card-bg);
-    padding: 2.5rem 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    width: 100%;
-    max-width: 400px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
 
-.dark-theme .login-card {
-    background: var(--dark-bg-2);
-    border: 1px solid var(--dark-border);
-}
+    #successMessage {
+        animation: slideInRight 0.3s ease-out forwards;
+    }
 
-.login-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
+    /* Login page specific styles */
+    .login-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background-color: var(--gray-50);
+        margin-top: -64px;
+        /* Offset the fixed navbar height */
+    }
 
-.login-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    position: relative;
-    padding-bottom: 1rem;
-}
+    .dark-theme .login-section {
+        background: var(--dark-bg-1);
+    }
 
-.login-header::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 30%;
-    right: 30%;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-    border-radius: 3px;
-}
+    /* Custom off-white color for login card in light theme */
+    :root {
+        --login-card-bg: #fcfcfd;
+    }
 
-.login-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem;
-    color: var(--primary);
-}
+    .login-container {
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
 
-.dark-theme .login-title {
-    color: var(--primary-light);
-}
+    .login-card {
+        background: var(--login-card-bg);
+        padding: 2.5rem 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        width: 100%;
+        max-width: 400px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
 
-.login-subtitle {
-    color: var(--gray-600);
-    margin: 0;
-    font-size: 1rem;
-}
+    .dark-theme .login-card {
+        background: var(--dark-bg-2);
+        border: 1px solid var(--dark-border);
+    }
 
-.dark-theme .login-subtitle {
-    color: var(--dark-text-2);
-}
+    .login-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
 
-.login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.input-with-icon {
-    position: relative;
-    width: 100%;
-}
-
-.input-with-icon i {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--gray-400);
-    font-size: 1rem;
-}
-
-.input-with-icon input {
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
-    border: 1px solid var(--gray-300);
-    border-radius: var(--radius);
-    font-size: 0.9375rem;
-    transition: all 0.2s ease;
-    background-color: var(--white);
-    color: var(--gray-900);
-}
-
-.dark-theme .input-with-icon input {
-    background-color: var(--dark-bg-3);
-    border-color: var(--dark-border);
-    color: var(--dark-text-1);
-}
-
-.input-with-icon input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    outline: none;
-}
-
-.toggle-password {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--gray-400);
-    cursor: pointer;
-    padding: 0;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-    width: 2rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    outline: none;
-    box-sizing: border-box;
-}
-
-.toggle-password:hover {
-    background-color: var(--gray-100);
-    color: var(--gray-600);
-}
-
-/* Chrome-specific fixes for circular button */
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-    .toggle-password {
-        -webkit-border-radius: 50%;
-        border-radius: 50%;
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
+    .login-header {
         text-align: center;
-        line-height: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        padding-bottom: 1rem;
     }
-    
+
+    .login-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 30%;
+        right: 30%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        border-radius: 3px;
+    }
+
+    .login-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: var(--primary);
+    }
+
+    .dark-theme .login-title {
+        color: var(--primary-light);
+    }
+
+    .login-subtitle {
+        color: var(--gray-600);
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .dark-theme .login-subtitle {
+        color: var(--dark-text-2);
+    }
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .input-with-icon {
+        position: relative;
+        width: 100%;
+    }
+
+    .input-with-icon i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-400);
+        font-size: 1rem;
+    }
+
+    .input-with-icon input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+        background-color: var(--white);
+        color: var(--gray-900);
+    }
+
+    .dark-theme .input-with-icon input {
+        background-color: var(--dark-bg-3);
+        border-color: var(--dark-border);
+        color: var(--dark-text-1);
+    }
+
+    .input-with-icon input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        outline: none;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--gray-400);
+        cursor: pointer;
+        padding: 0;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    .toggle-password:hover {
+        background-color: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    /* Chrome-specific fixes for circular button */
+    @media screen and (-webkit-min-device-pixel-ratio:0) {
+        .toggle-password {
+            -webkit-border-radius: 50%;
+            border-radius: 50%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            text-align: center;
+            line-height: 2rem;
+        }
+
+        .toggle-password i {
+            position: static;
+            transform: none;
+            vertical-align: middle;
+            display: inline-block;
+        }
+    }
+
+    .dark-theme .toggle-password:hover {
+        background-color: var(--dark-bg-3);
+        color: var(--dark-text-2);
+    }
+
     .toggle-password i {
-        position: static;
-        transform: none;
-        vertical-align: middle;
-        display: inline-block;
+        font-size: 1rem;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 1rem;
+        height: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
     }
-}
 
-.dark-theme .toggle-password:hover {
-    background-color: var(--dark-bg-3);
-    color: var(--dark-text-2);
-}
+    .toggle-password[aria-pressed="true"] .fa-eye {
+        display: none;
+    }
 
-.toggle-password i {
-    font-size: 1rem;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 1rem;
-    height: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-}
+    .toggle-password[aria-pressed="false"] .fa-eye-slash {
+        display: none;
+    }
 
-.toggle-password[aria-pressed="true"] .fa-eye {
-    display: none;
-}
+    .btn-login {
+        width: 100%;
+        padding: 0.875rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 0.5rem;
+    }
 
-.toggle-password[aria-pressed="false"] .fa-eye-slash {
-    display: none;
-}
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+    }
 
-.btn-login {
-    width: 100%;
-    padding: 0.875rem;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 0.5rem;
-}
+    .login-footer {
+        margin-top: 1.5rem;
+        text-align: center;
+        font-size: 0.9375rem;
+        color: var(--gray-600);
+    }
 
-.btn-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
-}
+    .dark-theme .login-footer {
+        color: var(--dark-text-3);
+    }
 
-.login-footer {
-    margin-top: 1.5rem;
-    text-align: center;
-    font-size: 0.9375rem;
-    color: var(--gray-600);
-}
+    .login-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
 
-.dark-theme .login-footer {
-    color: var(--dark-text-3);
-}
-
-.login-footer a {
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
-}
-
-.login-footer a:hover {
-    text-decoration: underline;
-}
+    .login-footer a:hover {
+        text-decoration: underline;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Flash Messages -->
 {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            {% if category == 'success' %}
-                <div id="successMessage" class="alert alert-success fade show" role="alert" style="position: fixed; top: 80px; right: 20px; z-index: 1050; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: none; border-left: 4px solid #0f5132; cursor: pointer;" data-bs-delay="2000" data-bs-autohide="true" onclick="this.remove()">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <div>
-                            <strong>Success!</strong>
-                            <div class="small">{{ message }}</div>
-                        </div>
-                    </div>
-                </div>
-            <script>
-                // Auto-hide after 2 seconds
-                document.addEventListener('DOMContentLoaded', function() {
-                    const successMessage = document.getElementById('successMessage');
-                    if (successMessage) {
-                        setTimeout(() => {
-                            successMessage.remove();
-                        }, 2000);
-                    }
-                });
-            </script>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+{% if messages %}
+{% for category, message in messages %}
+{% if category == 'success' %}
+<div id="successMessage" class="alert alert-success fade show" role="alert"
+    style="position: fixed; top: 80px; right: 20px; z-index: 1050; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: none; border-left: 4px solid #0f5132; cursor: pointer;"
+    data-bs-delay="2000" data-bs-autohide="true" onclick="this.remove()">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-check-circle me-2"></i>
+        <div>
+            <strong>Success!</strong>
+            <div class="small">{{ message }}</div>
+        </div>
+    </div>
+</div>
+<script>
+    // Auto-hide after 2 seconds
+    document.addEventListener('DOMContentLoaded', function () {
+        const successMessage = document.getElementById('successMessage');
+        if (successMessage) {
+            setTimeout(() => {
+                successMessage.remove();
+            }, 2000);
+        }
+    });
+</script>
+{% endif %}
+{% endfor %}
+{% endif %}
 {% endwith %}
 
 <div class="login-section">
@@ -344,22 +349,30 @@
         <div class="login-card">
             <!-- Error Popup -->
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        {% if category == 'error' %}
-                        <div id="errorPopup" class="alert alert-danger" role="alert" style="margin-bottom: 1.5rem; border-radius: var(--radius); padding: 0.75rem 1.25rem; border: none; background-color: #f8d7da; color: #721c24; font-size: 0.9rem; text-align: center; animation: fadeIn 0.3s ease-in-out;">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <span>{{ message }}</span>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if category == 'error' %}
+            <div id="errorPopup" class="alert alert-danger" role="alert"
+                style="margin-bottom: 1.5rem; border-radius: var(--radius); padding: 0.75rem 1.25rem; border: none; background-color: #f8d7da; color: #721c24; font-size: 0.9rem; text-align: center; animation: fadeIn 0.3s ease-in-out;">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
             {% endwith %}
-            
+
             <style>
                 @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(-10px); }
-                    to { opacity: 1; transform: translateY(0); }
+                    from {
+                        opacity: 0;
+                        transform: translateY(-10px);
+                    }
+
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
                 }
             </style>
 
@@ -368,33 +381,34 @@
                 <p class="login-subtitle">Sign in to your account</p>
             </div>
 
-            <form id="loginForm" class="login-form" method="POST" action="{{ url_for('login.login') }}" onsubmit="return handleFormSubmit(this);">
+            <form id="loginForm" class="login-form" method="POST" action="{{ url_for('login.login') }}"
+                onsubmit="return handleFormSubmit(this);">
                 <input type="hidden" name="role" id="roleInput" value="staff">
 
                 <div class="input-with-icon">
                     <i class="fas fa-user"></i>
-                    <input type="email" id="username" name="username" placeholder="Email" value="{{ email or '' }}" required>
+                    <input type="email" id="username" name="username" placeholder="Email" value="{{ email or '' }}"
+                        required>
                 </div>
 
                 <div class="input-with-icon">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="password" name="password" placeholder="Password" required 
-                           aria-describedby="password-constraints" autocomplete="current-password">
-                    <button type="button" class="toggle-password" aria-label="Toggle password visibility" 
-                            aria-pressed="false">
+                    <input type="password" id="password" name="password" placeholder="Password" required
+                        aria-describedby="password-constraints" autocomplete="current-password">
+                    <button type="button" class="toggle-password" aria-label="Toggle password visibility"
+                        aria-pressed="false">
                         <i class="fas fa-eye"></i>
                         <i class="fas fa-eye-slash"></i>
                     </button>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex mb-3">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
                         <label class="form-check-label" for="rememberMe">
                             Remember me
                         </label>
                     </div>
-                    <a href="#" class="text-decoration-none">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-login">
@@ -428,7 +442,7 @@
         window.history.replaceState({}, document.title, cleanUrl);
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Auto-hide success message after 5 seconds
         const successMessage = document.getElementById('successMessage');
         if (successMessage) {
@@ -451,7 +465,7 @@
 
             // Click handler
             togglePassword.addEventListener('click', togglePasswordState);
-            
+
             // Auto-hide error popup after 3 seconds (increased from 1s for better readability)
             const errorPopup = document.getElementById('errorPopup');
             if (errorPopup) {
@@ -461,7 +475,7 @@
                     setTimeout(() => errorPopup.remove(), 500);
                 }, 3000);
             }
-            
+
             // Keyboard navigation support
             togglePassword.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
