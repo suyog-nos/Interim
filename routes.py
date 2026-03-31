@@ -116,6 +116,7 @@ def index():
                 JOIN products p ON oi.product_id = p.product_id
                 LEFT JOIN categories c ON p.category_id = c.category_id
                 WHERE o.order_status = 'completed'
+                  AND o.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
                   AND p.status = 'active'
                   AND p.stock_quantity > 0
                 GROUP BY 
@@ -231,6 +232,7 @@ def dashboard():
                 JOIN products p ON oi.product_id = p.product_id
                 JOIN orders o ON oi.order_id = o.order_id
                 WHERE o.order_status = 'completed'
+                  AND o.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
                 GROUP BY p.product_id
                 ORDER BY total_sold DESC
                 LIMIT 5
