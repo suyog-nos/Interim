@@ -255,7 +255,8 @@ def dashboard():
                     o.created_at
                 FROM orders o
                 LEFT JOIN users u ON o.user_id = u.user_id
-                ORDER BY o.created_at DESC
+                ORDER BY 
+                    o.order_id DESC, o.created_at DESC
                 LIMIT 5
             """)
             recent_orders = cursor.fetchall()
@@ -947,10 +948,11 @@ def api_orders():
 
             # Get paginated order IDs with search
             query = f"""
-                SELECT DISTINCT o.order_id, o.created_at
+                SELECT DISTINCT o.order_id, o.created_at, o.order_status
                 FROM orders o 
                 {where_clause}
-                ORDER BY o.created_at DESC, o.order_id DESC
+                ORDER BY 
+                    o.order_id DESC, o.created_at DESC
                 LIMIT %s OFFSET %s
             """
             
@@ -992,7 +994,8 @@ def api_orders():
                 LEFT JOIN order_items oi ON o.order_id = oi.order_id
                 LEFT JOIN products p ON oi.product_id = p.product_id
                 WHERE o.order_id IN ({format_strings})
-                ORDER BY o.created_at DESC, o.order_id DESC, oi.order_item_id ASC
+                ORDER BY 
+                    o.order_id DESC, o.created_at DESC, oi.order_item_id ASC
             """, tuple(order_ids))
             rows = cursor.fetchall()
             
@@ -1288,7 +1291,8 @@ def orders():
                 FROM orders o
                 LEFT JOIN users u ON o.user_id = u.user_id
                 WHERE o.order_status IN ('processing', 'ready_for_pickup', 'pending')
-                ORDER BY o.created_at DESC
+                ORDER BY 
+                    o.order_id DESC, o.created_at DESC
                 LIMIT %s OFFSET %s
             """, (per_page, active_offset))
             active_data = cursor.fetchall()
@@ -1310,7 +1314,8 @@ def orders():
                 FROM orders o
                 LEFT JOIN users u ON o.user_id = u.user_id
                 WHERE o.order_status IN ('completed', 'cancelled')
-                ORDER BY o.created_at DESC
+                ORDER BY 
+                    o.order_id DESC, o.created_at DESC
                 LIMIT %s OFFSET %s
             """, (per_page, history_offset))
             history_data = cursor.fetchall()
@@ -3945,6 +3950,132 @@ def update_user():
     except Exception as e:
         print(f"Error updating user: {e}")
         return jsonify({'success': False, 'error': 'An error occurred while updating user'}), 500
+
+# ===== Top Products Report =====
+@main_bp.route('/reports/top-products')
+def top_products_report():
+    if session.get('role') != 'Admin':
+        flash('Only administrators can access reports.', 'error')
+        return redirect(url_for('main.dashboard'))
+
+    # Get filter parameters
+    timeframe = request.args.get('timeframe', 'Last 30 Days')
+    custom_from = request.args.get('custom_from', '')
+    custom_to = request.args.get('custom_to', '')
+    category_id = request.args.get('category_id', '')
+
+    # Build date condition based on timeframe
+    date_condition = "1=1"
+    params = []
+
+    if timeframe == 'Today':
+        date_condition = "DATE(o.created_at) = CURDATE()"
+    elif timeframe == 'Last 7 Days':
+        date_condition = "o.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+    elif timeframe == 'Last 30 Days':
+        date_condition = "o.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
+    elif timeframe == 'This Month':
+        date_condition = "MONTH(o.created_at) = MONTH(NOW()) AND YEAR(o.created_at) = YEAR(NOW())"
+    elif timeframe == 'Last 6 Months':
+        date_condition = "o.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)"
+    elif timeframe == 'Custom Range' and custom_from and custom_to:
+        date_condition = "DATE(o.created_at) BETWEEN %s AND %s"
+        params.extend([custom_from, custom_to])
+
+    # Category condition
+    cat_condition = ""
+    if category_id:
+        cat_condition = " AND p.category_id = %s"
+        params.append(category_id)
+
+    try:
+        with get_db_context() as cursor:
+            # Get Categories for Filter Dropdown
+            cursor.execute("SELECT category_id, name FROM categories ORDER BY name")
+            categories = cursor.fetchall()
+
+            # 1. Summary Cards
+            summary_query = f"""
+                SELECT 
+                    SUM(oi.quantity) as total_units,
+                    COUNT(DISTINCT o.order_id) as total_orders,
+                    COUNT(DISTINCT p.category_id) as total_categories
+                FROM orders o
+                JOIN order_items oi ON o.order_id = oi.order_id
+                JOIN products p ON oi.product_id = p.product_id
+                WHERE o.order_status = 'completed' AND {date_condition} {cat_condition}
+            """
+            cursor.execute(summary_query, params)
+            summary = cursor.fetchone()
+
+            # 2. Detailed Top Products (for table and charts)
+            products_query = f"""
+                SELECT 
+                    p.product_id,
+                    p.name AS product_name,
+                    c.name AS category_name,
+                    p.sku,
+                    p.stock_quantity,
+                    p.status,
+                    SUM(oi.quantity) AS total_quantity_sold,
+                    COUNT(DISTINCT oi.order_id) AS total_orders
+                FROM orders o
+                JOIN order_items oi ON o.order_id = oi.order_id
+                JOIN products p ON oi.product_id = p.product_id
+                LEFT JOIN categories c ON p.category_id = c.category_id
+                WHERE o.order_status = 'completed' AND {date_condition} {cat_condition}
+                GROUP BY p.product_id
+                ORDER BY total_quantity_sold DESC
+            """
+            cursor.execute(products_query, params)
+            top_products = cursor.fetchall()
+
+            # Extract best selling product from list
+            best_selling_product = top_products[0]['product_name'] if top_products else 'N/A'
+            if summary:
+                summary['best_selling_product'] = best_selling_product
+
+            # Prepare chart arrays (top 5 for charts)
+            chart_labels = [p['product_name'] for p in top_products[:5]]
+            chart_data = [int(p['total_quantity_sold']) for p in top_products[:5]]
+
+            # 3. Trend Query (Line Chart)
+            trend_query = f"""
+                SELECT 
+                    DATE(o.created_at) as sale_date,
+                    SUM(oi.quantity) as daily_quantity
+                FROM orders o
+                JOIN order_items oi ON o.order_id = oi.order_id
+                JOIN products p ON oi.product_id = p.product_id
+                WHERE o.order_status = 'completed' AND {date_condition} {cat_condition}
+                GROUP BY DATE(o.created_at)
+                ORDER BY DATE(o.created_at) ASC
+            """
+            cursor.execute(trend_query, params)
+            trend_results = cursor.fetchall()
+
+            trend_labels = [str(r['sale_date']) for r in trend_results]
+            trend_data = [int(r['daily_quantity']) for r in trend_results]
+
+        return render_template(
+            'report.html',
+            categories=categories,
+            summary=summary,
+            top_products=top_products,
+            chart_labels=chart_labels,
+            chart_data=chart_data,
+            trend_labels=trend_labels,
+            trend_data=trend_data,
+            current_timeframe=timeframe,
+            current_category=category_id,
+            custom_from=custom_from,
+            custom_to=custom_to
+        )
+
+    except Exception as e:
+        print(f"Error loading Top Products Report: {e}")
+        flash('An error occurred while loading the report.', 'error')
+        return redirect(url_for('main.dashboard'))
 
 @main_bp.app_errorhandler(404)
 def page_not_found(e):
