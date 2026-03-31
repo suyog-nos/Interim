@@ -285,10 +285,6 @@
         transition: all 0.4s ease;
     }
 
-    .feature-card:hover .feature-icon {
-        transform: rotateY(360deg);
-    }
-
     .feature-card h3 {
         font-size: 1.375rem;
         font-weight: 600;
@@ -374,7 +370,7 @@
     }
 
     .dark-theme .features {
-        background: #0f172a;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     }
 
     .dark-theme .features::before {
@@ -749,7 +745,7 @@
     }
 
     .dark-theme .flash-sale {
-        background: #0f172a;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     }
 
     .flash-sale-header {
@@ -968,6 +964,19 @@
         text-align: center;
         margin-top: 1rem;
     }
+
+    /* Best Sellers Section Badge */
+    .best-sellers-badge {
+        background: rgba(16, 185, 129, 0.1); 
+        border-color: rgba(16, 185, 129, 0.2); 
+        color: #059669;
+    }
+
+    .dark-theme .best-sellers-badge {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #34d399;
+    }
 </style>
 {% endblock %}
 
@@ -988,11 +997,6 @@
                 enjoy a seamless shopping experience, and stay updated with stock availability in real-time.
             </p>
 
-            <div class="hero-note">
-                Behind the scenes, our system ensures smooth operations: staff can manage sales and 
-                stock efficiently, and admins have full control over inventory, suppliers, and business insights.
-            </div>
-
             <div class="hero-buttons">
                 <a href="/login" class="btn btn-primary">
                     Open Dashboard
@@ -1006,6 +1010,59 @@
         </div>
     </div>
 </section>
+
+<!-- Best Sellers Section -->
+{% if best_seller_products %}
+<section class="flash-sale">
+    <div class="container">
+        <div class="flash-sale-header">
+            <div class="flash-sale-badge best-sellers-badge">
+                <i class="fas fa-chart-line"></i> BEST SELLERS
+            </div>
+            <h2 class="flash-sale-title">High Selling Products</h2>
+            <p class="flash-sale-desc">Our most popular and highly rated stationery items chosen by our customers.</p>
+        </div>
+
+        <div class="products-grid">
+            {% for product in best_seller_products %}
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="{% if product.image_url.startswith('http') %}{{ product.image_url }}{% else %}/{{ product.image_url.strip('/') }}{% endif %}" alt="{{ product.name }}">
+                    <div class="product-badge bg-success text-white" style="font-weight: 600;">{{ product.total_sold|int }} Sold</div>
+                </div>
+                <div class="product-details">
+                    {% if product.category_name %}
+                    <span class="product-category">{{ product.category_name }}</span>
+                    {% endif %}
+                    <h3 class="product-title">{{ product.name }}</h3>
+                    <div class="product-description">
+                        {% if product.brand %}Brand: {{ product.brand }}{% endif %}
+                    </div>
+                    <div class="product-footer">
+                        <span class="product-price"> रु {{ "%.2f"|format(product.price) if product.price else '0.00' }}</span>
+                        <a href="/products" class="add-to-cart">
+                            <i class="fas fa-shopping-cart"></i>
+                            Add to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="products-footer">
+            <a href="/products" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);">
+                Shop Best Sellers
+                <span class="btn-arrow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14m-7-7l7 7-7 7"/>
+                    </svg>
+                </span>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
 
 <!-- Flash Sale Section -->
 {% if flash_sale_products %}

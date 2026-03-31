@@ -66,6 +66,7 @@ def index():
         return redirect(url_for('products.index'))
         
     flash_sale_products = []
+    best_seller_products = []
     try:
         with get_db_context() as cursor:
             # Query for flash sale items: active, low stock (1-10)
@@ -99,10 +100,47 @@ def index():
                 elif not any(p['image_url'].startswith(prefix) for prefix in ['http://', 'https://', '/static/', 'static/']):
                     p['image_url'] = f"static/images/{p['image_url'].lstrip('/')}"
                     
+            # Query for best seller items
+            cursor.execute("""
+                SELECT 
+                    p.product_id, 
+                    p.name, 
+                    p.price, 
+                    p.stock_quantity, 
+                    p.image_url, 
+                    p.brand,
+                    c.name AS category_name,
+                    SUM(oi.quantity) AS total_sold
+                FROM order_items oi
+                JOIN orders o ON oi.order_id = o.order_id
+                JOIN products p ON oi.product_id = p.product_id
+                LEFT JOIN categories c ON p.category_id = c.category_id
+                WHERE o.order_status = 'completed'
+                  AND p.status = 'active'
+                  AND p.stock_quantity > 0
+                GROUP BY 
+                    p.product_id, p.name, p.price, p.stock_quantity, 
+                    p.image_url, p.brand, c.name
+                ORDER BY total_sold DESC
+                LIMIT 4
+            """)
+            best_seller_products = cursor.fetchall()
+            
+            # Format product data directly using existing rules
+            for p in best_seller_products:
+                if 'price' in p and p['price'] is not None:
+                    p['price'] = float(p['price'])
+                
+                # Image handler
+                if not p.get('image_url'):
+                    p['image_url'] = 'static/images/placeholder-product.png'
+                elif not any(p['image_url'].startswith(prefix) for prefix in ['http://', 'https://', '/static/', 'static/']):
+                    p['image_url'] = f"static/images/{p['image_url'].lstrip('/')}"
+                    
     except Exception as e:
-        print(f"Error fetching flash sale products: {e}")
+        print(f"Error fetching products: {e}")
         
-    return render_template('index.html', flash_sale_products=flash_sale_products)
+    return render_template('index.html', flash_sale_products=flash_sale_products, best_seller_products=best_seller_products)
 
 @main_bp.route('/register', methods=['GET', 'POST'])
 def register():
