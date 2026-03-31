@@ -27,7 +27,7 @@ ROLE_RESTRICTED_ENDPOINTS: Dict[str, Set[str]] = {
     'main.task': {'Admin'},
     'main.sales': {'Admin'},
     'main.cart': {'Customer'},
-    'main.checkout': {'Staff'},
+    'main.checkout': {'Customer'},
     # Products blueprint routes
     'products.index': {'Guest', 'Customer'},
     'products.products': {'Guest', 'Customer'},

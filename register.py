@@ -86,14 +86,18 @@ def create_staff():
         first_name = request.form.get('first_name', '').strip()
         last_name = request.form.get('last_name', '').strip()
         phone = request.form.get('phone', '').strip()
+        citizen_id = request.form.get('citizen_id', '').strip()
         email = request.form.get('email', '').lower().strip()
         password = request.form.get('password', '')
+        province = request.form.get('province', '').strip()
+        district = request.form.get('district', '').strip()
+        address = request.form.get('address', '').strip()
 
         # Basic validation
-        if not all([first_name, last_name, phone, email, password]):
+        if not all([first_name, last_name, phone, citizen_id, email, password]):
             return jsonify({
                 'success': False,
-                'error': 'All fields are required to add a staff member.'
+                'error': 'All required fields are required to add a staff member.'
             }), 400
 
         cursor = conn.cursor(dictionary=True)
@@ -114,18 +118,22 @@ def create_staff():
                 salt_length=16
             )
 
-            # Insert new staff user
+            # Insert new staff user with address fields
             cursor.execute(
                 """
                 INSERT INTO users 
-                (first_name, last_name, email, phone, hashed_password, role, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (first_name, last_name, email, phone, citizen_id, province, district, address, hashed_password, role, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     first_name,
                     last_name,
                     email,
                     phone,
+                    citizen_id if citizen_id else None,
+                    province if province else None,
+                    district if district else None,
+                    address if address else None,
                     hashed_password,
                     'Staff',
                     datetime.utcnow()
@@ -159,4 +167,3 @@ def create_staff():
         }), 500
 
 # ===== Staff Creation (Users Management) END =====
-# Force update

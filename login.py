@@ -84,10 +84,12 @@ def login():
             session.pop('login_email')
 
         # Successful authentication – set up session
-        full_name = f"{user.get('first_name', '').strip()} {user.get('last_name', '').strip()}".strip()
         session['user_id'] = user['user_id']
+        session['first_name'] = user.get('first_name', '').strip()
+        session['last_name'] = user.get('last_name', '').strip()
+        session['email'] = user['email']
         session['role'] = user.get('role') or 'Customer'
-        session['name'] = full_name or user['email']
+        session['name'] = f"{session['first_name']} {session['last_name']}".strip() or user['email']
         session['show_welcome'] = True
 
         role = session['role']
@@ -118,5 +120,3 @@ def logout():
     # Redirect to login page
     return redirect(url_for('login.login'))
 
-
-# Force update
