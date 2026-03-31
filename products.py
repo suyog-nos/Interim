@@ -99,8 +99,17 @@ def products():
 def render_products():
     """Render the products page with initial data"""
     try:
-        # Get initial products (increased limit)
-        products_data = get_products_data(limit=50, include_inactive=False)
+        # Get pagination parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 12, type=int)
+        offset = (page - 1) * per_page
+        category = request.args.get('category', '')
+        search_query = request.args.get('q', '').strip()
+        
+        # Get paginated data
+        data = get_products_data(category=category, search=search_query, limit=per_page, offset=offset, include_inactive=False)
+        total_products = data['total']
+        total_pages = (total_products + per_page - 1) // per_page
         
         # Get categories for filter
         conn = get_db_connection()
@@ -118,19 +127,26 @@ def render_products():
         } for row in cursor.fetchall()]
         
         return render_template('products.html', 
-                             products=products_data['products'], 
+                             products=data['products'], 
                              categories=categories,
-                             total_products=products_data['total'],
-                             is_guest=('user_id' not in session))
+                             total_products=total_products,
+                             page=page,
+                             per_page=per_page,
+                              total_pages=total_pages,
+                              search_query=search_query,
+                              selected_category=category,
+                              is_guest=('user_id' not in session))
     except Exception as e:
         print(f"Error in render_products: {str(e)}")
         return render_template('products.html', 
                             products=[], 
                             categories=[],
                             total_products=0,
+                            page=1,
+                            total_pages=0,
                             is_guest=True)
 
-def get_products_data(category='', limit=None, offset=0, include_inactive=False):
+def get_products_data(category='', search='', limit=None, offset=0, include_inactive=False):
     """Helper function to get products data with filters"""
     try:
         # Build the base query
@@ -152,6 +168,11 @@ def get_products_data(category='', limit=None, offset=0, include_inactive=False)
         if category:
             query += " AND c.name = %s"
             params.append(category)
+            
+        if search:
+            query += " AND (p.name LIKE %s OR p.brand LIKE %s OR p.sku LIKE %s)"
+            search_param = f"%{search}%"
+            params.extend([search_param, search_param, search_param])
         
         # Add pagination
         if limit is not None:
@@ -345,6 +366,67 @@ def update_product():
     return redirect(url_for('main.stock'))
 
 
+@products_bp.route('/api/customer/orders/<int:order_id>/cancel', methods=['POST'])
+def cancel_customer_order(order_id):
+    """Cancel an order (customer only)"""
+    user_id = session.get('user_id')
+    role = session.get('role')
+    
+    if not user_id or role != 'Customer':
+        return jsonify({'success': False, 'message': 'Only customers can cancel their orders.'}), 403
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Check if order belongs to this customer and is in processing status
+        cursor.execute("""
+            SELECT order_status FROM orders 
+            WHERE order_id = %s AND user_id = %s
+        """, (order_id, user_id))
+        
+        order = cursor.fetchone()
+        if not order:
+            return jsonify({'success': False, 'message': 'Order not found.'}), 404
+        
+        if order['order_status'] != 'processing':
+            return jsonify({'success': False, 'message': 'Only processing orders can be cancelled.'}), 400
+        
+        # Update order status to cancelled
+        cursor.execute("""
+            UPDATE orders 
+            SET order_status = 'cancelled'
+            WHERE order_id = %s AND user_id = %s
+        """, (order_id, user_id))
+        
+        # Restore stock quantities
+        cursor.execute("""
+            SELECT product_id, quantity FROM order_items 
+            WHERE order_id = %s
+        """, (order_id,))
+        items = cursor.fetchall()
+        
+        for item in items:
+            cursor.execute("""
+                UPDATE products 
+                SET stock_quantity = stock_quantity + %s 
+                WHERE product_id = %s
+            """, (item['quantity'], item['product_id']))
+        
+        conn.commit()
+        cursor.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Order cancelled successfully.'
+        })
+        
+    except Exception as e:
+        import traceback
+        print(f"Error cancelling order {order_id}: {e}")
+        print(traceback.format_exc())
+        return jsonify({'success': False, 'message': 'Failed to cancel order.'}), 500
+
 @products_bp.route('/api/customer/orders')
 def get_customer_orders():
     """Return the current customer's orders with their line items."""
@@ -357,9 +439,17 @@ def get_customer_orders():
     if role != 'Customer':
         return jsonify({'success': False, 'message': 'Only customers can view order history.'}), 403
 
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+    
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT COUNT(*) as count FROM orders WHERE user_id = %s", (user_id,))
+        total_orders = cursor.fetchone()['count']
+        total_pages = (total_orders + per_page - 1) // per_page if total_orders > 0 else 1
 
         cursor.execute(
             """
@@ -376,13 +466,17 @@ def get_customer_orders():
                 oi.price_at_order,
                 p.name AS product_name,
                 p.image_url
-            FROM orders o
+            FROM (
+                SELECT * FROM orders 
+                WHERE user_id = %s
+                ORDER BY created_at DESC, order_id DESC
+                LIMIT %s OFFSET %s
+            ) o
             LEFT JOIN order_items oi ON o.order_id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.product_id
-            WHERE o.user_id = %s
             ORDER BY o.created_at DESC, o.order_id DESC, oi.order_item_id ASC
             """,
-            (user_id,),
+            (user_id, per_page, offset),
         )
 
         rows = cursor.fetchall()
@@ -397,7 +491,7 @@ def get_customer_orders():
             cursor.close()
 
     orders_map = {}
-    order_counter = 1  # Start with order number 1
+    orders_map = {}
     
     for row in rows:
         order_id = row['order_id']
@@ -412,7 +506,7 @@ def get_customer_orders():
 
             orders_map[order_id] = {
                 'order_id': order_id,
-                'order_number': order_counter,  # Add sequential order number
+                'order_number': order_id,  # Use actual database ID
                 'order_status': (row.get('order_status') or '').lower(),
                 'total_amount': f"{total_amount:.2f}",
                 'created_at': created_str,
@@ -422,7 +516,6 @@ def get_customer_orders():
                 'items': [],
                 'subtotal': 0.0,
             }
-            order_counter += 1  # Increment for next order
 
         # Attach order items if they exist
         if row.get('order_item_id') is not None:
@@ -454,7 +547,14 @@ def get_customer_orders():
         order['subtotal'] = f"{order['subtotal']:.2f}"
         orders.append(order)
 
-    return jsonify({'success': True, 'orders': orders})
+    return jsonify({
+        'success': True, 
+        'orders': orders,
+        'pagination': {
+            'currentPage': page,
+            'totalPages': total_pages
+        }
+    })
 
 @products_bp.route('/api/products/<int:product_id>/alert', methods=['POST'])
 @login_required
@@ -759,11 +859,11 @@ def update_cart_item():
 def create_store_order():
     """Create an order for 'Pay at Store' payment type"""
     try:
-        if 'user_id' not in session:
+        if session.get('role') != 'Customer':
             return jsonify({
                 'success': False,
-                'message': 'Please log in to complete your order'
-            }), 401
+                'message': 'Only customers can place orders'
+            }), 403
         
         user_id = session['user_id']
         data = request.get_json() or {}
@@ -824,7 +924,7 @@ def create_store_order():
                 None,  # No staff_id for online orders
                 'Pay at Store',
                 'Unpaid',
-                'pending',
+                'processing',
                 total_amount,
                 transaction_code
             ))

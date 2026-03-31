@@ -55,5 +55,3 @@ class RegistrationForm(FlaskForm):
             cursor.execute("SELECT user_id FROM users WHERE phone = %s", (cleaned_phone,))
             if cursor.fetchone() is not None:
                 raise ValidationError('This phone number is already registered. Please use a different number.')
-
-# Force update
