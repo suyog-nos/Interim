@@ -19,7 +19,7 @@ ROLE_RESTRICTED_ENDPOINTS: Dict[str, Set[str]] = {
     'main.demand_forecasting': {'Staff', 'Admin'},
     'main.stock': {'Staff', 'Admin'},
     'main.add_product': {'Staff', 'Admin'},
-    'main.orders': {'Staff', 'Admin'},
+    'main.orders': {'Staff', 'Admin', 'Customer'},
     'main.users': {'Admin'},
     'main.notifications': {'Admin'},
     'main.maintenance': {'Admin'},
