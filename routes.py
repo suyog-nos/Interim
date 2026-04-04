@@ -918,7 +918,7 @@ def api_orders():
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
-        search_query = request.args.get('q', '').strip()
+        search_query = request.args.get('search', '').strip() or request.args.get('q', '').strip()
         offset = (page - 1) * per_page
 
         with get_db_context() as cursor:
@@ -926,19 +926,25 @@ def api_orders():
             where_clause = ""
             params = []
             if search_query:
-                # Add LEFT JOIN to search by customer name from users table
+                # Add LEFT JOIN specifically for customer name (users table) and join products for product name
                 where_clause = """
                     LEFT JOIN users u ON o.user_id = u.user_id
-                    WHERE o.order_id LIKE %s 
-                    OR u.first_name LIKE %s 
-                    OR u.last_name LIKE %s
-                    OR o.order_id IN (
-                        SELECT order_id FROM order_items 
-                        WHERE product_name LIKE %s
+                    WHERE (
+                        CAST(o.order_id AS CHAR) LIKE %s 
+                        OR u.first_name LIKE %s 
+                        OR u.last_name LIKE %s
+                        OR CONCAT(u.first_name, ' ', u.last_name) LIKE %s
+                        OR o.transaction_code LIKE %s
+                        OR o.order_id IN (
+                            SELECT oi.order_id 
+                            FROM order_items oi
+                            JOIN products p ON oi.product_id = p.product_id
+                            WHERE p.name LIKE %s
+                        )
                     )
                 """
                 q_param = f"%{search_query}%"
-                params = [q_param, q_param, q_param, q_param]
+                params = [q_param, q_param, q_param, q_param, q_param, q_param]
 
             # Get total count of unique orders with search
             count_query = f"SELECT COUNT(DISTINCT o.order_id) as total FROM orders o {where_clause}"
@@ -1069,7 +1075,9 @@ def api_orders_stats():
             cursor.execute("""
                 SELECT COALESCE(SUM(total_amount), 0) as today_sales 
                 FROM orders 
-                WHERE DATE(created_at) = CURDATE() AND order_status != 'cancelled'
+                WHERE created_at >= CURDATE() 
+                AND created_at < CURDATE() + INTERVAL 1 DAY
+                AND order_status != 'cancelled'
             """)
             today_sales = cursor.fetchone()['today_sales']
             
@@ -1259,7 +1267,11 @@ def orders():
     # Check if user is logged in and has proper permissions
     if 'user_id' not in session or session.get('role') not in ['Admin', 'Staff']:
         flash('You do not have permission to access this page', 'danger')
-        return redirect(url_for('main.index'))
+        role = session.get('role')
+        if role == 'Customer':
+            return redirect(url_for('main.customer_history'))
+        else:
+            return redirect(url_for('main.index'))
     
     # Dual-pagination parameter extraction
     active_page = request.args.get('active_page', 1, type=int)
