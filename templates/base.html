@@ -1392,9 +1392,8 @@
         {% if messages %}
             <div class="toast-container position-fixed" style="z-index: 1100; top: 80px; right: 20px;" id="flashMessageContainer">
                 {% for category, message in messages %}
-                    <div class="toast show border-0 shadow-lg mb-3" role="alert" aria-live="assertive" aria-atomic="true" 
-                         style="min-width: 300px; border-radius: 12px; overflow: hidden; animation: slideInRight 0.3s ease-out forwards;
-                                {% if category == 'success' %}border-left: 5px solid #0f5132 !important;{% elif category == 'error' or category == 'danger' %}border-left: 5px solid #842029 !important;{% endif %}">
+                    <div class="toast show border-0 shadow-lg mb-3 toast-flash-{{ category }}" role="alert" aria-live="assertive" aria-atomic="true" 
+                         style="min-width: 300px; border-radius: 12px; overflow: hidden; animation: slideInRight 0.3s ease-out forwards;">
                         <div class="toast-body d-flex align-items-center p-3 {% if category == 'success' %}bg-success-subtle text-success-emphasis{% elif category == 'error' or category == 'danger' %}bg-danger-subtle text-danger-emphasis{% else %}bg-info-subtle text-info-emphasis{% endif %}">
                             <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' or category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} fa-lg me-3"></i>
                             <div class="flex-grow-1">
@@ -1419,6 +1418,10 @@
                 });
             </script>
             <style>
+                .toast-flash-success { border-left: 5px solid #0f5132 !important; }
+                .toast-flash-error, .toast-flash-danger { border-left: 5px solid #842029 !important; }
+                .toast-flash-info { border-left: 5px solid #087990 !important; }
+
                 @keyframes slideInRight {
                     from { transform: translateX(100%); opacity: 0; }
                     to { transform: translateX(0); opacity: 1; }
