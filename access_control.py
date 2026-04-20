@@ -36,6 +36,10 @@ ROLE_RESTRICTED_ENDPOINTS: Dict[str, Set[str]] = {
     'products.get_cart': {'Customer'},
     'products.remove_from_cart': {'Customer'},
     'products.create_store_order': {'Customer'},
+    'main.admin_support': {'Admin'},
+    'main.staff_contact_admin': {'Staff'},
+    'main.customer_help': {'Customer', 'Guest'},
+    'main.contact': {'Admin', 'Staff', 'Customer', 'Guest'},
 }
 
 # Additional restrictions for direct URLs
