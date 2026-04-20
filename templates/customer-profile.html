@@ -3,29 +3,7 @@
 {% block title %}My Profile - SmartStationery{% endblock %}
 
 {% block content %}
-<!-- Toast Notifications -->
-<div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-    {% set toast_id = 'flash-' ~ loop.index %}
-    <div id="{{ toast_id }}"
-        class="toast align-items-center text-white bg-{{ 'success' if category == 'success' else 'danger' }} border-0"
-        role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="3000">
-        <div class="d-flex">
-            <div class="toast-body d-flex align-items-center">
-                <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>
-                <div>
-                    <div class="fw-bold">{{ 'Success' if category == 'success' else 'Error' }}</div>
-                    <div class="small">{{ message }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-    {% endwith %}
-    <!-- AJAX Toasts will be inserted here -->
-</div>
+<!-- Main Container -->
 
 <div class="container py-4 animate-fade-in">
     <div class="row justify-content-center">
@@ -387,7 +365,7 @@
         color: white;
         position: relative;
         overflow: hidden;
-        transition: all 0.3s ease;
+        /* transition: all 0.3s ease; */
     }
 
     .profile-header::before {
@@ -400,12 +378,12 @@
         background: linear-gradient(45deg,
                 rgba(255, 255, 255, 0) 0%,
                 rgba(255, 255, 255, 0.1) 100%);
-        transform: translateX(-100%);
-        transition: transform 0.6s ease;
+        /* transform: translateX(-100%); */
+        /* transition: transform 0.6s ease; */
     }
 
     .profile-header:hover::before {
-        transform: translateX(100%);
+        /* transform: translateX(100%); */ /* Disabled animation */
     }
 
     .profile-avatar {
@@ -417,12 +395,12 @@
         align-items: center;
         justify-content: center;
         font-size: 2rem;
-        transition: all 0.3s ease;
+        /* transition: all 0.3s ease; */
         border: 3px solid rgba(255, 255, 255, 0.3);
     }
 
     .profile-avatar:hover {
-        transform: scale(1.05);
+        /* transform: scale(1.05); */
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
@@ -439,7 +417,7 @@
         bottom: -5px;
         left: 0;
         background-color: white;
-        transition: width 0.3s ease;
+        /* transition: width 0.3s ease; */
     }
 
     .profile-header:hover .profile-info h3::after {
@@ -447,21 +425,21 @@
     }
 
     .profile-actions {
-        transition: transform 0.3s ease;
+        /* transition: transform 0.3s ease; */ /* Disabled animation */
     }
 
     #changePasswordBtn {
-        transition: all 0.3s ease;
+        /* transition: all 0.3s ease; */
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     #changePasswordBtn:hover {
         background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
+        /* transform: translateY(-2px); */
     }
 
     .profile-header:hover .profile-actions {
-        transform: translateY(-2px);
+        /* transform: translateY(-2px); */
     }
 
     @media (max-width: 768px) {

@@ -312,38 +312,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-{% if category == 'success' %}
-<div id="successMessage" class="alert alert-success fade show" role="alert"
-    style="position: fixed; top: 80px; right: 20px; z-index: 1050; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: none; border-left: 4px solid #0f5132; cursor: pointer;"
-    data-bs-delay="2000" data-bs-autohide="true" onclick="this.remove()">
-    <div class="d-flex align-items-center">
-        <i class="fas fa-check-circle me-2"></i>
-        <div>
-            <strong>Success!</strong>
-            <div class="small">{{ message }}</div>
-        </div>
-    </div>
-</div>
-<script>
-    // Auto-hide after 2 seconds
-    document.addEventListener('DOMContentLoaded', function () {
-        const successMessage = document.getElementById('successMessage');
-        if (successMessage) {
-            setTimeout(() => {
-                successMessage.remove();
-            }, 2000);
-        }
-    });
-</script>
-{% endif %}
-{% endfor %}
-{% endif %}
-{% endwith %}
-
 <div class="login-section">
     <div class="login-container">
         <div class="login-card">

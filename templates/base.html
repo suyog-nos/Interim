@@ -1162,23 +1162,21 @@
         }
 
         /* Allow child templates to add custom styles */
+    /* Default toast notification styling */
+    .welcome-toast {
+        background: linear-gradient(135deg, var(--primary), var(--accent)) !important;
+        border-radius: 0.75rem;
+        min-width: 20rem;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .welcome-toast .toast-body {
+        font-weight: 600;
+        color: #ffffff !important;
+    }
     </style>
 
-    {% block extra_css %}
-    <style>
-        /* Default toast notification styling */
-        .welcome-toast {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: 0.75rem;
-            min-width: 20rem;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .welcome-toast .toast-body {
-            font-weight: 600;
-        }
-    </style>
-    {% endblock %}
+    {% block extra_css %}{% endblock %}
 
     <!-- Additional head content from child pages -->
     {% block extra_head %}{% endblock %}
@@ -1389,6 +1387,45 @@
 
     <!-- Main Content -->
     <main>
+    <!-- Unified Toast-based Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="toast-container position-fixed" style="z-index: 1100; top: 80px; right: 20px;" id="flashMessageContainer">
+                {% for category, message in messages %}
+                    <div class="toast show border-0 shadow-lg mb-3" role="alert" aria-live="assertive" aria-atomic="true" 
+                         style="min-width: 300px; border-radius: 12px; overflow: hidden; animation: slideInRight 0.3s ease-out forwards;
+                                {% if category == 'success' %}border-left: 5px solid #0f5132 !important;{% elif category == 'error' or category == 'danger' %}border-left: 5px solid #842029 !important;{% endif %}">
+                        <div class="toast-body d-flex align-items-center p-3 {% if category == 'success' %}bg-success-subtle text-success-emphasis{% elif category == 'error' or category == 'danger' %}bg-danger-subtle text-danger-emphasis{% else %}bg-info-subtle text-info-emphasis{% endif %}">
+                            <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' or category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} fa-lg me-3"></i>
+                            <div class="flex-grow-1">
+                                <strong class="d-block">{% if category == 'success' %}Success!{% elif category == 'error' or category == 'danger' %}Alert!{% else %}Notice{% endif %}</strong>
+                                <span class="small">{{ message }}</span>
+                            </div>
+                            <button type="button" class="btn-close ms-2" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const toasts = document.querySelectorAll('#flashMessageContainer .toast');
+                    toasts.forEach(toastEl => {
+                        setTimeout(() => {
+                            const bsToast = new bootstrap.Toast(toastEl);
+                            bsToast.hide();
+                            setTimeout(() => toastEl.remove(), 500);
+                        }, 4000);
+                    });
+                });
+            </script>
+            <style>
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            </style>
+        {% endif %}
+    {% endwith %}
         {% block content %}{% endblock %}
     </main>
 
@@ -1406,9 +1443,9 @@
                     </a>
                 </div>
                 <div class="footer-links">
-                    <a href="/privacy">Privacy Policy</a>
-                    <a href="/terms">Terms of Service</a>
-                    <a href="/contact">Contact Us</a>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service</a>
+                    <a href="{{ url_for('main.contact') }}">Contact Us</a>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -1489,6 +1526,93 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <a href="/logout" class="btn btn-danger">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="privacyModalLabel"><i class="fas fa-user-shield me-2"></i> PRIVACY POLICY</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <h5 class="fw-bold mb-3">1. Introduction</h5>
+                    <p>This Smart Stationery Inventory Management System is designed to manage inventory, sales transactions, and user interactions in a structured and secure environment. This policy explains how user data is collected, used, and protected.</p>
+
+                    <h5 class="fw-bold mt-4 mb-3">2. Information We Collect</h5>
+                    <ul>
+                        <li><strong>User Information:</strong> Name, email, role (Admin, Staff, Customer)</li>
+                        <li><strong>Authentication Data:</strong> Login credentials (securely stored)</li>
+                        <li><strong>Transaction Data:</strong> Sales records, inventory updates</li>
+                        <li><strong>Activity Logs:</strong> User actions within the system</li>
+                    </ul>
+
+                    <h5 class="fw-bold mt-4 mb-3">3. How We Use Information</h5>
+                    <ul>
+                        <li>Manage inventory and stock levels</li>
+                        <li>Process and record sales transactions</li>
+                        <li>Enable role-based access control</li>
+                        <li>Monitor system usage and performance</li>
+                        <li>Improve system functionality and reliability</li>
+                    </ul>
+
+                    <h5 class="fw-bold mt-4 mb-3">4. Data Storage and Retention</h5>
+                    <ul>
+                        <li>Data is stored securely within the system database</li>
+                        <li>Access is restricted based on user roles</li>
+                        <li>Data is retained as long as required for system operation</li>
+                    </ul>
+
+                    <h5 class="fw-bold mt-4 mb-3">5. Data Security</h5>
+                    <p>We implement reasonable security measures including role-based authentication and authorization. However, no system is completely secure, and absolute security cannot be guaranteed.</p>
+
+                    <h5 class="fw-bold mt-4 mb-3">6. Data Sharing</h5>
+                    <p>No personal data is shared with third parties. Data remains within the system unless explicitly exported by an authorized admin.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="termsModalLabel"><i class="fas fa-file-contract me-2"></i> TERMS OF SERVICE</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <h5 class="fw-bold mb-3">1. Acceptance of Terms</h5>
+                    <p>By accessing and using this system, users agree to comply with these Terms of Service.</p>
+
+                    <h5 class="fw-bold mt-4 mb-3">2. Intended Use</h5>
+                    <p>This system is intended for inventory management, sales tracking, and role-based operational workflows.</p>
+
+                    <h5 class="fw-bold mt-4 mb-3">3. User Roles and Permissions</h5>
+                    <ul>
+                        <li><strong>Admin:</strong> Full access including system management and oversight</li>
+                        <li><strong>Staff:</strong> Inventory handling and operational tasks</li>
+                        <li><strong>Customer:</strong> Product viewing and interaction</li>
+                    </ul>
+
+                    <h5 class="fw-bold mt-4 mb-3">4. Prohibited Activities</h5>
+                    <p>Users must not attempt unauthorized access, manipulate data, or interfere with system security.</p>
+
+                    <h5 class="fw-bold mt-4 mb-3">5. System Availability</h5>
+                    <p>Continuous availability is not guaranteed. The system may undergo updates or maintenance.</p>
+
+                    <h5 class="fw-bold mt-4 mb-3">6. Limitation of Liability</h5>
+                    <p>The developer is not liable for data loss, system downtime, or misuse of the system.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

@@ -170,40 +170,6 @@
                 </div>
 
                 <div class="stock-content">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                    <div class="messages-container">
-                        {% for category, message in messages %}
-                        {% if category == 'success' %}
-                        <!-- Success Toast - Same Style as Logout, No Close Button -->
-                        <div class="toast-container position-fixed toast-floating"
-                            style="z-index: 1050; top: 80px; right: 20px;">
-                            <div class="toast border-0 shadow-lg welcome-toast inventory-toast" role="status"
-                                aria-live="polite" aria-atomic="true" id="successToast-{{ loop.index }}">
-                                <div class="toast-body text-white">
-                                    <i class="fas fa-check-circle me-2"></i>
-                                    {{ message }}
-                                </div>
-                            </div>
-                        </div>
-                        {% else %}
-                        <!-- Error Toast - Same Style as Logout, No Close Button -->
-                        <div class="toast-container position-fixed toast-floating"
-                            style="z-index: 1050; top: 80px; right: 20px;">
-                            <div class="toast border-0 shadow-lg error-toast inventory-toast" role="alert"
-                                aria-live="assertive" aria-atomic="true" id="errorToast-{{ loop.index }}">
-                                <div class="toast-body text-white">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    {{ message }}
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    {% endwith %}
-
                     <div class="stock-controls">
                         <div class="filter-group">
                             <label class="filter-label">Filter Category:</label>
@@ -862,7 +828,7 @@
         right: -4px;
         bottom: -4px;
         border-radius: 50%;
-        animation: pulse 2s infinite;
+        /* animation: pulse 2s infinite; */
     }
 
     .stock-indicator.in-stock {
@@ -875,7 +841,7 @@
 
     .stock-indicator.low-stock {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        animation: pulse-danger 1.5s infinite;
+        /* animation: pulse-danger 1.5s infinite; */
     }
 
     .stock-indicator.low-stock::after {
@@ -2666,7 +2632,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-warning" id="sendAlertBtn">
-                        <span class="alert-plane-icon"><i class="iconify" data-icon="mdi:airplane"></i></span>
                         <i class="fas fa-paper-plane me-1"></i> Send Alert
                     </button>
                 </div>
@@ -3349,38 +3314,6 @@
     </style>
 
     <style>
-        .alert-plane-icon {
-            position: absolute;
-            font-size: 20px;
-            top: 50%;
-            left: -30px;
-            transform: translateY(-50%) rotate(-45deg);
-            opacity: 0;
-            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        #sendAlertBtn:hover .alert-plane-icon {
-            left: calc(100% + 30px);
-            opacity: 1;
-            transform: translateY(-50%) rotate(45deg);
-        }
-
-        #sendAlertBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
-        }
-
-        #sendAlertBtn i {
-            position: relative;
-            z-index: 2;
-            transition: transform 0.3s ease;
-        }
-
-        #sendAlertBtn:hover i {
-            transform: translateX(-5px);
-        }
 
         /* Dark theme styles for Add Product Modal */
         .dark-theme #addProductModal .modal-content {
