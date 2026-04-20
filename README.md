@@ -44,6 +44,16 @@ pip install -r requirements.txt
 python app.py
 ```
 
+## Default Test Credentials
+
+For QA and development purposes, the database is pre-configured with the following role-based accounts. All accounts share a unified password:
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@gmail.com` | `admin123` |
+| Staff | `staff@gmail.com` | `admin123` |
+| Customer | `customer@gmail.com` | `admin123` |
+
 ## Troubleshooting
 
 **Database Connection:** Verify database credentials in config

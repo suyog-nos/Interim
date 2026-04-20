@@ -46,6 +46,6 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
-
+*insert.sql
 # Logs
 *.log
