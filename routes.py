@@ -2405,7 +2405,17 @@ def task():
     
     cursor = conn.cursor(dictionary=True)
     try:
-        # Get task statistics for the dashboard
+        # Get pagination parameters for tasks
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 9, type=int)
+        offset = (page - 1) * per_page
+        
+        # Get pagination parameters for alerts
+        alert_page = request.args.get('alert_page', 1, type=int)
+        alert_per_page = request.args.get('alert_per_page', 9, type=int)
+        alert_offset = (alert_page - 1) * alert_per_page
+
+        # Get task statistics
         cursor.execute("""
             SELECT 
                 COUNT(*) AS total,
@@ -2415,8 +2425,10 @@ def task():
             FROM tasks
         """)
         stats = cursor.fetchone() or {}
+        total_tasks = stats['total'] if stats else 0
+        total_pages = (total_tasks + per_page - 1) // per_page if total_tasks > 0 else 1
         
-        # Get all tasks with assignee details
+        # Get paginated tasks
         cursor.execute("""
             SELECT 
                 t.task_id,
@@ -2434,67 +2446,85 @@ def task():
                 FIELD(t.status, 'pending', 'in-progress', 'completed'),
                 t.due_date ASC,
                 FIELD(t.priority, 'high', 'medium', 'low')
-        """)
+            LIMIT %s OFFSET %s
+        """, (per_page, offset))
         tasks = cursor.fetchall()
         
-        # Fetch stock alerts raised by staff (stock_requests acts as alerts)
-        # Fetch new arrival alerts submitted by staff
+        # Combine alerts using UNION for unified pagination
+        # Note: We need to align columns for UNION
         cursor.execute("""
-            SELECT 
-                naa.arrival_id,
-                naa.product_id,
-                p.name AS product_name,
-                p.stock_status AS alert_type,
-                p.stock_quantity,
-                naa.quantity_received,
-                naa.staff_notes,
-                naa.status,
-                naa.created_at,
-                CONCAT(u.first_name, ' ', u.last_name) AS staff_name,
-                COALESCE(s.name, 'Unknown Supplier') AS supplier_name,
-                CASE 
-                    WHEN p.stock_quantity <= 0 THEN 'high'
-                    WHEN p.stock_quantity <= 5 THEN 'high'
-                    WHEN p.stock_quantity <= 15 THEN 'medium'
-                    ELSE 'low'
-                END AS priority_label
-            FROM new_arrival_alerts naa
-            JOIN products p ON naa.product_id = p.product_id
-            JOIN users u ON naa.staff_id = u.user_id
-            LEFT JOIN suppliers s ON naa.supplier_id = s.supplier_id
-            ORDER BY naa.created_at DESC
-            LIMIT 30
+            SELECT COUNT(*) FROM (
+                SELECT arrival_id FROM new_arrival_alerts
+                UNION ALL
+                SELECT request_id FROM stock_requests
+            ) as combined_count
         """)
-        arrival_alerts = cursor.fetchall()
-        
-        # Fetch stock alerts raised by staff
+        alert_total = cursor.fetchone()['COUNT(*)'] or 0
+        alert_total_pages = (alert_total + alert_per_page - 1) // alert_per_page if alert_total > 0 else 1
+
+        # Fetch paged combined alerts
         cursor.execute("""
-            SELECT 
-                sr.request_id,
-                sr.product_id,
-                p.name AS product_name,
-                p.stock_status AS alert_type,
-                p.stock_quantity,
-                sr.requested_quantity,
-                sr.reason,
-                sr.status,
-                sr.created_at,
-                CONCAT(u.first_name, ' ', u.last_name) AS staff_name,
-                CASE 
-                    WHEN p.stock_quantity <= 0 THEN 'high'
-                    WHEN p.stock_quantity <= 5 THEN 'high'
-                    WHEN p.stock_quantity <= 15 THEN 'medium'
-                    ELSE 'low'
-                END AS priority_label
-            FROM stock_requests sr
-            JOIN products p ON sr.product_id = p.product_id
-            JOIN users u ON sr.staff_id = u.user_id
-            ORDER BY sr.created_at DESC
-            LIMIT 30
-        """)
-        stock_alerts = cursor.fetchall()
+            SELECT * FROM (
+                SELECT 
+                    'arrival' as alert_source,
+                    naa.arrival_id as alert_id,
+                    naa.product_id,
+                    p.name AS product_name,
+                    p.stock_status AS alert_type,
+                    p.stock_quantity,
+                    naa.quantity_received as quantity,
+                    naa.staff_notes as notes,
+                    naa.status,
+                    naa.created_at,
+                    CONCAT(u.first_name, ' ', u.last_name) AS staff_name,
+                    COALESCE(s.name, 'Unknown Supplier') AS supplier_name,
+                    CASE 
+                        WHEN p.stock_quantity <= 0 THEN 'high'
+                        WHEN p.stock_quantity <= 5 THEN 'high'
+                        WHEN p.stock_quantity <= 15 THEN 'medium'
+                        ELSE 'low'
+                    END AS priority_label
+                FROM new_arrival_alerts naa
+                JOIN products p ON naa.product_id = p.product_id
+                JOIN users u ON naa.staff_id = u.user_id
+                LEFT JOIN suppliers s ON naa.supplier_id = s.supplier_id
+                
+                UNION ALL
+                
+                SELECT 
+                    'stock' as alert_source,
+                    sr.request_id as alert_id,
+                    sr.product_id,
+                    p.name AS product_name,
+                    p.stock_status AS alert_type,
+                    p.stock_quantity,
+                    sr.requested_quantity as quantity,
+                    sr.reason as notes,
+                    sr.status,
+                    sr.created_at,
+                    CONCAT(u.first_name, ' ', u.last_name) AS staff_name,
+                    NULL as supplier_name,
+                    CASE 
+                        WHEN p.stock_quantity <= 0 THEN 'high'
+                        WHEN p.stock_quantity <= 5 THEN 'high'
+                        WHEN p.stock_quantity <= 15 THEN 'medium'
+                        ELSE 'low'
+                    END AS priority_label
+                FROM stock_requests sr
+                JOIN products p ON sr.product_id = p.product_id
+                JOIN users u ON sr.staff_id = u.user_id
+            ) AS all_alerts
+            ORDER BY created_at DESC
+            LIMIT %s OFFSET %s
+        """, (alert_per_page, alert_offset))
+        all_alerts = cursor.fetchall()
         
-        # Fetch staff members for task assignment dropdown
+        # Split back for statistics or template compatibility if needed
+        # But for pagination logic, we'll use all_alerts
+        arrival_alerts = [a for a in all_alerts if a['alert_source'] == 'arrival']
+        stock_alerts = [a for a in all_alerts if a['alert_source'] == 'stock']
+        
+        # Get staff members for task assignment dropdown
         cursor.execute("""
             SELECT 
                 user_id,
@@ -2506,9 +2536,15 @@ def task():
         """)
         staff_members = cursor.fetchall()
         
-        combined_alerts = (arrival_alerts or []) + (stock_alerts or [])
-        alert_count = len(combined_alerts)
-        pending_alerts = sum(1 for alert in combined_alerts if str(alert.get('status', '')).lower() == 'pending')
+        # Calculate pending count for badge (across all alerts, not just this page)
+        cursor.execute("""
+            SELECT COUNT(*) FROM (
+                SELECT status FROM new_arrival_alerts WHERE status = 'Pending'
+                UNION ALL
+                SELECT status FROM stock_requests WHERE status = 'Pending'
+            ) as pending_count
+        """)
+        pending_alerts = cursor.fetchone()['COUNT(*)'] or 0
         
         return render_template(
             'task.html',
@@ -2516,9 +2552,20 @@ def task():
             tasks=tasks,
             arrival_alerts=arrival_alerts,
             stock_alerts=stock_alerts,
+            all_alerts=all_alerts, # New combined list
             staff_members=staff_members,
-            alert_count=alert_count,
+            alert_count=alert_total,
             pending_alerts=pending_alerts,
+            page=page,
+            total_pages=total_pages,
+            per_page=per_page,
+            total_tasks=total_tasks,
+            offset=offset,
+            alert_page=alert_page,
+            alert_total_pages=alert_total_pages,
+            alert_per_page=alert_per_page,
+            alert_total=alert_total,
+            alert_offset=alert_offset,
             current_page='tasks'
         )
     except Exception as e:
@@ -2541,14 +2588,27 @@ def mytask():
         # Import the functions from products.py
         from products import get_staff_tasks, get_staff_task_stats
         
+        # Get pagination parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 6, type=int)
+        offset = (page - 1) * per_page
+        
         # Get user's tasks and stats using the new functions
-        tasks = get_staff_tasks(user_id)
         stats = get_staff_task_stats(user_id)
+        total_tasks = stats['total'] if stats else 0
+        total_pages = (total_tasks + per_page - 1) // per_page if total_tasks > 0 else 1
+        
+        tasks = get_staff_tasks(user_id, limit=per_page, offset=offset)
         
         return render_template(
             'mytask.html',
             tasks=tasks,
             stats=stats,
+            page=page,
+            total_pages=total_pages,
+            per_page=per_page,
+            total_tasks=total_tasks,
+            offset=offset,
             current_page='mytasks'
         )
         
@@ -4085,9 +4145,39 @@ def top_products_report():
         )
 
     except Exception as e:
-        print(f"Error loading Top Products Report: {e}")
         flash('An error occurred while loading the report.', 'error')
         return redirect(url_for('main.dashboard'))
+
+@main_bp.route('/contact')
+def contact():
+    role = session.get('role', 'Guest')
+    if role == 'Admin':
+        return redirect(url_for('main.admin_support'))
+    elif role == 'Staff':
+        return redirect(url_for('main.staff_contact_admin'))
+    else:
+        return redirect(url_for('main.customer_help'))
+
+@main_bp.route('/admin/support', methods=['GET', 'POST'])
+def admin_support():
+    if request.method == 'POST':
+        flash('Support request sent to the developer successfully!', 'success')
+        return redirect(url_for('main.admin_support'))
+    return render_template('admin_support.html')
+
+@main_bp.route('/staff/contact-admin', methods=['GET', 'POST'])
+def staff_contact_admin():
+    if request.method == 'POST':
+        flash('Message sent to the Administrator successfully!', 'success')
+        return redirect(url_for('main.staff_contact_admin'))
+    return render_template('staff_contact_admin.html')
+
+@main_bp.route('/customer/help', methods=['GET', 'POST'])
+def customer_help():
+    if request.method == 'POST':
+        flash('Your inquiry has been submitted to the support team.', 'success')
+        return redirect(url_for('main.customer_help'))
+    return render_template('customer_help.html')
 
 @main_bp.app_errorhandler(404)
 def page_not_found(e):

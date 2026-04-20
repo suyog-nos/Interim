@@ -609,6 +609,81 @@
     border: 5px solid var(--dark-bg-3);
     border-top: 5px solid var(--primary-light);
 }
+
+/* Pagination Styles */
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    padding: 0 5px;
+}
+
+.pagination-container {
+    display: flex;
+    gap: 4px;
+}
+
+.pagination-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    color: #3b82f6;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.dark-theme .pagination-btn {
+    background: var(--dark-bg-2);
+    border-color: var(--dark-border);
+    color: #60a5fa;
+}
+
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.dark-theme .pagination-btn:hover:not(.disabled):not(.active) {
+    background: var(--dark-bg-3);
+}
+
+.pagination-btn.active {
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+}
+
+.pagination-btn.disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.dark-theme .pagination-btn.disabled {
+    background: var(--dark-bg-1);
+    color: #475569;
+    border-color: var(--dark-border);
+}
+
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.dark-theme .pagination-info {
+    color: var(--dark-text-3);
+}
 </style>
 {% endblock %}
 
@@ -727,16 +802,59 @@
                                         </div>
                                     </div>
                                 </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="col-12">
-                                <div class="empty-state">
-                                    <i class="fas fa-tasks fa-3x mb-3 text-muted"></i>
-                                    <h5 class="text-muted">No tasks available</h5>
-                                </div>
-                            </div>
-                        {% endif %}
+                        {% endfor %}
                     </div>
+
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                    <div class="pagination-wrapper mt-4">
+                        <div class="pagination-info">
+                            Showing {{ offset + 1 if total_tasks > 0 else 0 }} to {{ [offset + tasks|length, total_tasks]|min }} of {{ total_tasks }} tasks
+                        </div>
+                        
+                        <div class="pagination-container">
+                            {% if page > 1 %}
+                            <a href="{{ url_for('main.task', page=page-1) }}" class="pagination-btn">
+                                &laquo;
+                            </a>
+                            {% else %}
+                            <div class="pagination-btn disabled">
+                                &laquo;
+                            </div>
+                            {% endif %}
+
+                            {% for p in range(1, total_pages + 1) %}
+                                {% if p == page %}
+                                <div class="pagination-btn active">{{ p }}</div>
+                                {% elif p <= 3 or p > total_pages - 3 or (p >= page - 1 and p <= page + 1) %}
+                                <a href="{{ url_for('main.task', page=p) }}" class="pagination-btn">{{ p }}</a>
+                                {% elif p == 4 or p == total_pages - 3 %}
+                                <div class="pagination-info px-2">...</div>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page < total_pages %}
+                            <a href="{{ url_for('main.task', page=page+1) }}" class="pagination-btn">
+                                &raquo;
+                            </a>
+                            {% else %}
+                            <div class="pagination-btn disabled">
+                                &raquo;
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="row" id="taskList">
+                        <div class="col-12">
+                            <div class="empty-state">
+                                <i class="fas fa-tasks fa-3x mb-3 text-muted"></i>
+                                <h5 class="text-muted">No tasks available</h5>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
                 </div>
 
                 <!-- Alerts Tab -->
@@ -772,51 +890,69 @@
                         </div>
                     </div>
                     <div class="row" id="alertList">
-                        {% set has_arrival_alerts = arrival_alerts and arrival_alerts|length > 0 %}
-                        {% set has_stock_alerts = stock_alerts and stock_alerts|length > 0 %}
-                        {% if has_arrival_alerts %}
-                            <div class="col-12">
-                                <h5 class="fw-semibold mb-3">New Arrival Alerts</h5>
-                            </div>
-                            {% for alert in arrival_alerts %}
-                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                        {% if all_alerts %}
+                            {% for alert in all_alerts %}
+                                <div class="col-12 col-md-6 col-lg-4 mb-3 alert-item" data-alert-source="{{ alert.alert_source }}" data-alert-status="{{ alert.status.lower() }}">
                                     <div class="card h-100 alert-status-{{ alert.status.lower() }}">
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
                                                 <div>
+                                                    <h6 class="text-primary x-small fw-bold text-uppercase mb-1" style="font-size: 0.75rem;">
+                                                        {{ 'New Arrival' if alert.alert_source == 'arrival' else 'Stock Request' }}
+                                                    </h6>
                                                     <h5 class="card-title mb-1">{{ alert.product_name }}</h5>
                                                     <p class="text-muted small mb-0">
-                                                        Received by {{ alert.staff_name }}{% if alert.supplier_name %} · {{ alert.supplier_name }}{% endif %}
+                                                        {% if alert.alert_source == 'arrival' %}
+                                                            Received by {{ alert.staff_name }}{% if alert.supplier_name %} · {{ alert.supplier_name }}{% endif %}
+                                                        {% else %}
+                                                            Requested by {{ alert.staff_name }}
+                                                        {% endif %}
                                                     </p>
                                                 </div>
                                                 {% if session.role == 'Admin' %}
                                                 <button class="btn btn-sm btn-outline-danger delete-alert-btn" 
-                                                        data-alert-id="{{ alert.arrival_id }}" 
-                                                        data-alert-type="arrival"
+                                                        data-alert-id="{{ alert.alert_id }}" 
+                                                        data-alert-type="{{ alert.alert_source }}"
                                                         data-product-name="{{ alert.product_name }}"
                                                         title="Delete Alert">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                                 {% endif %}
                                             </div>
-                                            <p class="small text-muted mb-2">{{ alert.staff_notes or 'No notes provided' }}</p>
+                                            <p class="small text-muted mb-2">{{ alert.notes or 'No details provided' }}</p>
+                                            
                                             {% if session.role == 'Admin' and alert.status == 'Pending' %}
                                             <div class="d-flex gap-2 mb-2">
-                                                <button class="btn btn-sm btn-success approve-arrival-btn" 
-                                                        data-arrival-id="{{ alert.arrival_id }}" 
-                                                        data-product-name="{{ alert.product_name }}">
-                                                    <i class="fas fa-check me-1"></i>Approve
-                                                </button>
-                                                <button class="btn btn-sm btn-danger deny-arrival-btn" 
-                                                        data-arrival-id="{{ alert.arrival_id }}" 
-                                                        data-product-name="{{ alert.product_name }}">
-                                                    <i class="fas fa-times me-1"></i>Deny
-                                                </button>
+                                                {% if alert.alert_source == 'arrival' %}
+                                                    <button class="btn btn-sm btn-success approve-arrival-btn" 
+                                                            data-arrival-id="{{ alert.alert_id }}" 
+                                                            data-product-name="{{ alert.product_name }}">
+                                                        <i class="fas fa-check me-1"></i>Approve
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger deny-arrival-btn" 
+                                                            data-arrival-id="{{ alert.alert_id }}" 
+                                                            data-product-name="{{ alert.product_name }}">
+                                                        <i class="fas fa-times me-1"></i>Deny
+                                                    </button>
+                                                {% else %}
+                                                    <button class="btn btn-sm btn-success approve-stock-btn" 
+                                                            data-request-id="{{ alert.alert_id }}" 
+                                                            data-product-name="{{ alert.product_name }}">
+                                                        <i class="fas fa-check me-1"></i>Approve
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger deny-stock-btn" 
+                                                            data-request-id="{{ alert.alert_id }}" 
+                                                            data-product-name="{{ alert.product_name }}">
+                                                        <i class="fas fa-times me-1"></i>Deny
+                                                    </button>
+                                                {% endif %}
                                             </div>
                                             {% endif %}
+
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <small class="text-muted">
-                                                    <i class="fas fa-layer-group me-1"></i>Qty: {{ alert.quantity_received }}
+                                                    <i class="fas fa-layer-group me-1"></i>
+                                                    {{ 'Qty: ' if alert.alert_source == 'arrival' else 'Requested: ' }}{{ alert.quantity }}
                                                 </small>
                                                 <div class="d-flex align-items-center gap-2">
                                                     {% if alert.status != 'Pending' %}
@@ -833,91 +969,65 @@
                                     </div>
                                 </div>
                             {% endfor %}
-                        {% endif %}
-
-                        {% if has_stock_alerts %}
-                            <div class="col-12 pt-2">
-                                <h5 class="fw-semibold mb-3">Stock Requests</h5>
-                            </div>
-                            {% for alert in stock_alerts %}
-                                <div class="col-12 col-md-6 col-lg-4 mb-3">
-                                    <div class="card h-100 alert-status-{{ alert.status.lower() }}">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <div>
-                                                    <h5 class="card-title mb-1">{{ alert.product_name }}</h5>
-                                                    <p class="text-muted small mb-0">Requested by {{ alert.staff_name }}</p>
-                                                </div>
-                                                {% if session.role == 'Admin' %}
-                                                <button class="btn btn-sm btn-outline-danger delete-alert-btn" 
-                                                        data-alert-id="{{ alert.request_id }}" 
-                                                        data-alert-type="stock"
-                                                        data-product-name="{{ alert.product_name }}"
-                                                        title="Delete Alert">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                                {% endif %}
-                                            </div>
-                                            <p class="small text-muted mb-2">{{ alert.reason or 'No details provided' }}</p>
-                                            {% if session.role == 'Admin' and alert.status == 'Pending' %}
-                                            <div class="d-flex gap-2 mb-2">
-                                                <button class="btn btn-sm btn-success approve-stock-btn" 
-                                                        data-request-id="{{ alert.request_id }}" 
-                                                        data-product-name="{{ alert.product_name }}">
-                                                    <i class="fas fa-check me-1"></i>Approve
-                                                </button>
-                                                <button class="btn btn-sm btn-danger deny-stock-btn" 
-                                                        data-request-id="{{ alert.request_id }}" 
-                                                        data-product-name="{{ alert.product_name }}">
-                                                    <i class="fas fa-times me-1"></i>Deny
-                                                </button>
-                                            </div>
-                                            {% endif %}
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <small class="text-muted">
-                                                    <i class="fas fa-layer-group me-1"></i>Requested: {{ alert.requested_quantity }}
-                                                </small>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    {% if alert.status != 'Pending' %}
-                                                    <span class="badge {{ 'bg-success' if alert.status == 'Approved' else 'bg-danger' }}">
-                                                        {{ alert.status }}
-                                                    </span>
-                                                    {% endif %}
-                                                    <small class="text-muted">
-                                                        <i class="far fa-clock me-1"></i>{{ alert.created_at.strftime('%b %d, %Y') if alert.created_at else '' }}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                        {% if not has_arrival_alerts and not has_stock_alerts %}
-                            <div class="col-12" id="noAlertsMessage" style="display: none;">
-                                <div class="empty-state">
-                                    <i class="fas fa-search fa-3x mb-3 text-muted"></i>
-                                    <h5 class="text-muted">No alerts found</h5>
-                                    <p class="text-muted small">Try adjusting your filters</p>
-                                </div>
-                            </div>
+                        {% else %}
                             <div class="col-12" id="noAlertsAtAll">
                                 <div class="empty-state">
                                     <i class="fas fa-bell-slash fa-3x mb-3 text-muted"></i>
                                     <h5 class="text-muted">No alerts right now</h5>
                                 </div>
                             </div>
-                        {% else %}
-                            <div class="col-12" id="noAlertsMessage" style="display: none;">
-                                <div class="empty-state">
-                                    <i class="fas fa-search fa-3x mb-3 text-muted"></i>
-                                    <h5 class="text-muted">No alerts found</h5>
-                                    <p class="text-muted small">Try adjusting your filters</p>
-                                </div>
-                            </div>
                         {% endif %}
+                        
+                        <!-- Filter empty state (hidden by default) -->
+                        <div class="col-12" id="noAlertsMessage" style="display: none;">
+                            <div class="empty-state">
+                                <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                                <h5 class="text-muted">No alerts found</h5>
+                                <p class="text-muted small">Try adjusting your filters</p>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Alert Pagination -->
+                    {% if alert_total_pages > 1 %}
+                    <div class="pagination-wrapper mt-4">
+                        <div class="pagination-info">
+                            Showing {{ alert_offset + 1 if alert_total > 0 else 0 }} to {{ [alert_offset + all_alerts|length, alert_total]|min }} of {{ alert_total }} alerts
+                        </div>
+                        
+                        <div class="pagination-container">
+                            {% if alert_page > 1 %}
+                            <a href="{{ url_for('main.task', alert_page=alert_page-1) }}" class="pagination-btn">
+                                &laquo;
+                            </a>
+                            {% else %}
+                            <div class="pagination-btn disabled">
+                                &laquo;
+                            </div>
+                            {% endif %}
+
+                            {% for p in range(1, alert_total_pages + 1) %}
+                                {% if p == alert_page %}
+                                <div class="pagination-btn active">{{ p }}</div>
+                                {% elif p <= 3 or p > alert_total_pages - 3 or (p >= alert_page - 1 and p <= alert_page + 1) %}
+                                <a href="{{ url_for('main.task', alert_page=p) }}" class="pagination-btn">{{ p }}</a>
+                                {% elif p == 4 or p == alert_total_pages - 3 %}
+                                <div class="pagination-info px-2">...</div>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if alert_page < alert_total_pages %}
+                            <a href="{{ url_for('main.task', alert_page=alert_page+1) }}" class="pagination-btn">
+                                &raquo;
+                            </a>
+                            {% else %}
+                            <div class="pagination-btn disabled">
+                                &raquo;
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

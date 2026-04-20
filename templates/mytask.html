@@ -357,6 +357,77 @@
         font-size: 1.8rem;
     }
 
+    /* Pagination Styles */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        padding: 0 5px;
+    }
+
+    .pagination-container {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pagination-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        color: #3b82f6;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .dark-theme .pagination-btn {
+        background: #1e293b;
+        border-color: #334155;
+        color: #60a5fa;
+    }
+
+    .pagination-btn:hover:not(.disabled):not(.active) {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+
+    .dark-theme .pagination-btn:hover:not(.disabled):not(.active) {
+        background: #334155;
+    }
+
+    .pagination-btn.active {
+        background: #3b82f6;
+        color: #fff;
+        border-color: #3b82f6;
+    }
+
+    .pagination-btn.disabled {
+        background: #f8fafc;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .dark-theme .pagination-btn.disabled {
+        background: #0f172a;
+        color: #475569;
+        border-color: #334155;
+    }
+
+    .pagination-info {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
     @media (max-width: 991px) {
         .tasks-hero .row {
             flex-direction: column-reverse;
@@ -406,10 +477,6 @@
         </div>
     </div>
 
-    <div class="text-end mb-3 text-muted small px-2">
-        Showing {{ tasks|length }} task{{ '' if tasks|length == 1 else 's' }}
-    </div>
-
     <!-- Tasks Grid -->
     <div class="tasks-grid">
         {% for task in tasks %}
@@ -453,6 +520,47 @@
         </article>
         {% endfor %}
     </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="pagination-wrapper">
+        <div class="pagination-info">
+            Showing {{ offset + 1 if total_tasks > 0 else 0 }} to {{ [offset + tasks|length, total_tasks]|min }} of {{ total_tasks }} tasks
+        </div>
+        
+        <div class="pagination-container">
+            {% if page > 1 %}
+            <a href="{{ url_for('main.mytask', page=page-1) }}" class="pagination-btn">
+                &laquo;
+            </a>
+            {% else %}
+            <div class="pagination-btn disabled">
+                &laquo;
+            </div>
+            {% endif %}
+
+            {% for p in range(1, total_pages + 1) %}
+                {% if p == page %}
+                <div class="pagination-btn active">{{ p }}</div>
+                {% elif p <= 3 or p > total_pages - 3 or (p >= page - 1 and p <= page + 1) %}
+                <a href="{{ url_for('main.mytask', page=p) }}" class="pagination-btn">{{ p }}</a>
+                {% elif p == 4 or p == total_pages - 3 %}
+                <div class="pagination-info px-2">...</div>
+                {% endif %}
+            {% endfor %}
+
+            {% if page < total_pages %}
+            <a href="{{ url_for('main.mytask', page=page+1) }}" class="pagination-btn">
+                &raquo;
+            </a>
+            {% else %}
+            <div class="pagination-btn disabled">
+                &raquo;
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
     {% else %}
     <div class="empty-state">
         <div class="empty-icon-circle">

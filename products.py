@@ -51,14 +51,14 @@ def get_staff_task_stats(user_id):
             'completed': 0
         }
 
-def get_staff_tasks(user_id):
-    """Get all tasks for a staff member"""
+def get_staff_tasks(user_id, limit=None, offset=0):
+    """Get tasks for a staff member with pagination support"""
     try:
         connection = get_db_connection()
         cursor = connection.cursor(dictionary=True)
         
-        # Get user's tasks
-        cursor.execute("""
+        # Build the query
+        query = """
             SELECT * 
             FROM tasks 
             WHERE assigned_to = %s 
@@ -74,7 +74,17 @@ def get_staff_tasks(user_id):
                     WHEN 'medium' THEN 2
                     ELSE 3
                 END
-        """, (user_id,))
+        """
+        
+        params = [user_id]
+        
+        # Add pagination
+        if limit is not None:
+            query += " LIMIT %s OFFSET %s"
+            params.extend([limit, offset])
+            
+        # Get user's tasks
+        cursor.execute(query, params)
         
         tasks = cursor.fetchall()
         cursor.close()
