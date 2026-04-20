@@ -50,9 +50,9 @@ For QA and development purposes, the database is pre-configured with the followi
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | `admin@gmail.com` | `admin123` |
-| Staff | `staff@gmail.com` | `admin123` |
-| Customer | `customer@gmail.com` | `admin123` |
+| Admin | `admin@gmail.com` | `Admin@123` |
+| Staff | `staff@gmail.com` | `Admin@123` |
+| Customer | `customer@gmail.com` | `Admin@123` |
 
 ## Troubleshooting
 
